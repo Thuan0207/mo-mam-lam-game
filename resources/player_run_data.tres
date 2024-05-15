@@ -1,0 +1,6 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://dee2bfqrs0s0d"]
+
+[ext_resource type="Script" path="res://resources/PlayerRunData.cs" id="1_hy7mp"]
+
+[resource]
+script = ExtResource("1_hy7mp")

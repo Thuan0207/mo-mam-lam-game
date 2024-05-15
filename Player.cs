@@ -28,13 +28,13 @@ public partial class Player : CharacterBody2D
 
 	[Export] public Resource Data;
 
-	// public override void _Ready()
-	// {
-	// 	if (Data is PlayerRunData playerRunData)
-	// 	{
-	// 		GD.Print(playerRunData.Speed);
-	// 	}
-	// }
+	public override void _Ready()
+	{
+		if (Data is PlayerRunData playerRunData)
+		{
+			GD.Print(playerRunData.Speed);
+		}
+	}
 
 
 	// Khai báo trọng lực ( trọng lực mặc định của godot và có thể thay đổi ở giao diện)

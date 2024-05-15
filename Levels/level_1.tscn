@@ -1,9 +1,10 @@
-[gd_scene load_steps=10 format=3 uid="uid://ckwut2klv8yex"]
+[gd_scene load_steps=11 format=3 uid="uid://ckwut2klv8yex"]
 
 [ext_resource type="Texture2D" uid="uid://r27d4n5dfmiw" path="res://Sprites/Platformer_Dungeon Asset Pack/Platformer_Dungeon Asset Pack/TileSet/TileSet.png" id="1_8apuj"]
 [ext_resource type="Texture2D" uid="uid://jtd66e2f2icb" path="res://Sprites/PixelPlatformerSet1v.1.1/other_and_decorative.png" id="1_xm3e8"]
 [ext_resource type="PackedScene" uid="uid://mmsuso8ln750" path="res://PlayerCT.tscn" id="3_k3dyj"]
 [ext_resource type="Script" path="res://Player.cs" id="4_sw0dt"]
+[ext_resource type="Resource" uid="uid://dee2bfqrs0s0d" path="res://resources/player_run_data.tres" id="5_kv7fi"]
 
 [sub_resource type="TileMapPattern" id="TileMapPattern_uhf2b"]
 tile_data = PackedInt32Array(0, 5, 3, 1, 393221, 0, 65537, 5, 2, 2, 327685, 0, 65538, 131077, 2, 3, 131077, 3)
@@ -2038,6 +2039,7 @@ layer_0/tile_data = PackedInt32Array(524286, 65541, 2, 524287, 65541, 2, 458752,
 [node name="Player" parent="." instance=ExtResource("3_k3dyj")]
 position = Vector2(16, -99)
 script = ExtResource("4_sw0dt")
+Data = ExtResource("5_kv7fi")
 
 [node name="Camera2D" type="Camera2D" parent="Player"]
 position = Vector2(95, -63)
