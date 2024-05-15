@@ -18,16 +18,29 @@ using System;
 	}
 }*/
 
-public partial class PlayerCT : CharacterBody2D
+public partial class Player : CharacterBody2D
 {
 
-	public const float Speed = 250.0f;
-	public const float JumpVelocity = -450.0f;
-	
+	[Export]
+	public float Speed = 250.0f;
+	[Export]
+	public float JumpVelocity = -450.0f;
+
+	[Export] public Resource Data;
+
+	// public override void _Ready()
+	// {
+	// 	if (Data is PlayerRunData playerRunData)
+	// 	{
+	// 		GD.Print(playerRunData.Speed);
+	// 	}
+	// }
+
 
 	// Khai báo trọng lực ( trọng lực mặc định của godot và có thể thay đổi ở giao diện)
+
 	public float gravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
-	
+
 
 	public override void _PhysicsProcess(double delta)
 	{
@@ -38,12 +51,12 @@ public partial class PlayerCT : CharacterBody2D
 		// Áp dụng trọng lực khi ở trên không
 		if (!IsOnFloor())
 			velocity.Y += gravity * (float)delta;
-			//animatedSprite2D.Animation = "jump";
+		//animatedSprite2D.Animation = "jump";
 
 		// nhảy khi player bấm space và ở trên sàn
 		if (Input.IsActionJustPressed("ui_accept") && IsOnFloor())
 			velocity.Y = JumpVelocity;
-			
+
 
 		// di chuyển khi player nhấn nút
 		Vector2 direction = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
@@ -55,16 +68,17 @@ public partial class PlayerCT : CharacterBody2D
 		{
 			// nhân vật đứng im khi player k bấm gì
 			velocity.X = Mathf.MoveToward(Velocity.X, 0, Speed);
-			animatedSprite2D.Animation ="idle";
+			animatedSprite2D.Animation = "idle";
 		}
-		if(velocity.X != 0){
+		if (velocity.X != 0)
+		{
 			animatedSprite2D.Animation = "run";
 			animatedSprite2D.FlipH = velocity.X < 0;
 		}
 		if (!IsOnFloor())
-			{
+		{
 			animatedSprite2D.Animation = "jump";
-			}
+		}
 
 		Velocity = velocity;
 		MoveAndSlide();
