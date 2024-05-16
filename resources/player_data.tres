@@ -1,0 +1,24 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://dee2bfqrs0s0d"]
+
+[ext_resource type="Script" path="res://resources/PlayerData.cs" id="1_65lj8"]
+
+[resource]
+script = ExtResource("1_65lj8")
+FallGravityMult = 0.5
+MaxFallSpeed = 50.0
+FastFallGravityMult = 0.5
+MaxFastFallSpeed = 70.0
+JumpHeight = 100.0
+JumpTimeToApex = 1.5
+JumpCutGravityMult = 0.5
+JumpHangGravityMult = 0.5
+JumpHangTimeThreshold = 0.1
+JumpHangAccelerationMult = 0.5
+JumpHangMaxSpeedMult = 1.0
+_runMaxSpeed = 270.0
+AccelTime = 0.7
+DeccelTime = 0.3
+AccelInAir = 0.5
+DeccelInAir = 0.5
+CoyoteTime = 0.2
+JumpInputBufferTime = 0.5

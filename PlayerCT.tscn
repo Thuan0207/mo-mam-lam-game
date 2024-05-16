@@ -183,4 +183,3 @@ scale = Vector2(1.375, 1.35417)
 sprite_frames = SubResource("SpriteFrames_w5yw0")
 animation = &"jump"
 autoplay = "idle"
-frame_progress = 0.979326
