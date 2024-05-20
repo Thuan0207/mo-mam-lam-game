@@ -162,7 +162,7 @@ public partial class Player : CharacterBody2D
             IsJumping = true;
             _isJumpCut = false;
             _isJumpFalling = false;
-            velocityCopied.Y += CalculateJumpForce();
+            velocityCopied.Y -= CalculateJumpForce();
         }
         Velocity = velocityCopied;
         MoveAndSlide();
@@ -248,8 +248,7 @@ public partial class Player : CharacterBody2D
         // increase force when the player falling, help with coyote time
         if (Velocity.Y > 0)
             force += Velocity.Y;
-        // negative force to propel the player
-        return -force;
+        return force;
     }
     #endregion
 
