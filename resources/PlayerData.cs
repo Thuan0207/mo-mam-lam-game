@@ -77,7 +77,7 @@ public partial class PlayerData : Resource
     [Export]
     //Speeds (close to 0) where the player will experience extra "jump hang". The player's velocity.y is closest to 0 at the jump's apex (think of the gradient of a parabola or quadratic function)
 
-    public float JumpHangTimeThreshold;
+    public float JumpHangThreshold;
 
     [Export]
     public float JumpHangAccelerationMult;
@@ -158,10 +158,10 @@ public partial class PlayerData : Resource
             90f,
             0.36f,
             1.1f,
-            0.5f,
-            0.1f,
-            2.0f,
-            1f,
+            0.8f,
+            16.0f,
+            1.0f,
+            1.1f,
             200f,
             24.0f,
             42.0f,
@@ -179,10 +179,10 @@ public partial class PlayerData : Resource
         float jumpHeight = 90,
         float jumpTimeToApex = 0.36f,
         float jumpCutGravityMult = 1.1f,
-        float jumpHangGravityMult = 0.5f,
-        float jumpHangTimeThreshold = 0.1f,
-        float jumpHangAccelerationMult = 2.0f,
-        float jumpHangMaxSpeedMult = 1f,
+        float jumpHangGravityMult = 0.8f,
+        float jumpHangThreshold = 16.0f,
+        float jumpHangAccelerationMult = 1.0f,
+        float jumpHangMaxSpeedMult = 1.1f,
         float runMaxSpeed = 200,
         float acceleration = 24.0f,
         float decceleration = 42.0f,
@@ -205,7 +205,7 @@ public partial class PlayerData : Resource
         JumpTimeToApex = jumpTimeToApex;
         JumpCutGravityMult = jumpCutGravityMult;
         JumpHangGravityMult = jumpHangGravityMult;
-        JumpHangTimeThreshold = jumpHangTimeThreshold;
+        JumpHangThreshold = jumpHangThreshold;
         JumpHangAccelerationMult = jumpHangAccelerationMult;
         JumpHangMaxSpeedMult = jumpHangMaxSpeedMult;
         CoyoteTime = coyoteTime;

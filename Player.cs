@@ -47,23 +47,27 @@ public partial class Player : CharacterBody2D
         #endregion
 
 
-        #region Animation
+        #region ANIMATION CHECKS
+
         if (LastOnGroundTime < 0)
         {
             animatedSprite2D.Animation = "jump";
-            CheckDirectionToFace(_moveInput.X > 0);
         }
         else if (_moveInput.X != 0)
         {
             animatedSprite2D.Animation = "run";
-            CheckDirectionToFace(_moveInput.X > 0);
         }
         else
+        {
             animatedSprite2D.Animation = "idle";
+        }
         #endregion
 
         #region INPUT HANDLER
         _moveInput = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
+
+        if (_moveInput.X != 0)
+            CheckDirectionToFace(_moveInput.X > 0);
 
         if (Input.IsActionJustPressed("jump"))
             OnJumpInput();
@@ -78,7 +82,7 @@ public partial class Player : CharacterBody2D
             LastOnGroundTime = Data.CoyoteTime;
 
         #endregion
-        #region Jump checks
+        #region JUMP CHECKS
         // falling
         if (IsJumping && Velocity.Y > 0)
         {
@@ -93,7 +97,8 @@ public partial class Player : CharacterBody2D
         }
         #endregion
 
-        #region gravity
+
+        #region GRAVITY
         // fast fall by holding down move down button
         if (Velocity.Y > 0 && _moveInput.Y > 0)
         {
@@ -108,10 +113,7 @@ public partial class Player : CharacterBody2D
             Velocity = new Vector2(Velocity.X, Mathf.Max(Velocity.Y, Data.MaxFallSpeed));
         }
         // reduce gravity when player at the peak of their jump => make the jump feel floaty
-        else if (
-            (IsJumping || _isJumpFalling)
-            && Mathf.Abs(Velocity.Y) < Data.JumpHangTimeThreshold
-        )
+        else if ((IsJumping || _isJumpFalling) && Mathf.Abs(Velocity.Y) < Data.JumpHangThreshold)
         {
             SetPlayerGravity(Data.GravityScale * Data.JumpHangGravityMult);
         }
@@ -128,7 +130,7 @@ public partial class Player : CharacterBody2D
         #endregion
     }
 
-    #region Input callback
+    #region INPUT CALLBACK
     private void OnJumpUpInput()
     {
         if (CanJumpCut())
@@ -178,7 +180,7 @@ public partial class Player : CharacterBody2D
 
         //Gets an acceleration value based on if we are accelerating (includes turning)
         //or trying to decelerate (stop). As well as applying a multiplier if we're air borne.
-        if (IsOnFloor())
+        if (LastOnGroundTime > 0)
             accelRate =
                 (Mathf.Abs(targetSpeed) > 0.01f) ? Data.RunAccelAmount : Data.RunDeccelAmount;
         else
@@ -188,23 +190,23 @@ public partial class Player : CharacterBody2D
                     : Data.RunDeccelAmount * Data.DeccelInAir;
         #endregion
 
-        #region Add bonus Jump Apex Acceleration
-        if (IsJumping && Mathf.Abs(Velocity.Y) < Data.JumpHangTimeThreshold)
+        #region  JUMP APEX ACCELERATION
+        if (IsJumping && Mathf.Abs(Velocity.Y) < Data.JumpHangThreshold)
         {
-            accelRate *= Data.JumpHangTimeThreshold;
+            accelRate *= Data.JumpHangThreshold * 0.1f;
             targetSpeed *= Data.JumpHangMaxSpeedMult;
         }
         #endregion
 
 
-        #region Converse Momentum
+        #region CONVERSE MOMENTUM
         //We won't slow the player down if they are moving in their desired direction but at a greater speed than their maxSpeed
         if (
             Data.doConserveMomentum
             && Mathf.Abs(Velocity.X) > Mathf.Abs(targetSpeed)
             && Mathf.Sign(Velocity.X) == Mathf.Sign(targetSpeed)
             && Mathf.Abs(targetSpeed) > 0.01f
-            && !IsOnFloor()
+            && LastOnGroundTime < 0
         )
         {
             //Prevent any deceleration from happening, or in other words conserve are current momentum
