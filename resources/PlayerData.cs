@@ -1,7 +1,4 @@
-using System;
-using System.Diagnostics;
 using Godot;
-using Godot.Collections;
 
 [Tool]
 public partial class PlayerData : Resource
@@ -10,6 +7,7 @@ public partial class PlayerData : Resource
     [ExportGroup("Gravity")]
     // use to calculate jumpHeight and jumpTimeToApex
     float _gravityStrength;
+
     public float GravityStrength
     {
         get => _gravityStrength;
@@ -21,8 +19,6 @@ public partial class PlayerData : Resource
         }
     }
 
-    //Strength of the player's gravity as a multiplier of gravity (set in ProjectSettings/Physics2D).
-    //Also the value the player's rigidbody2D.gravityScale is set to.
     public float GravityScale;
 
     [Export]
@@ -41,7 +37,7 @@ public partial class PlayerData : Resource
     public float MaxFastFallSpeed;
 
     [ExportGroup("Jump")]
-    float _jumpHeight = 300.0f;
+    float _jumpHeight;
 
     [Export]
     public float JumpHeight
@@ -53,7 +49,7 @@ public partial class PlayerData : Resource
             GravityStrength = CalculateGravityStrength(_jumpHeight, _jumpTimeToApex);
         }
     }
-    float _jumpTimeToApex = 1;
+    float _jumpTimeToApex;
 
     [Export]
     //Time between applying the jump force and reaching the desired jump height. These values also control the player's gravity and jump force.
@@ -91,17 +87,17 @@ public partial class PlayerData : Resource
 
     [ExportGroup("Run")]
     [Export]
-    float _runMaxSpeed = 250.0f;
+    float _runMaxSpeed;
     public float RunMaxSpeed
     {
         get => _runMaxSpeed;
         set
         {
             _runMaxSpeed = value;
-            RunAccelAmount = CalculateAccelAmount(_accelTime, value);
-            RunDeccelAmount = CalculateAccelAmount(_deccelTime, value);
-            AccelTime = Clamp(_accelTime, value);
-            DeccelTime = Clamp(_deccelTime, value);
+            RunAccelAmount = CalculateAccelAmount(_acceleration, value);
+            RunDeccelAmount = CalculateAccelAmount(_deceleration, value);
+            Acceleration = Clamp(_acceleration, value);
+            Decceleration = Clamp(_deceleration, value);
         }
     }
 
@@ -109,41 +105,41 @@ public partial class PlayerData : Resource
     public float RunAccelAmount { get; private set; }
 
     // the time it take to reach max speed
-    float _accelTime = 0.5f;
+    float _acceleration;
 
     [Export]
-    public float AccelTime
+    public float Acceleration
     {
-        get => _accelTime;
+        get => _acceleration;
         set
         {
-            _accelTime = Clamp(value, _runMaxSpeed);
-            RunAccelAmount = CalculateAccelAmount(_accelTime, _runMaxSpeed);
+            _acceleration = Clamp(value, _runMaxSpeed);
+            RunAccelAmount = CalculateAccelAmount(_acceleration, _runMaxSpeed);
         }
     }
 
     public float RunDeccelAmount { get; private set; }
 
     // the time it take to deccelerate player from max speed to 0
-    float _deccelTime = 0.2f;
+    float _deceleration;
 
     [Export]
-    public float DeccelTime
+    public float Decceleration
     {
-        get => _deccelTime;
+        get => _deceleration;
         set
         {
-            _deccelTime = Clamp(value, _runMaxSpeed);
-            RunDeccelAmount = CalculateAccelAmount(_deccelTime, _runMaxSpeed);
+            _deceleration = Clamp(value, _runMaxSpeed);
+            RunDeccelAmount = CalculateAccelAmount(_deceleration, _runMaxSpeed);
         }
     }
 
     [Export(PropertyHint.Range, "0.01f,1.0f,0.01f")]
     //Multipliers applied to acceleration rate when airborne.
-    public float AccelInAir { get; set; } = 0.5f;
+    public float AccelInAir { get; set; }
 
     [Export(PropertyHint.Range, "0.01f,1.0f,0.01f")]
-    public float DeccelInAir { get; set; } = 0.5f;
+    public float DeccelInAir { get; set; }
     public bool doConserveMomentum = true;
 
     [ExportGroup("Assists")]
@@ -155,50 +151,50 @@ public partial class PlayerData : Resource
 
     public PlayerData()
         : this(
-            0.5f,
-            50.0f,
-            0.5f,
-            70.0f,
-            100.0f,
-            1.5f,
-            0.5f,
+            0.95f,
+            20f,
+            1.28f,
+            40f,
+            90f,
+            0.36f,
+            1.1f,
             0.5f,
             0.1f,
-            0.5f,
+            2.0f,
+            1f,
+            200f,
+            24.0f,
+            42.0f,
             1.0f,
-            250.0f,
-            0.5f,
+            1.0f,
             0.2f,
-            0.5f,
-            0.5f,
-            0.2f,
-            0.5f
+            0.088f
         ) { }
 
     public PlayerData(
-        float fallGravityMult = 0.5f,
-        float maxFallSpeed = 50,
-        float fastFallGravityMult = 0.5f,
-        float maxFastFallSpeed = 70,
-        float jumpHeight = 100,
-        float jumpTimeToApex = 1.5f,
-        float jumpCutGravityMult = 0.5f,
+        float fallGravityMult = 0.95f,
+        float maxFallSpeed = 20,
+        float fastFallGravityMult = 1.28f,
+        float maxFastFallSpeed = 40,
+        float jumpHeight = 90,
+        float jumpTimeToApex = 0.36f,
+        float jumpCutGravityMult = 1.1f,
         float jumpHangGravityMult = 0.5f,
         float jumpHangTimeThreshold = 0.1f,
-        float jumpHangAccelerationMult = 0.5f,
+        float jumpHangAccelerationMult = 2.0f,
         float jumpHangMaxSpeedMult = 1f,
-        float runMaxSpeed = 250,
-        float runAcceleration = 0.5f,
-        float runDecceleration = 0.2f,
-        float accelInAir = 0.5f,
-        float deccelInair = 0.5f,
+        float runMaxSpeed = 200,
+        float acceleration = 24.0f,
+        float decceleration = 42.0f,
+        float accelInAir = 1.0f,
+        float deccelInair = 1.0f,
         float coyoteTime = 0.2f,
-        float jumpInputBufferTime = 0.5f
+        float jumpInputBufferTime = 0.088f
     )
     {
         RunMaxSpeed = runMaxSpeed;
-        AccelTime = runAcceleration;
-        DeccelTime = runDecceleration;
+        Acceleration = acceleration;
+        Decceleration = decceleration;
         AccelInAir = accelInAir;
         DeccelInAir = deccelInair;
         FallGravityMult = fallGravityMult;
@@ -216,25 +212,23 @@ public partial class PlayerData : Resource
         JumpInputBufferTime = jumpInputBufferTime;
     }
 
-    static float CalculateAccelAmount(float time, float runMaxSpeed)
-    {
-        return 60 * time / runMaxSpeed;
-    }
-
+    #region assist
     static float Clamp(float number, float runMaxSpeed)
     {
         return Mathf.Clamp(number, 0.01f, runMaxSpeed);
     }
+    #endregion
 
-    private string GetDebuggerDisplay()
+    #region Data calculation
+    static float CalculateAccelAmount(float acceleration, float runMaxSpeed)
     {
-        return ToString();
+        return 60 * acceleration / runMaxSpeed;
     }
 
     private static float CalculateGravityStrength(float jumpHeight, float jumpTimeToApex)
     {
         //Calculate gravity strength using the formula (gravity = 2 * jumpHeight / timeToJumpApex^2)
-        return -(2 * jumpHeight) / (jumpTimeToApex * jumpTimeToApex);
+        return 2 * jumpHeight / (jumpTimeToApex * jumpTimeToApex);
     }
 
     private static float CalculateGravityScale(float gravityStrength)
@@ -247,4 +241,5 @@ public partial class PlayerData : Resource
     {
         return Mathf.Abs(gravityStrength) * jumpTimeToApex;
     }
+    #endregion
 }

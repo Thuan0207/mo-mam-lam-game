@@ -4,21 +4,21 @@
 
 [resource]
 script = ExtResource("1_65lj8")
-FallGravityMult = 0.5
-MaxFallSpeed = 50.0
-FastFallGravityMult = 0.5
-MaxFastFallSpeed = 70.0
-JumpHeight = 100.0
-JumpTimeToApex = 1.5
-JumpCutGravityMult = 0.5
-JumpHangGravityMult = 0.5
+FallGravityMult = 0.95
+MaxFallSpeed = 20.0
+FastFallGravityMult = 1.28
+MaxFastFallSpeed = 40.0
+JumpHeight = 90.0
+JumpTimeToApex = 0.36
+JumpCutGravityMult = 1.1
+JumpHangGravityMult = 0.0
 JumpHangTimeThreshold = 0.1
-JumpHangAccelerationMult = 0.5
+JumpHangAccelerationMult = 2.0
 JumpHangMaxSpeedMult = 1.0
-_runMaxSpeed = 270.0
-AccelTime = 0.7
-DeccelTime = 0.3
-AccelInAir = 0.5
-DeccelInAir = 0.5
+_runMaxSpeed = 200.0
+Acceleration = 24.0
+Decceleration = 42.0
+AccelInAir = 1.0
+DeccelInAir = 1.0
 CoyoteTime = 0.2
-JumpInputBufferTime = 0.5
+JumpInputBufferTime = 0.088
