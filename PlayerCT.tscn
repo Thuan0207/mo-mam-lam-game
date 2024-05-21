@@ -1,4 +1,4 @@
-[gd_scene load_steps=39 format=3 uid="uid://bcb66ab5wjgvt"]
+[gd_scene load_steps=49 format=3 uid="uid://bcb66ab5wjgvt"]
 
 [ext_resource type="Texture2D" uid="uid://dl034ryv0cfci" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Dash/Battlemage Dash1.png" id="1_iwra5"]
 [ext_resource type="Texture2D" uid="uid://ribhu1ecxgys" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Dash/Battlemage Dash2.png" id="2_hsg8h"]
@@ -27,14 +27,24 @@
 [ext_resource type="Texture2D" uid="uid://4d0ectxkai14" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Foward/Grounded/Battlemage Foward Grounded3.png" id="25_lu3h8"]
 [ext_resource type="Texture2D" uid="uid://dmdsbgxgumpsr" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Foward/Grounded/Battlemage Foward Grounded4.png" id="26_ehi6p"]
 [ext_resource type="Texture2D" uid="uid://cm6ihg3b230ce" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running1.png" id="27_4ew65"]
+[ext_resource type="Texture2D" uid="uid://csuf85fhoxluj" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Neutral/Going Down/Battlemage Neutral Down1.png" id="27_u1bwo"]
+[ext_resource type="Texture2D" uid="uid://cforcal100wdi" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Neutral/Going Down/Battlemage Neutral Down2.png" id="28_2lypd"]
 [ext_resource type="Texture2D" uid="uid://dnkmy6kchqca1" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running2.png" id="28_6ejvt"]
+[ext_resource type="Texture2D" uid="uid://06tuhg5bhj7b" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Neutral/Going Down/Battlemage Neutral Down3.png" id="29_0qscf"]
 [ext_resource type="Texture2D" uid="uid://0xmtqhp50juw" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running3.png" id="29_g8itl"]
+[ext_resource type="Texture2D" uid="uid://dwtnqqhk4bi84" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Neutral/Grounded/Battlemage Neutra Grounded1.png" id="30_0xdm5"]
 [ext_resource type="Texture2D" uid="uid://c8lueyyu5jc5h" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running4.png" id="30_w0q3a"]
 [ext_resource type="Texture2D" uid="uid://be2pw1x0j4i85" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running5.png" id="31_hke80"]
+[ext_resource type="Texture2D" uid="uid://dk1j232ggllul" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Neutral/Grounded/Battlemage Neutra Grounded2.png" id="31_kg3vg"]
+[ext_resource type="Texture2D" uid="uid://bd0wyixooun04" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Neutral/Grounded/Battlemage Neutra Grounded3.png" id="32_kv05e"]
 [ext_resource type="Texture2D" uid="uid://8i3totdyddy0" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running6.png" id="32_rotfm"]
+[ext_resource type="Texture2D" uid="uid://ctrd4mse2ad2i" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Neutral/Grounded/Battlemage Neutra Grounded4.png" id="33_ilky4"]
 [ext_resource type="Texture2D" uid="uid://b6mwjdo7r6m8m" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running7.png" id="33_vbht4"]
 [ext_resource type="Texture2D" uid="uid://bib63vxn1eyqd" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running8.png" id="34_5ndnb"]
+[ext_resource type="Texture2D" uid="uid://c2d24poshbkqu" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Neutral/Going Up/Battlemage Neutral up1.png" id="34_wy7a1"]
+[ext_resource type="Texture2D" uid="uid://ykqg41letasb" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Neutral/Going Up/Battlemage Neutral up2.png" id="35_plqac"]
 [ext_resource type="Texture2D" uid="uid://wkegq7gn51o3" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running9.png" id="35_w8smy"]
+[ext_resource type="Texture2D" uid="uid://dogr5cwx3hrvi" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Neutral/Going Up/Battlemage Neutral up3.png" id="36_efk4e"]
 [ext_resource type="Texture2D" uid="uid://blpy72clmv0yx" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running10.png" id="36_orben"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5tgh7"]
@@ -137,6 +147,51 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": ExtResource("27_u1bwo")
+}, {
+"duration": 1.0,
+"texture": ExtResource("28_2lypd")
+}, {
+"duration": 1.0,
+"texture": ExtResource("29_0qscf")
+}],
+"loop": true,
+"name": &"jump_neutral_down",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("30_0xdm5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("31_kg3vg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("32_kv05e")
+}, {
+"duration": 1.0,
+"texture": ExtResource("33_ilky4")
+}],
+"loop": true,
+"name": &"jump_neutral_grounded",
+"speed": 7.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("34_wy7a1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("35_plqac")
+}, {
+"duration": 1.0,
+"texture": ExtResource("36_efk4e")
+}],
+"loop": true,
+"name": &"jump_neutral_up",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": ExtResource("27_4ew65")
 }, {
 "duration": 1.0,
@@ -168,7 +223,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"run",
-"speed": 20.0
+"speed": 15.0
 }]
 
 [node name="Player" type="CharacterBody2D"]
@@ -181,5 +236,6 @@ shape = SubResource("RectangleShape2D_5tgh7")
 position = Vector2(27, -16)
 scale = Vector2(1.375, 1.35417)
 sprite_frames = SubResource("SpriteFrames_w5yw0")
-animation = &"jump"
-autoplay = "jump"
+animation = &"jump_neutral_up"
+autoplay = "jump_neutral_grounded"
+frame_progress = 0.453069

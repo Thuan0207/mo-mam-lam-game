@@ -3,7 +3,6 @@ using Godot;
 
 public partial class Player : CharacterBody2D
 {
-    // Khai báo trọng lực ( trọng lực mặc định của godot và có thể thay đổi ở giao diện)
     public float playerGravity;
 
     [Export]
@@ -48,7 +47,6 @@ public partial class Player : CharacterBody2D
 
 
         #region ANIMATION CHECKS
-
         if (LastOnGroundTime < 0)
         {
             animatedSprite2D.Animation = "jump";
@@ -155,7 +153,7 @@ public partial class Player : CharacterBody2D
         else
             velocityCopied.Y = 0;
         // run
-        velocityCopied.X += CalculateVelocityX() * (float)delta;
+        velocityCopied.X += CalculateRunForce() * (float)delta;
         // jump
         if (CanJump() && LastPressedJumpTime > 0)
         {
@@ -164,13 +162,16 @@ public partial class Player : CharacterBody2D
             _isJumpFalling = false;
             velocityCopied.Y -= CalculateJumpForce();
         }
+        GD.Print(MotionMode, " MotionMode");
+        GD.Print(UpDirection, " UpDirection");
         Velocity = velocityCopied;
         MoveAndSlide();
+        MoveAndCollide(velocityCopied);
     }
 
     // Velocity METHODS
     #region RUN METHODS
-    float CalculateVelocityX()
+    float CalculateRunForce()
     {
         // calculate direction
         float targetSpeed = _moveInput.X * Data.RunMaxSpeed;
@@ -216,9 +217,9 @@ public partial class Player : CharacterBody2D
         #endregion
 
         float speedDiff = targetSpeed - Velocity.X;
-        float movement = speedDiff * accelRate;
+        float force = speedDiff * accelRate;
 
-        return movement;
+        return force;
     }
 
     void Turn()
