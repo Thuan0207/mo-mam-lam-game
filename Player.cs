@@ -1,4 +1,6 @@
 using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Godot;
 
 public partial class Player : CharacterBody2D
@@ -11,6 +13,7 @@ public partial class Player : CharacterBody2D
     #region STATE PARAMETERS
     public bool IsFacingRight { get; private set; }
     public bool IsJumping { get; private set; }
+    public bool IsFalling { get; private set; }
 
     public float LastOnGroundTime { get; private set; }
     #endregion
@@ -23,9 +26,14 @@ public partial class Player : CharacterBody2D
     #region Jump
     bool _isJumpCut;
     bool _isJumpFalling;
+
     #endregion
 
+    #region ANIMATION PARAMETERS
     AnimatedSprite2D animatedSprite2D;
+    bool isGroundedAnimationPlaying = false;
+    bool isStopAnimationPlaying = false;
+    #endregion
 
     public override void _Ready()
     {
@@ -34,6 +42,7 @@ public partial class Player : CharacterBody2D
             Data = playerRunData;
         }
         IsFacingRight = true;
+        IsFalling = false;
         animatedSprite2D = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
         SetPlayerGravity(Data.GravityScale);
     }
@@ -47,18 +56,10 @@ public partial class Player : CharacterBody2D
 
 
         #region ANIMATION CHECKS
-        if (LastOnGroundTime < 0)
-        {
-            animatedSprite2D.Animation = "jump";
-        }
-        else if (_moveInput.X != 0)
-        {
-            animatedSprite2D.Animation = "run";
-        }
+        if (_moveInput.X != 0)
+            HandleAnimation("forward");
         else
-        {
-            animatedSprite2D.Animation = "idle";
-        }
+            HandleAnimation("neutral");
         #endregion
 
         #region INPUT HANDLER
@@ -80,18 +81,25 @@ public partial class Player : CharacterBody2D
             LastOnGroundTime = Data.CoyoteTime;
 
         #endregion
+
         #region JUMP CHECKS
-        // falling
+        // jump falling
         if (IsJumping && Velocity.Y > 0)
         {
             IsJumping = false;
             _isJumpFalling = true;
+        }
+        // falling
+        if (LastOnGroundTime < 0 && Velocity.Y > 0)
+        {
+            IsFalling = true;
         }
         // grounded
         if (LastOnGroundTime > 0 && !IsJumping)
         {
             _isJumpCut = false;
             _isJumpFalling = false;
+            IsFalling = false;
         }
         #endregion
 
@@ -162,11 +170,10 @@ public partial class Player : CharacterBody2D
             _isJumpFalling = false;
             velocityCopied.Y -= CalculateJumpForce();
         }
-        GD.Print(MotionMode, " MotionMode");
-        GD.Print(UpDirection, " UpDirection");
+
         Velocity = velocityCopied;
         MoveAndSlide();
-        MoveAndCollide(velocityCopied);
+        // MoveAndCollide(velocityCopied);
     }
 
     // Velocity METHODS
@@ -207,7 +214,7 @@ public partial class Player : CharacterBody2D
             && Mathf.Abs(Velocity.X) > Mathf.Abs(targetSpeed)
             && Mathf.Sign(Velocity.X) == Mathf.Sign(targetSpeed)
             && Mathf.Abs(targetSpeed) > 0.01f
-            && LastOnGroundTime < 0
+            && LastOnGroundTime > 0
         )
         {
             //Prevent any deceleration from happening, or in other words conserve are current momentum
@@ -239,6 +246,39 @@ public partial class Player : CharacterBody2D
     {
         return IsJumping && Velocity.Y < 0;
     }
+
+    #region ANIMTION METHODS
+    private void HandleAnimation(string type)
+    {
+        bool isAirborne = LastOnGroundTime < 0;
+        string prevAnimationName = animatedSprite2D.Animation.ToString();
+        string[] parts = prevAnimationName.Split("_");
+        string prevType = parts.Length > 1 ? parts[1] : parts[0];
+        bool isJumpGroundedAnimation = parts[0] == "jump" && parts[2] == "grounded";
+        bool isJumpDownAnimation = parts[0] == "jump" && parts[2] == "down";
+        string jumpType = isAirborne || isJumpGroundedAnimation ? prevType : type; // jump related aninamtion need to use the same type of animation through out its life cycle. If it start with jump_forward_up it need to end in jump_forward_down
+
+        if (IsJumping)
+            animatedSprite2D.Play($"jump_{jumpType}_up");
+        else if (IsFalling)
+            animatedSprite2D.Play($"jump_{jumpType}_down");
+        else if (isJumpDownAnimation && LastOnGroundTime > 0)
+        {
+            animatedSprite2D.Play($"jump_{jumpType}_grounded");
+            isGroundedAnimationPlaying = true;
+        }
+        // wait for the animation to finish
+        else if (isGroundedAnimationPlaying)
+        {
+            // 3 is the last frame
+            isGroundedAnimationPlaying = animatedSprite2D.Frame != 3;
+            animatedSprite2D.Play($"jump_{jumpType}_grounded");
+        }
+        else
+            animatedSprite2D.Play($"{type}");
+    }
+    #endregion
+
 
     private float CalculateJumpForce()
     {
