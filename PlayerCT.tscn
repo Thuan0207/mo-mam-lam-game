@@ -115,6 +115,44 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": ExtResource("16_p8p5g")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_cl4yy")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_820n6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_eqcxu")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_gn156")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_04i3b")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_xo7re")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_d8t1k")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_nbths")
+}, {
+"duration": 1.0,
+"texture": ExtResource("25_lu3h8")
+}, {
+"duration": 1.0,
+"texture": ExtResource("26_ehi6p")
+}],
+"loop": true,
+"name": &"jump_forward",
+"speed": 15.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": ExtResource("18_820n6")
 }, {
 "duration": 1.0,
@@ -134,7 +172,7 @@ animations = [{
 "speed": 15.0
 }, {
 "frames": [{
-"duration": 1.0,
+"duration": 1.5,
 "texture": ExtResource("23_d8t1k")
 }, {
 "duration": 1.0,
@@ -154,12 +192,47 @@ animations = [{
 "duration": 1.0,
 "texture": ExtResource("16_p8p5g")
 }, {
-"duration": 1.0,
+"duration": 2.0,
 "texture": ExtResource("17_cl4yy")
 }],
-"loop": true,
+"loop": false,
 "name": &"jump_forward_up",
-"speed": 0.5
+"speed": 6.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("34_wy7a1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("35_plqac")
+}, {
+"duration": 1.0,
+"texture": ExtResource("36_efk4e")
+}, {
+"duration": 1.0,
+"texture": ExtResource("27_u1bwo")
+}, {
+"duration": 1.0,
+"texture": ExtResource("28_2lypd")
+}, {
+"duration": 1.0,
+"texture": ExtResource("29_0qscf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("30_0xdm5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("31_kg3vg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("32_kv05e")
+}, {
+"duration": 1.0,
+"texture": ExtResource("33_ilky4")
+}],
+"loop": true,
+"name": &"jump_neutral",
+"speed": 15.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -173,10 +246,10 @@ animations = [{
 }],
 "loop": true,
 "name": &"jump_neutral_down",
-"speed": 8.0
+"speed": 9.0
 }, {
 "frames": [{
-"duration": 1.0,
+"duration": 1.5,
 "texture": ExtResource("30_0xdm5")
 }, {
 "duration": 1.0,
@@ -190,7 +263,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"jump_neutral_grounded",
-"speed": 16.0
+"speed": 12.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -204,7 +277,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"jump_neutral_up",
-"speed": 1.0
+"speed": 9.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -233,7 +306,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"neutral",
-"speed": 10.5
+"speed": 12.0
 }]
 
 [node name="Player" type="CharacterBody2D"]
@@ -246,4 +319,4 @@ shape = SubResource("RectangleShape2D_5tgh7")
 position = Vector2(27, -16)
 scale = Vector2(1.375, 1.35417)
 sprite_frames = SubResource("SpriteFrames_w5yw0")
-animation = &"jump_forward_grounded"
+animation = &"jump_forward_up"

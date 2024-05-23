@@ -10,6 +10,8 @@ public partial class Player : CharacterBody2D
     [Export]
     public PlayerData Data;
 
+    [Export]
+    public AnimationData AnimationData;
     #region STATE PARAMETERS
     public bool IsFacingRight { get; private set; }
     public bool IsJumping { get; private set; }
@@ -33,17 +35,24 @@ public partial class Player : CharacterBody2D
     AnimatedSprite2D animatedSprite2D;
     bool isGroundedAnimationPlaying = false;
     bool isStopAnimationPlaying = false;
+
     #endregion
 
     public override void _Ready()
     {
-        if (Data is PlayerData playerRunData)
+        if (Data is PlayerData playerData)
         {
-            Data = playerRunData;
+            Data = playerData;
         }
+        if (AnimationData is AnimationData animationData)
+        {
+            AnimationData = animationData;
+        }
+
         IsFacingRight = true;
         IsFalling = false;
         animatedSprite2D = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+        defaultScale = animatedSprite2D.Scale;
         SetPlayerGravity(Data.GravityScale);
     }
 
@@ -247,7 +256,39 @@ public partial class Player : CharacterBody2D
         return IsJumping && Velocity.Y < 0;
     }
 
-    #region ANIMTION METHODS
+    Vector2 defaultScale;
+
+    #region ANIMATION METHODS
+
+    void StretchSprite(Vector2 scaleAddend)
+    {
+        Tween tween = GetTree().CreateTween();
+        Vector2 stretchScale = defaultScale + scaleAddend;
+        tween
+            .TweenProperty(animatedSprite2D, "scale", stretchScale, 0.1)
+            .SetTrans(Tween.TransitionType.Quad)
+            .SetEase(Tween.EaseType.Out);
+    }
+
+    void SquatchSprite(Vector2 scaleAddend)
+    {
+        Tween tween = GetTree().CreateTween();
+        Vector2 squashScale = defaultScale + scaleAddend;
+        tween
+            .TweenProperty(animatedSprite2D, "scale", squashScale, 0.1)
+            .SetTrans(Tween.TransitionType.Quad)
+            .SetEase(Tween.EaseType.In);
+    }
+
+    void ScaleSpriteBackToDefault()
+    {
+        Tween tween = GetTree().CreateTween();
+        tween
+            .TweenProperty(animatedSprite2D, "scale", defaultScale, 0.01)
+            .SetTrans(Tween.TransitionType.Quad)
+            .SetEase(Tween.EaseType.InOut);
+    }
+
     private void HandleAnimation(string type)
     {
         bool isAirborne = LastOnGroundTime < 0;
@@ -259,9 +300,21 @@ public partial class Player : CharacterBody2D
         string jumpType = isAirborne || isJumpGroundedAnimation ? prevType : type; // jump related aninamtion need to use the same type of animation through out its life cycle. If it start with jump_forward_up it need to end in jump_forward_down
 
         if (IsJumping)
+        {
             animatedSprite2D.Play($"jump_{jumpType}_up");
+            if (jumpType == "neutral")
+                SquatchSprite(AnimationData.NeutralSquashScaleAddend);
+            else
+                SquatchSprite(AnimationData.ForwardSquashScaleAddend);
+        }
         else if (IsFalling)
+        {
             animatedSprite2D.Play($"jump_{jumpType}_down");
+            if (jumpType == "neutral")
+                StretchSprite(AnimationData.NeutralStretchScaleAddend);
+            else
+                SquatchSprite(AnimationData.ForwardStretchScaleAddend);
+        }
         else if (isJumpDownAnimation && LastOnGroundTime > 0)
         {
             animatedSprite2D.Play($"jump_{jumpType}_grounded");
@@ -275,7 +328,11 @@ public partial class Player : CharacterBody2D
             animatedSprite2D.Play($"jump_{jumpType}_grounded");
         }
         else
+        {
             animatedSprite2D.Play($"{type}");
+            if (animatedSprite2D.Scale != defaultScale)
+                ScaleSpriteBackToDefault();
+        }
     }
     #endregion
 

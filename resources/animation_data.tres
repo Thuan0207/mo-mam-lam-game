@@ -1,0 +1,10 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://c8xan60m6mq83"]
+
+[ext_resource type="Script" path="res://resources/AnimationData.cs" id="1_60q2s"]
+
+[resource]
+script = ExtResource("1_60q2s")
+_neutralStretchScaleAddend = Vector2(0, 0.1)
+_neutralSquashScaleAddend = Vector2(0.1, -0.3)
+_forwardStretchScaleAddend = Vector2(-0.2, 0.2)
+_forwardSquashScaleAddend = Vector2(0.2, -0.2)
