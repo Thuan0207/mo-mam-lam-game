@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_60q2s")
-_neutralStretchScaleAddend = Vector2(0, 0.1)
-_neutralSquashScaleAddend = Vector2(0.1, -0.3)
-_forwardStretchScaleAddend = Vector2(-0.2, 0.2)
-_forwardSquashScaleAddend = Vector2(0.2, -0.2)
+_neutralStretchScaleAddend = Vector2(0, 0.15)
+_neutralSquashScaleAddend = Vector2(0.18, -0.1)
+_forwardStretchScaleAddend = Vector2(0, 0.115)
+_forwardSquashScaleAddend = Vector2(0.115, 0)

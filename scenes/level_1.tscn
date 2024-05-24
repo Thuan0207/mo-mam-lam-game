@@ -2,8 +2,8 @@
 
 [ext_resource type="Texture2D" uid="uid://r27d4n5dfmiw" path="res://Sprites/Platformer_Dungeon Asset Pack/Platformer_Dungeon Asset Pack/TileSet/TileSet.png" id="1_8apuj"]
 [ext_resource type="Texture2D" uid="uid://jtd66e2f2icb" path="res://Sprites/PixelPlatformerSet1v.1.1/other_and_decorative.png" id="1_xm3e8"]
-[ext_resource type="PackedScene" uid="uid://bcb66ab5wjgvt" path="res://PlayerCT.tscn" id="3_k3dyj"]
-[ext_resource type="Script" path="res://Player.cs" id="4_sw0dt"]
+[ext_resource type="PackedScene" uid="uid://bcb66ab5wjgvt" path="res://scenes/PlayerCT.tscn" id="3_k3dyj"]
+[ext_resource type="Script" path="res://scripts/Player.cs" id="4_sw0dt"]
 [ext_resource type="Resource" uid="uid://dee2bfqrs0s0d" path="res://resources/player_data.tres" id="5_kv7fi"]
 [ext_resource type="Resource" uid="uid://c8xan60m6mq83" path="res://resources/animation_data.tres" id="6_4insu"]
 
