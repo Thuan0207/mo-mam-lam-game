@@ -333,8 +333,10 @@ modulate = Color(1, 1, 1, 0.392157)
 material = SubResource("CanvasItemMaterial_ppg0y")
 position = Vector2(-14, 4)
 emitting = false
+amount = 1
 process_material = SubResource("ParticleProcessMaterial_aivuo")
 texture = ExtResource("1_c7a4o")
+lifetime = 0.36
 one_shot = true
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]

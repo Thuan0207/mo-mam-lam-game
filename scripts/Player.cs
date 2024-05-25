@@ -7,14 +7,16 @@ public partial class Player : CharacterBody2D
 {
     #region EDTIOR VARIABLES
     [Export]
+    public AnimationData AnimationData;
+
+    [Export]
     public PlayerData Data;
     float playerGravity;
     Marker2D jumpingParticlesMarker;
     GpuParticles2D runningParticles;
+
     #endregion
 
-    [Export]
-    public AnimationData AnimationData;
     #region STATE PARAMETERS
     public bool IsFacingRight { get; private set; }
     public bool IsJumping { get; private set; }
@@ -36,11 +38,15 @@ public partial class Player : CharacterBody2D
 
     #region ANIMATION PARAMETERS
     AnimatedSprite2D animatedSprite2D;
-    bool isGroundedAnimationPlaying = false;
-    bool isStopAnimationPlaying = false;
+    bool isGroundedAnimationPlaying;
+    bool isStopAnimationPlaying;
 
     PackedScene jumpEffectScene;
+    #endregion
 
+    #region PREV PARAMETERS
+    string prevPressedKey;
+    string currPressedKey;
     #endregion
 
     public override void _Ready()
@@ -53,7 +59,10 @@ public partial class Player : CharacterBody2D
         {
             AnimationData = animationData;
         }
-
+        isGroundedAnimationPlaying = false;
+        isStopAnimationPlaying = false;
+        prevPressedKey = "";
+        currPressedKey = "";
         IsFacingRight = true;
         IsFalling = false;
         animatedSprite2D = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
@@ -72,19 +81,22 @@ public partial class Player : CharacterBody2D
         #endregion
 
 
-        #region ANIMATION CHECKS
+        #region MOVING CHECKS
         if (_moveInput.X != 0)
+        {
             HandleAnimation("forward");
+            CheckDirectionToFace(_moveInput.X > 0);
+        }
         else
+        {
             HandleAnimation("neutral");
+            // reset key counting
+            prevPressedKey = currPressedKey = "";
+        }
         #endregion
 
         #region INPUT HANDLER
         _moveInput = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
-        if (_moveInput.X != 0)
-            CheckDirectionToFace(_moveInput.X > 0);
-        else
-            runningParticles.Emitting = false;
 
         if (Input.IsActionJustPressed("ui_left"))
             OnLeftInput();
@@ -160,20 +172,34 @@ public partial class Player : CharacterBody2D
         #endregion
     }
 
+    private void TriggerRunningPartcile(int direction)
+    {
+        float highSpeed = Mathf.Floor(Data.RunMaxSpeed * 0.75f);
+        if (direction != 0 && Mathf.Sign(direction) != Mathf.Sign(Velocity.X))
+        {
+            GD.Print("Condition running");
+            runningParticles.Emitting = true;
+        }
+    }
+
     private void OnRighInput()
     {
-        GD.Print("how many time does right run");
-        runningParticles.Emitting = true;
-        if (runningParticles.ProcessMaterial is ParticleProcessMaterial particlesMaterial)
-            particlesMaterial.Gravity *= Vector3.Right;
+        // runningParticles.Emitting = true;
+        // if (runningParticles.ProcessMaterial is ParticleProcessMaterial particlesMaterial)
+        //     particlesMaterial.Gravity *= Vector3.Right;
+        TriggerRunningPartcile(1);
+        prevPressedKey = currPressedKey;
+        currPressedKey = "ui_right";
     }
 
     private void OnLeftInput()
     {
-        GD.Print("how many time does left run");
-        runningParticles.Emitting = true;
-        if (runningParticles.ProcessMaterial is ParticleProcessMaterial particlesMaterial)
-            particlesMaterial.Gravity *= Vector3.Left;
+        TriggerRunningPartcile(-1);
+        prevPressedKey = currPressedKey;
+        currPressedKey = "ui_left";
+        // runningParticles.Emitting = true;
+        // if (runningParticles.ProcessMaterial is ParticleProcessMaterial particlesMaterial)
+        //     particlesMaterial.Gravity *= Vector3.Left;
     }
 
     #region INPUT CALLBACK
