@@ -384,15 +384,6 @@ public partial class Player : CharacterBody2D
         if (runningDustRight.Emitting || runningDustLeft.Emitting)
             IsReadyForDeccelAtMaxSpeed = false;
     }
-
-    private void EmitWalkingDust()
-    {
-        if (_moveInput.X != 0)
-            walkingDust.Emitting = true;
-        else
-            walkingDust.Emitting = false;
-    }
-
     #endregion
 
     private float CalculateJumpForce()

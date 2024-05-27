@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c5hqmpumfspxw"
-path="res://.godot/imported/Arrow Trap - Level 3.png-136d923b4ec0029bc655718cda0ccc2c.ctex"
+path="res://.godot/imported/Arrow Trap - Level 3.png-032c099c4fbd225c6d0b0dae933b6436.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Sprites/Foozle_2DS0007_Pixel_Trap_Pack/Foozle_2DTR0001_Pixel_Trap_Pack/Arrow Trap/PNGs/Arrow Trap - Level 3.png"
-dest_files=["res://.godot/imported/Arrow Trap - Level 3.png-136d923b4ec0029bc655718cda0ccc2c.ctex"]
+source_file="res://Sprites/cavesofgallet/Arrow Trap - Level 3.png"
+dest_files=["res://.godot/imported/Arrow Trap - Level 3.png-032c099c4fbd225c6d0b0dae933b6436.ctex"]
 
 [params]
 

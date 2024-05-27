@@ -19,7 +19,6 @@ randomness = 1.0
 lifetime_randomness = 1.0
 emission_shape = 3
 emission_rect_extents = Vector2(16, 2)
-spread = 0.0
 gravity = Vector2(0, -120)
 radial_accel_min = -100.0
 radial_accel_max = -20.0
