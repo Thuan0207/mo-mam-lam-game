@@ -1,0 +1,29 @@
+[gd_scene load_steps=3 format=3 uid="uid://0p1tdfkjw176"]
+
+[sub_resource type="Curve" id="Curve_qy3s5"]
+_data = [Vector2(0, 0.0122675), 0.0, 0.0, 0, 0, Vector2(1e-05, 0.496549), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Gradient" id="Gradient_1l536"]
+offsets = PackedFloat32Array(0, 0.335714, 0.789286, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.553506, 0.553506, 0.553506, 1, 0.85098, 0.85098, 0.85098, 0.705882, 1, 1, 1, 0.0784314)
+
+[node name="RunningDust" type="CPUParticles2D"]
+position = Vector2(-10, 19)
+emitting = false
+amount = 12
+lifetime = 0.6
+one_shot = true
+speed_scale = 2.0
+explosiveness = 1.0
+randomness = 1.0
+lifetime_randomness = 1.0
+emission_shape = 1
+emission_sphere_radius = 5.0
+gravity = Vector2(-10, -100)
+radial_accel_min = 50.0
+radial_accel_max = 60.0
+scale_amount_min = 2.0
+scale_amount_max = 3.0
+scale_amount_curve = SubResource("Curve_qy3s5")
+color_ramp = SubResource("Gradient_1l536")

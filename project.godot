@@ -11,9 +11,9 @@ config_version=5
 [application]
 
 config/name="Mount Hollow"
-run/main_scene="res://Levels/level_1.tscn"
+run/main_scene="res://scenes/level_1.tscn"
 config/features=PackedStringArray("4.2", "C#", "GL Compatibility")
-run/max_fps=60
+run/max_fps=30
 config/icon="res://icon.svg"
 
 [display]
@@ -29,10 +29,6 @@ project/assembly_name="Mount Hollow"
 [editor]
 
 version_control/autoload_on_startup=true
-
-[editor_plugins]
-
-enabled=PackedStringArray()
 
 [importer_defaults]
 
