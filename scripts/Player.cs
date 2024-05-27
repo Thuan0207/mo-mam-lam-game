@@ -12,8 +12,6 @@ public partial class Player : CharacterBody2D
     [Export]
     public PlayerData Data;
     float playerGravity;
-    Marker2D jumpingParticlesMarker;
-    GpuParticles2D runningParticles;
 
     #endregion
 
@@ -23,6 +21,7 @@ public partial class Player : CharacterBody2D
     public bool IsFalling { get; private set; }
 
     public float LastOnGroundTime { get; private set; }
+    public bool IsReadyForDeccelAtMaxSpeed { get; private set; }
     #endregion
 
     #region INPUT PARAMETERS
@@ -40,14 +39,15 @@ public partial class Player : CharacterBody2D
     AnimatedSprite2D animatedSprite2D;
     bool isGroundedAnimationPlaying;
     bool isStopAnimationPlaying;
-
-    PackedScene jumpEffectScene;
     #endregion
 
-    #region PREV PARAMETERS
-    string prevPressedKey;
-    string currPressedKey;
+    #region NODE
+    CpuParticles2D runningDustLeft;
+    CpuParticles2D runningDustRight;
+    CpuParticles2D walkingDust;
+    CpuParticles2D jumpingDust;
     #endregion
+
 
     public override void _Ready()
     {
@@ -61,15 +61,14 @@ public partial class Player : CharacterBody2D
         }
         isGroundedAnimationPlaying = false;
         isStopAnimationPlaying = false;
-        prevPressedKey = "";
-        currPressedKey = "";
         IsFacingRight = true;
         IsFalling = false;
         animatedSprite2D = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
         defaultScale = animatedSprite2D.Scale;
-        jumpEffectScene = GD.Load<PackedScene>("res://scenes/jump_effect.tscn");
-        jumpingParticlesMarker = GetNode<Marker2D>("JumpingParticlesMarker");
-        runningParticles = GetNode<GpuParticles2D>("RunningParticles");
+        runningDustLeft = GetNode<CpuParticles2D>("RunningDustLeft");
+        runningDustRight = GetNode<CpuParticles2D>("RunningDustRight");
+        walkingDust = GetNode<CpuParticles2D>("WalkingDust");
+        jumpingDust = GetNode<CpuParticles2D>("JumpingDust");
         SetPlayerGravity(Data.GravityScale);
     }
 
@@ -90,19 +89,11 @@ public partial class Player : CharacterBody2D
         else
         {
             HandleAnimation("neutral");
-            // reset key counting
-            prevPressedKey = currPressedKey = "";
         }
         #endregion
 
         #region INPUT HANDLER
         _moveInput = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
-
-        if (Input.IsActionJustPressed("ui_left"))
-            OnLeftInput();
-
-        if (Input.IsActionJustPressed("ui_right"))
-            OnRighInput();
 
         if (Input.IsActionJustPressed("jump"))
             OnJumpInput();
@@ -172,36 +163,6 @@ public partial class Player : CharacterBody2D
         #endregion
     }
 
-    private void TriggerRunningPartcile(int direction)
-    {
-        float highSpeed = Mathf.Floor(Data.RunMaxSpeed * 0.75f);
-        if (direction != 0 && Mathf.Sign(direction) != Mathf.Sign(Velocity.X))
-        {
-            GD.Print("Condition running");
-            runningParticles.Emitting = true;
-        }
-    }
-
-    private void OnRighInput()
-    {
-        // runningParticles.Emitting = true;
-        // if (runningParticles.ProcessMaterial is ParticleProcessMaterial particlesMaterial)
-        //     particlesMaterial.Gravity *= Vector3.Right;
-        TriggerRunningPartcile(1);
-        prevPressedKey = currPressedKey;
-        currPressedKey = "ui_right";
-    }
-
-    private void OnLeftInput()
-    {
-        TriggerRunningPartcile(-1);
-        prevPressedKey = currPressedKey;
-        currPressedKey = "ui_left";
-        // runningParticles.Emitting = true;
-        // if (runningParticles.ProcessMaterial is ParticleProcessMaterial particlesMaterial)
-        //     particlesMaterial.Gravity *= Vector3.Left;
-    }
-
     #region INPUT CALLBACK
     private void OnJumpUpInput()
     {
@@ -212,7 +173,7 @@ public partial class Player : CharacterBody2D
     private void OnJumpInput()
     {
         LastPressedJumpTime = Data.JumpInputBufferTime;
-        JumpParticleEffect();
+        jumpingDust.Emitting = true;
     }
     #endregion
 
@@ -238,7 +199,9 @@ public partial class Player : CharacterBody2D
 
         Velocity = velocityCopied;
         MoveAndSlide();
-        // MoveAndCollide(velocityCopied);
+
+        if (Math.Round(Velocity.X) != 0)
+            EmitRunningDust();
     }
 
     // Velocity METHODS
@@ -345,14 +308,6 @@ public partial class Player : CharacterBody2D
             .SetEase(Tween.EaseType.InOut);
     }
 
-    void JumpParticleEffect()
-    {
-        GD.Print("How many time was i call");
-        var instance = jumpEffectScene.Instantiate<AnimatedSprite2D>();
-        instance.GlobalPosition = jumpingParticlesMarker.Position;
-        AddChild(instance);
-    }
-
     private void HandleAnimation(string type)
     {
         bool isAirborne = LastOnGroundTime < 0;
@@ -400,6 +355,45 @@ public partial class Player : CharacterBody2D
     }
     #endregion
 
+    #region VFX & SFX METHODS
+    private void EmitRunningDust()
+    {
+        bool isAtMaxSpeed = Mathf.Round(Mathf.Abs(Velocity.X)) >= Data.RunMaxSpeed;
+
+        if (isAtMaxSpeed)
+            IsReadyForDeccelAtMaxSpeed = true;
+
+        // emit cloud of dust when change direction at max speed
+        if (
+            _moveInput.X != 0
+            && LastOnGroundTime > 0
+            && IsReadyForDeccelAtMaxSpeed
+            && Mathf.Sign(Velocity.X) != _moveInput.X
+        )
+        {
+            runningDustLeft.Emitting = !IsFacingRight;
+            runningDustRight.Emitting = IsFacingRight;
+        }
+        // emit trailing dust when running at max speed
+        walkingDust.Emitting =
+            LastOnGroundTime > 0
+            && isAtMaxSpeed
+            && !runningDustRight.Emitting
+            && !runningDustLeft.Emitting;
+
+        if (runningDustRight.Emitting || runningDustLeft.Emitting)
+            IsReadyForDeccelAtMaxSpeed = false;
+    }
+
+    private void EmitWalkingDust()
+    {
+        if (_moveInput.X != 0)
+            walkingDust.Emitting = true;
+        else
+            walkingDust.Emitting = false;
+    }
+
+    #endregion
 
     private float CalculateJumpForce()
     {

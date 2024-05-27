@@ -11,6 +11,9 @@ public partial class State : Node
     //  The state machine node will set it.
     public StateMachine StateMachine;
 
+    // Virtual function. Receives events from the `_ready()` callback.
+    public virtual void Prepared() { }
+
     // Virtual function. Receives events from the `_unhandled_input()` callback.
     public virtual void HandleInput(InputEvent @event) { }
 

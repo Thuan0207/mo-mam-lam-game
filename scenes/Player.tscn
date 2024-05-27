@@ -1,12 +1,16 @@
-[gd_scene load_steps=52 format=3 uid="uid://bcb66ab5wjgvt"]
+[gd_scene load_steps=55 format=3 uid="uid://bcb66ab5wjgvt"]
 
-[ext_resource type="Texture2D" uid="uid://cgykwdr2dmate" path="res://asset/Smoke Effect 01/Smoke Effect 01/Smoke VFX 1.png" id="1_c7a4o"]
+[ext_resource type="Script" path="res://scripts/Player.cs" id="1_htxw0"]
 [ext_resource type="Texture2D" uid="uid://dl034ryv0cfci" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Dash/Battlemage Dash1.png" id="1_iwra5"]
+[ext_resource type="Resource" uid="uid://c8xan60m6mq83" path="res://resources/animation_data.tres" id="2_c0f6y"]
 [ext_resource type="Texture2D" uid="uid://ribhu1ecxgys" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Dash/Battlemage Dash2.png" id="2_hsg8h"]
 [ext_resource type="Texture2D" uid="uid://dai5sud3it5v" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Dash/Battlemage Dash3.png" id="3_5e2tr"]
+[ext_resource type="Resource" uid="uid://dee2bfqrs0s0d" path="res://resources/player_data.tres" id="3_xysni"]
 [ext_resource type="Texture2D" uid="uid://c10aj1vansg0q" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Dash/Battlemage Dash4.png" id="4_70r5a"]
+[ext_resource type="PackedScene" uid="uid://cusmre3lypee6" path="res://scenes/VFX/walking_dust.tscn" id="5_be0hw"]
 [ext_resource type="Texture2D" uid="uid://cb8enl57huo0" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Dash/Battlemage Dash5.png" id="5_j2g12"]
 [ext_resource type="Texture2D" uid="uid://cdxowv3waqsrj" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Dash/Battlemage Dash6.png" id="6_joqim"]
+[ext_resource type="PackedScene" uid="uid://7l3h12fyh70a" path="res://scenes/VFX/jumping_dust.tscn" id="6_u8xcp"]
 [ext_resource type="Texture2D" uid="uid://co0kp8fbnxi53" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Dash/Battlemage Dash7.png" id="7_ndlya"]
 [ext_resource type="Texture2D" uid="uid://cmf26pqowm4ot" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Idle/Battlemage Idle1.png" id="8_2jr03"]
 [ext_resource type="Texture2D" uid="uid://xsbvtnbfs2jl" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Idle/Battlemage Idle2.png" id="9_xtsi5"]
@@ -47,21 +51,10 @@
 [ext_resource type="Texture2D" uid="uid://wkegq7gn51o3" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running9.png" id="35_w8smy"]
 [ext_resource type="Texture2D" uid="uid://dogr5cwx3hrvi" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Neutral/Going Up/Battlemage Neutral up3.png" id="36_efk4e"]
 [ext_resource type="Texture2D" uid="uid://blpy72clmv0yx" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running10.png" id="36_orben"]
+[ext_resource type="PackedScene" uid="uid://0p1tdfkjw176" path="res://scenes/VFX/running_dust.tscn" id="47_khkxb"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5tgh7"]
 size = Vector2(20, 39)
-
-[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_ppg0y"]
-particles_animation = true
-particles_anim_h_frames = 9
-particles_anim_v_frames = 1
-particles_anim_loop = false
-
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_aivuo"]
-particle_flag_disable_z = true
-gravity = Vector3(-10, 0, 0)
-anim_speed_min = 1.0
-anim_speed_max = 1.0
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_w5yw0"]
 animations = [{
@@ -323,21 +316,28 @@ animations = [{
 }]
 
 [node name="Player" type="CharacterBody2D"]
+collision_layer = 2
+script = ExtResource("1_htxw0")
+AnimationData = ExtResource("2_c0f6y")
+Data = ExtResource("3_xysni")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_5tgh7")
 metadata/_edit_lock_ = true
 
-[node name="RunningParticles" type="GPUParticles2D" parent="."]
-modulate = Color(1, 1, 1, 0.392157)
-material = SubResource("CanvasItemMaterial_ppg0y")
-position = Vector2(-14, 4)
-emitting = false
-amount = 1
-process_material = SubResource("ParticleProcessMaterial_aivuo")
-texture = ExtResource("1_c7a4o")
-lifetime = 0.36
-one_shot = true
+[node name="RunningDustLeft" parent="." instance=ExtResource("47_khkxb")]
+lifetime = 0.4
+
+[node name="RunningDustRight" parent="." instance=ExtResource("47_khkxb")]
+position = Vector2(10, 19)
+lifetime = 0.4
+gravity = Vector2(10, -100)
+
+[node name="WalkingDust" parent="." instance=ExtResource("5_be0hw")]
+position = Vector2(0, 19)
+
+[node name="JumpingDust" parent="." instance=ExtResource("6_u8xcp")]
+position = Vector2(0, 20)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 position = Vector2(-1, -13)

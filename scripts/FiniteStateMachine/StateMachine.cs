@@ -9,46 +9,48 @@ public partial class StateMachine : Node
     [Export]
     public NodePath InitialStatePath; // Path to the initial active state. We export it to be able to pick the initial state in the inspector.
 
+    Dictionary<string, State> states;
     State state; // The current active state. At the start of the game, we get the `initial_state`.
 
     public override void _Ready()
     {
-        base._Ready();
-        state = GetNode<State>(InitialStatePath);
-        foreach (Node Child in GetChildren())
+        states = new Dictionary<string, State>();
+        foreach (Node _node in GetChildren())
         {
-            if (Child is State StateChild)
+            if (_node is State _stateChild)
             {
-                StateChild.StateMachine = this;
+                states[_node.Name] = _stateChild;
+                _stateChild.StateMachine = this;
+                _stateChild.Prepared();
+                _stateChild.Exit(); // reset
             }
         }
+        state = GetNode<State>(InitialStatePath);
         state.Enter();
     }
 
     public override void _UnhandledInput(InputEvent @event)
     {
-        base._UnhandledInput(@event);
         state.HandleInput(@event);
+        @event.Dispose();
     }
 
     public override void _Process(double delta)
     {
-        base._Process(delta);
         state.Update(delta);
     }
 
     public override void _PhysicsProcess(double delta)
     {
-        base._PhysicsProcess(delta);
         state.PhysicsUpdate(delta);
     }
 
-    public void TransitionTo(string _targetStateName, Dictionary<string, dynamic> _msg = null)
+    public void TransitionTo(string _key, Dictionary<string, dynamic> _msg = null)
     {
-        if (!HasNode(_targetStateName))
+        if (!states.ContainsKey(_key) || state == states[_key])
             return;
         state.Exit();
-        state = GetNode<State>(_targetStateName);
+        state = states[_key];
         state.Enter(_msg);
         EmitSignal("Transitioned", state.Name);
     }
