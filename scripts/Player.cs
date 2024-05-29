@@ -1,7 +1,10 @@
 using System;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Godot;
+using MEC;
+using static Godot.GD;
 
 public partial class Player : CharacterBody2D
 {
@@ -19,7 +22,7 @@ public partial class Player : CharacterBody2D
     public bool IsFacingRight { get; private set; }
     public bool IsJumping { get; private set; }
     public bool IsFalling { get; private set; }
-
+    public bool IsDashing { get; private set; }
     public float LastOnGroundTime { get; private set; }
     public bool IsReadyForDeccelAtMaxSpeed { get; private set; }
     #endregion
@@ -27,6 +30,7 @@ public partial class Player : CharacterBody2D
     #region INPUT PARAMETERS
     Vector2 _moveInput;
     public float LastPressedJumpTime { get; private set; }
+    public float LastPressedDashTime { get; private set; }
     #endregion
 
     #region Jump
@@ -46,6 +50,18 @@ public partial class Player : CharacterBody2D
     CpuParticles2D runningDustRight;
     CpuParticles2D walkingDust;
     CpuParticles2D jumpingDust;
+    #endregion
+
+    #region DASH
+    Vector2 lastDashDir;
+    int dashesLeft;
+    bool dashRefilling;
+    bool isDashAttacking; // Dash attack is the first phase in dash (the first few ms) where player can not do change anything
+    #endregion
+
+    #region GENERAL PARAMETERS
+    Vector2 defaultScale;
+    double localTimeScale;
     #endregion
 
 
@@ -69,18 +85,43 @@ public partial class Player : CharacterBody2D
         runningDustRight = GetNode<CpuParticles2D>("RunningDustRight");
         walkingDust = GetNode<CpuParticles2D>("WalkingDust");
         jumpingDust = GetNode<CpuParticles2D>("JumpingDust");
-        SetPlayerGravity(Data.GravityScale);
+        localTimeScale = 1;
+        animatedSprite2D.AnimationFinished += OnAnimationFinished;
+        SetGravityScale(Data.GravityScale);
     }
 
-    public override void _Process(double delta)
+    private void OnAnimationFinished()
     {
+        throw new NotImplementedException();
+    }
+
+    public override void _Process(double _d)
+    {
+        float delta = (float)(_d * localTimeScale);
+
         #region TIMERS
-        LastOnGroundTime -= (float)delta;
-        LastPressedJumpTime -= (float)delta;
+        LastOnGroundTime -= delta;
+        LastPressedJumpTime -= delta;
+        LastPressedDashTime -= delta;
         #endregion
 
+        #region INPUT HANDLER
+        _moveInput = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
+        if (Input.IsActionJustPressed("jump"))
+            OnJumpInput();
 
-        #region MOVING CHECKS
+        if (Input.IsActionJustReleased("jump"))
+            OnJumpUpInput();
+
+        if (Input.IsActionJustPressed("dash"))
+            OnDashInput();
+        #endregion
+
+        // Ground Check
+        if (IsOnFloor() && !IsJumping && !IsDashing)
+            LastOnGroundTime = Data.CoyoteTime;
+
+        #region MOVING PROCESS
         if (_moveInput.X != 0)
         {
             HandleAnimation("forward");
@@ -90,23 +131,6 @@ public partial class Player : CharacterBody2D
         {
             HandleAnimation("neutral");
         }
-        #endregion
-
-        #region INPUT HANDLER
-        _moveInput = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
-
-        if (Input.IsActionJustPressed("jump"))
-            OnJumpInput();
-
-        if (Input.IsActionJustReleased("jump"))
-            OnJumpUpInput();
-        #endregion
-
-        #region COLLISION CHECKS
-        // Ground Check
-        if (IsOnFloor() && !IsJumping)
-            LastOnGroundTime = Data.CoyoteTime;
-
         #endregion
 
         #region JUMP CHECKS
@@ -130,37 +154,59 @@ public partial class Player : CharacterBody2D
         }
         #endregion
 
+        DashCheck();
 
-        #region GRAVITY
-        // fast fall by holding down move down button
-        if (Velocity.Y > 0 && _moveInput.Y > 0)
-        {
-            SetPlayerGravity(Data.GravityScale * Data.FastFallGravityMult);
-            // cap max fall speed
-            Velocity = new Vector2(Velocity.X, Mathf.Max(Velocity.Y, Data.MaxFastFallSpeed));
-        }
-        // increase gravity when player release the jump button
-        else if (_isJumpCut)
-        {
-            SetPlayerGravity(Data.GravityScale * Data.JumpCutGravityMult);
-            Velocity = new Vector2(Velocity.X, Mathf.Max(Velocity.Y, Data.MaxFallSpeed));
-        }
-        // reduce gravity when player at the peak of their jump => make the jump feel floaty
-        else if ((IsJumping || _isJumpFalling) && Mathf.Abs(Velocity.Y) < Data.JumpHangThreshold)
-        {
-            SetPlayerGravity(Data.GravityScale * Data.JumpHangGravityMult);
-        }
-        // increase gravity when falling
-        else if (Velocity.Y > 0)
-        {
-            SetPlayerGravity(Data.GravityScale * Data.FallGravityMult);
-            Velocity = new Vector2(Velocity.X, Mathf.Max(Velocity.Y, Data.MaxFallSpeed));
+        #region GRAVITY PROCESS
+        if (!isDashAttacking)
+        { // fast fall by holding down move down button
+            if (Velocity.Y > 0 && _moveInput.Y > 0)
+            {
+                SetGravityScale(Data.GravityScale * Data.FastFallGravityMult);
+                // cap max fall speed
+                Velocity = new Vector2(Velocity.X, Mathf.Max(Velocity.Y, Data.MaxFastFallSpeed));
+            }
+            // increase gravity when player release the jump button
+            else if (_isJumpCut)
+            {
+                SetGravityScale(Data.GravityScale * Data.JumpCutGravityMult);
+                Velocity = new Vector2(Velocity.X, Mathf.Max(Velocity.Y, Data.MaxFallSpeed));
+            }
+            // reduce gravity when player at the peak of their jump => make the jump feel floaty
+            else if (
+                (IsJumping || _isJumpFalling)
+                && Mathf.Abs(Velocity.Y) < Data.JumpHangThreshold
+            )
+            {
+                SetGravityScale(Data.GravityScale * Data.JumpHangGravityMult);
+            }
+            // increase gravity when falling
+            else if (Velocity.Y > 0)
+            {
+                SetGravityScale(Data.GravityScale * Data.FallGravityMult);
+                Velocity = new Vector2(Velocity.X, Mathf.Max(Velocity.Y, Data.MaxFallSpeed));
+            }
+            else
+            {
+                SetGravityScale(Data.GravityScale);
+            }
         }
         else
         {
-            SetPlayerGravity(Data.GravityScale);
+            //No gravity when dashing (returns to normal once initial dashAttack phase over)
+            SetGravityScale(0);
         }
         #endregion
+    }
+
+    private void DashAnimation()
+    {
+        if (!IsDashing)
+            return;
+        animatedSprite2D.Stop();
+        if (isDashAttacking)
+            animatedSprite2D.Play("dash_attack");
+        else
+            animatedSprite2D.Play("dash_end");
     }
 
     #region INPUT CALLBACK
@@ -170,6 +216,11 @@ public partial class Player : CharacterBody2D
             _isJumpCut = true;
     }
 
+    private void OnDashInput()
+    {
+        LastPressedDashTime = Data.dashInputBufferTime;
+    }
+
     private void OnJumpInput()
     {
         LastPressedJumpTime = Data.JumpInputBufferTime;
@@ -177,27 +228,33 @@ public partial class Player : CharacterBody2D
     }
     #endregion
 
-    public override void _PhysicsProcess(double delta)
+    public override void _PhysicsProcess(double _d)
     {
-        Vector2 velocityCopied = Velocity;
+        float delta = (float)(_d * localTimeScale);
+        Vector2 v = Velocity;
+
         // apply gravity
         if (!IsOnFloor())
-            velocityCopied.Y += playerGravity * (float)delta;
+            v.Y += playerGravity * delta;
         else
-            velocityCopied.Y = 0;
+            v.Y = 0;
 
         // run
-        velocityCopied.X += CalculateRunForce() * (float)delta;
+        if (!IsDashing)
+            v.X += CalculateRunForce(1) * delta;
+        else if (isDashAttacking)
+            v.X += CalculateRunForce(Data.dashEndRunLerp) * delta;
+
         // jump
-        if (CanJump() && LastPressedJumpTime > 0)
+        if (!IsDashing && CanJump() && LastPressedJumpTime > 0)
         {
             IsJumping = true;
             _isJumpCut = false;
             _isJumpFalling = false;
-            velocityCopied.Y -= CalculateJumpForce();
+            v.Y -= CalculateJumpForce();
         }
 
-        Velocity = velocityCopied;
+        Velocity = v;
         MoveAndSlide();
 
         if (Math.Round(Velocity.X) != 0)
@@ -206,10 +263,13 @@ public partial class Player : CharacterBody2D
 
     // Velocity METHODS
     #region RUN METHODS
-    float CalculateRunForce()
+    float CalculateRunForce(float lerpAmount)
     {
         // calculate direction
         float targetSpeed = _moveInput.X * Data.RunMaxSpeed;
+
+        //We can reduce are control using Lerp() this smooths changes to are direction and speed
+        targetSpeed = Mathf.Lerp(Velocity.X, targetSpeed, lerpAmount);
 
         #region Calculate AccelRate
         float accelRate;
@@ -264,18 +324,6 @@ public partial class Player : CharacterBody2D
     }
     #endregion
 
-    #region Jump methods
-    private bool CanJump()
-    {
-        return LastOnGroundTime > 0 && !IsJumping;
-    }
-
-    private bool CanJumpCut()
-    {
-        return IsJumping && Velocity.Y < 0;
-    }
-
-    Vector2 defaultScale;
 
     #region ANIMATION METHODS
 
@@ -308,15 +356,20 @@ public partial class Player : CharacterBody2D
             .SetEase(Tween.EaseType.InOut);
     }
 
-    private void HandleAnimation(string type)
+    private void HandleAnimation(string category)
     {
         bool isAirborne = LastOnGroundTime < 0;
         string prevAnimationName = animatedSprite2D.Animation.ToString();
-        string[] parts = prevAnimationName.Split("_");
-        string prevType = parts.Length > 1 ? parts[1] : parts[0];
-        bool isJumpGroundedAnimation = parts[0] == "jump" && parts[2] == "grounded";
-        bool isJumpDownAnimation = parts[0] == "jump" && parts[2] == "down";
-        string jumpType = isAirborne || isJumpGroundedAnimation ? prevType : type; // jump related aninamtion need to use the same type of animation through out its life cycle. If it start with jump_forward_up it need to end in jump_forward_down
+        string[] prevParts = prevAnimationName.Split("_");
+        string prevType = prevParts.Length == 3 ? prevParts[0] : null;
+        string prevCategory = prevParts.Length == 3 ? prevParts[1] : null;
+        string prevDirection = prevParts.Length == 3 ? prevParts[2] : null;
+        bool jumpGroundedAnimationPlaying = prevType == "jump" && prevDirection == "grounded";
+        bool jumpDownAnimationPlaying = prevType == "jump" && prevDirection == "down";
+        string jumpType = isAirborne || jumpGroundedAnimationPlaying ? prevCategory : category; // jump related aninamtion need to use the same type of animation through out its life cycle. If it start with jump_forward_up it need to end in jump_forward_down
+
+        if (jumpType == null)
+            return;
 
         if (IsJumping)
         {
@@ -334,7 +387,7 @@ public partial class Player : CharacterBody2D
             else
                 StretchSprite(AnimationData.ForwardStretchScaleAddend);
         }
-        else if (isJumpDownAnimation && LastOnGroundTime > 0)
+        else if (jumpDownAnimationPlaying && LastOnGroundTime > 0)
         {
             animatedSprite2D.Play($"jump_{jumpType}_grounded");
             isGroundedAnimationPlaying = true;
@@ -348,7 +401,7 @@ public partial class Player : CharacterBody2D
         }
         else
         {
-            animatedSprite2D.Play($"{type}");
+            animatedSprite2D.Play($"{category}");
             if (animatedSprite2D.Scale != defaultScale)
                 ScaleSpriteBackToDefault();
         }
@@ -386,6 +439,7 @@ public partial class Player : CharacterBody2D
     }
     #endregion
 
+    #region Jump methods
     private float CalculateJumpForce()
     {
         LastPressedJumpTime = 0;
@@ -400,18 +454,128 @@ public partial class Player : CharacterBody2D
     #endregion
 
     #region Check Methods;
+    private bool CanJump()
+    {
+        return LastOnGroundTime > 0 && !IsJumping;
+    }
+
+    private bool CanJumpCut()
+    {
+        return IsJumping && Velocity.Y < 0;
+    }
+
+    private bool CanDash()
+    {
+        if (!IsDashing && dashesLeft < Data.dashAmount && LastOnGroundTime > 0 && !dashRefilling)
+        {
+            Timing.RunCoroutine(RefillDash(1), "RefillDash");
+        }
+
+        return dashesLeft > 0;
+    }
+
     public void CheckDirectionToFace(bool isMovingRight)
     {
         if (isMovingRight != IsFacingRight)
             Turn();
     }
+
+    void DashCheck()
+    {
+        if (CanDash() && LastPressedDashTime > 0)
+        {
+            //Freeze game for split second. Adds juiciness and a bit of forgiveness over directional input
+            Sleep(Data.dashSleepTime);
+            //If not direction pressed, dash forward
+            if (_moveInput != Vector2.Zero)
+            {
+                lastDashDir = _moveInput;
+            }
+            else
+                lastDashDir = IsFacingRight ? Vector2.Right : Vector2.Left;
+
+            IsDashing = true;
+            IsJumping = false;
+            _isJumpCut = false;
+
+            Timing.RunCoroutine(StartDash(lastDashDir));
+        }
+    }
     #endregion
 
-    #region General Methods
-    private void SetPlayerGravity(float gravityScale)
+    #region DASH METHODS
+    private IEnumerator<double> StartDash(Vector2 dir)
+    {
+        //Overall this method of dashing aims to mimic Celeste, if you're looking for
+        // a more physics-based approach try a method similar to that used in the jump
+        LastOnGroundTime = 0;
+        LastPressedDashTime = 0;
+
+        float startTime = Time.GetTicksMsec();
+
+        dashesLeft--;
+        isDashAttacking = true;
+
+        SetGravityScale(0);
+
+        //We keep the player's velocity at the dash speed during the "attack" phase (in celeste the first 0.15s)
+        while (Time.GetTicksMsec() - startTime <= Data.dashAttackTime * 1000)
+        {
+            Velocity = Data.dashSpeed * (float)localTimeScale * dir.Normalized();
+            //Pauses the loop until the next frame, creating something of a Update loop.
+            //This is a cleaner implementation opposed to multiple timers and this coroutine approach is actually what is used in Celeste :D
+            yield return Timing.WaitForOneFrame;
+        }
+
+        startTime = Time.GetTicksMsec();
+
+        isDashAttacking = false;
+
+        //Begins the "end" of our dash where we return some control to the player but still limit run acceleration (see Update() and Run())
+        SetGravityScale(Data.GravityScale);
+        Velocity = Data.dashEndSpeed * (float)localTimeScale * dir.Normalized();
+
+        while (Time.GetTicksMsec() - startTime <= Data.dashEndTime)
+        {
+            yield return Timing.WaitForOneFrame;
+        }
+
+        //Dash over
+        IsDashing = false;
+    }
+
+    //Short period before the player is able to dash again
+    private IEnumerator<double> RefillDash(int amount)
+    {
+        //cooldown, so we can't constantly dash along the ground, again this is the implementation in Celeste, feel free to change it up
+        dashRefilling = true;
+        yield return Timing.WaitForSeconds(Data.dashRefillTime);
+        dashRefilling = false;
+        dashesLeft = Mathf.Min(Data.dashAmount, dashesLeft + 1);
+    }
+    #endregion
+
+    #region GENERAL METHODS
+    private void SetGravityScale(float gravityScale)
     {
         float globalGravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
         playerGravity = globalGravity * gravityScale;
     }
+
+    private void Sleep(float duration)
+    {
+        //Method used so we don't need to call StartCoroutine everywhere
+        //nameof() notation means we don't need to input a string directly.
+        //Removes chance of spelling mistakes and will improve error messages if any
+        Timing.RunCoroutine(PerformSleep(duration));
+    }
+
+    private IEnumerator<double> PerformSleep(float duration)
+    {
+        localTimeScale = 0;
+        yield return Timing.WaitForSeconds(duration);
+        localTimeScale = 1;
+    }
+
     #endregion
 }

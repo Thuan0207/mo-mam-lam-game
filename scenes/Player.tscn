@@ -70,7 +70,12 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": ExtResource("4_70r5a")
+}],
+"loop": false,
+"name": &"dash_attack",
+"speed": 9.0
 }, {
+"frames": [{
 "duration": 1.0,
 "texture": ExtResource("5_j2g12")
 }, {
@@ -81,8 +86,8 @@ animations = [{
 "texture": ExtResource("7_ndlya")
 }],
 "loop": true,
-"name": &"dash",
-"speed": 20.0
+"name": &"dash_end",
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -343,7 +348,7 @@ position = Vector2(0, 20)
 position = Vector2(-1, -13)
 scale = Vector2(1.375, 1.35417)
 sprite_frames = SubResource("SpriteFrames_w5yw0")
-animation = &"neutral"
+animation = &"dash_attack"
 metadata/_edit_lock_ = true
 
 [node name="JumpingParticlesMarker" type="Marker2D" parent="."]
