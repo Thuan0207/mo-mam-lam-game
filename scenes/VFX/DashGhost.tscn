@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://copwmo7wqwmjy"]
+
+[ext_resource type="Script" path="res://scripts/VFX/DashGhost.cs" id="1_temu8"]
+[ext_resource type="Material" uid="uid://ctee5q1b6wrb" path="res://resources/DashGhost.tres" id="3_0tr8i"]
+
+[node name="DashGhost" type="Sprite2D"]
+z_index = -1
+material = ExtResource("3_0tr8i")
+script = ExtResource("1_temu8")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(0, 1)
+zoom = Vector2(5, 5)

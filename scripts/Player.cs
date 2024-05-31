@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Godot;
 using MEC;
 using static Godot.GD;
@@ -52,6 +50,10 @@ public partial class Player : CharacterBody2D
     CpuParticles2D jumpingDust;
     #endregion
 
+    #region SCENE
+    PackedScene dashGhostTscn;
+    #endregion
+
     #region DASH
     Vector2 lastDashDir;
     int dashesLeft;
@@ -75,24 +77,25 @@ public partial class Player : CharacterBody2D
         {
             AnimationData = animationData;
         }
+
         isGroundedAnimationPlaying = false;
         isStopAnimationPlaying = false;
+
         IsFacingRight = true;
         IsFalling = false;
+
         animatedSprite2D = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-        defaultScale = animatedSprite2D.Scale;
         runningDustLeft = GetNode<CpuParticles2D>("RunningDustLeft");
         runningDustRight = GetNode<CpuParticles2D>("RunningDustRight");
         walkingDust = GetNode<CpuParticles2D>("WalkingDust");
         jumpingDust = GetNode<CpuParticles2D>("JumpingDust");
-        localTimeScale = 1;
-        animatedSprite2D.AnimationFinished += OnAnimationFinished;
-        SetGravityScale(Data.GravityScale);
-    }
 
-    private void OnAnimationFinished()
-    {
-        throw new NotImplementedException();
+        localTimeScale = 1;
+        defaultScale = animatedSprite2D.Scale;
+
+        dashGhostTscn = ResourceLoader.Load<PackedScene>("res://scenes/VFX/DashGhost.tscn");
+
+        SetGravityScale(Data.GravityScale);
     }
 
     public override void _Process(double _d)
@@ -196,17 +199,6 @@ public partial class Player : CharacterBody2D
             SetGravityScale(0);
         }
         #endregion
-    }
-
-    private void DashAnimation()
-    {
-        if (!IsDashing)
-            return;
-        animatedSprite2D.Stop();
-        if (isDashAttacking)
-            animatedSprite2D.Play("dash_attack");
-        else
-            animatedSprite2D.Play("dash_end");
     }
 
     #region INPUT CALLBACK
@@ -366,10 +358,10 @@ public partial class Player : CharacterBody2D
         string prevDirection = prevParts.Length == 3 ? prevParts[2] : null;
         bool jumpGroundedAnimationPlaying = prevType == "jump" && prevDirection == "grounded";
         bool jumpDownAnimationPlaying = prevType == "jump" && prevDirection == "down";
-        string jumpType = isAirborne || jumpGroundedAnimationPlaying ? prevCategory : category; // jump related aninamtion need to use the same type of animation through out its life cycle. If it start with jump_forward_up it need to end in jump_forward_down
-
-        if (jumpType == null)
-            return;
+        string jumpType =
+            (isAirborne || jumpGroundedAnimationPlaying) && prevCategory != null
+                ? prevCategory
+                : category; // jump related aninamtion need to use the same type of animation through out its life cycle. If it start with jump_forward_up it need to end in jump_forward_down
 
         if (IsJumping)
         {
@@ -511,6 +503,8 @@ public partial class Player : CharacterBody2D
         LastOnGroundTime = 0;
         LastPressedDashTime = 0;
 
+        Timing.RunCoroutine(InstanceGhostDash());
+
         float startTime = Time.GetTicksMsec();
 
         dashesLeft--;
@@ -542,6 +536,51 @@ public partial class Player : CharacterBody2D
 
         //Dash over
         IsDashing = false;
+    }
+
+    // create ghost effect for dash animation
+    private IEnumerator<double> InstanceGhostDash()
+    {
+        bool isFirstFrame = true;
+        while (IsDashing)
+        {
+            if (isFirstFrame)
+                yield return Timing.WaitForOneFrame;
+            var _ghost = dashGhostTscn.Instantiate<Sprite2D>();
+            _ghost.Scale = animatedSprite2D.Scale;
+            _ghost.Texture = animatedSprite2D.SpriteFrames.GetFrameTexture(
+                animatedSprite2D.Animation,
+                animatedSprite2D.Frame
+            );
+            _ghost.FlipH = animatedSprite2D.FlipH;
+            _ghost.GlobalPosition = animatedSprite2D.GlobalPosition;
+            _ghost.Material = !isFirstFrame ? null : _ghost.Material;
+
+            if (_ghost.Material != null && _ghost.Material is ShaderMaterial shaderMaterial)
+            {
+                Print("ShaderMaterial");
+                Tween tween = GetTree().CreateTween();
+                float size = (float)shaderMaterial.GetShaderParameter("size");
+                tween
+                    .TweenMethod(
+                        Callable.From(
+                            (float force) => shaderMaterial.SetShaderParameter("size", force)
+                        ),
+                        size,
+                        size * 10,
+                        0.5
+                    )
+                    .SetTrans(Tween.TransitionType.Linear)
+                    .SetEase(Tween.EaseType.Out);
+                tween.TweenCallback(
+                    Callable.From(() => shaderMaterial.SetShaderParameter("size", size))
+                );
+            }
+
+            isFirstFrame = false;
+            GetTree().Root.AddChild(_ghost);
+            yield return Timing.WaitForOneFrame;
+        }
     }
 
     //Short period before the player is able to dash again

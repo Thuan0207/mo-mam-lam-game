@@ -4,6 +4,9 @@
 
 [resource]
 script = ExtResource("1_60q2s")
+DashGhostAmount = 4.0
+DashGhostTick = 0.1
+DashGhostTime = 0.6
 _neutralStretchScaleAddend = Vector2(0, 0.15)
 _neutralSquashScaleAddend = Vector2(0.18, -0.1)
 _forwardStretchScaleAddend = Vector2(0, 0.115)
