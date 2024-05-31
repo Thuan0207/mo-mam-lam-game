@@ -1,4 +1,4 @@
-[gd_scene load_steps=48 format=3 uid="uid://bcb66ab5wjgvt"]
+[gd_scene load_steps=49 format=3 uid="uid://bcb66ab5wjgvt"]
 
 [ext_resource type="Script" path="res://scripts/Player.cs" id="1_htxw0"]
 [ext_resource type="Resource" uid="uid://c8xan60m6mq83" path="res://resources/animation_data.tres" id="2_c0f6y"]
@@ -44,6 +44,7 @@
 [ext_resource type="Texture2D" uid="uid://wkegq7gn51o3" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running9.png" id="35_w8smy"]
 [ext_resource type="Texture2D" uid="uid://dogr5cwx3hrvi" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Neutral/Going Up/Battlemage Neutral up3.png" id="36_efk4e"]
 [ext_resource type="Texture2D" uid="uid://blpy72clmv0yx" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running10.png" id="36_orben"]
+[ext_resource type="PackedScene" uid="uid://beou8sseh75u2" path="res://scenes/VFX/explosion.tscn" id="46_4u88p"]
 [ext_resource type="PackedScene" uid="uid://0p1tdfkjw176" path="res://scenes/VFX/running_dust.tscn" id="47_khkxb"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5tgh7"]
@@ -287,6 +288,7 @@ collision_layer = 2
 script = ExtResource("1_htxw0")
 AnimationData = ExtResource("2_c0f6y")
 Data = ExtResource("3_xysni")
+sizeScale = 4.5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_5tgh7")
@@ -316,3 +318,6 @@ metadata/_edit_lock_ = true
 [node name="JumpingParticlesMarker" type="Marker2D" parent="."]
 position = Vector2(0, 14)
 metadata/_edit_lock_ = true
+
+[node name="Explosion" parent="." instance=ExtResource("46_4u88p")]
+amount = 12

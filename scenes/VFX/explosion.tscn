@@ -1,19 +1,15 @@
-[gd_scene load_steps=3 format=3 uid="uid://beou8sseh75u2"]
-
-[ext_resource type="Script" path="res://scripts/VFX/Explosion.cs" id="1_rt0wx"]
+[gd_scene load_steps=2 format=3 uid="uid://beou8sseh75u2"]
 
 [sub_resource type="Curve" id="Curve_545i5"]
 _data = [Vector2(0.0238908, 0.3074), 0.0, 0.0, 0, 0, Vector2(1, 0.521776), 0.0, 0.0, 0, 0]
 point_count = 2
 
-[node name="Explosion" type="Node2D"]
-script = ExtResource("1_rt0wx")
-
-[node name="CPUParticles2D" type="CPUParticles2D" parent="."]
+[node name="CPUParticles2D" type="CPUParticles2D"]
 emitting = false
-amount = 60
-lifetime = 0.5
+amount = 4
+lifetime = 0.2
 one_shot = true
+speed_scale = 1.2
 explosiveness = 1.0
 spread = 180.0
 gravity = Vector2(0, 0)
@@ -22,6 +18,3 @@ initial_velocity_max = 100.0
 scale_amount_min = 2.0
 scale_amount_max = 4.0
 scale_amount_curve = SubResource("Curve_545i5")
-
-[node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(5, 5)

@@ -48,6 +48,7 @@ public partial class Player : CharacterBody2D
     CpuParticles2D runningDustRight;
     CpuParticles2D walkingDust;
     CpuParticles2D jumpingDust;
+    CpuParticles2D explosionDust;
     #endregion
 
     #region SCENE
@@ -89,6 +90,7 @@ public partial class Player : CharacterBody2D
         runningDustRight = GetNode<CpuParticles2D>("RunningDustRight");
         walkingDust = GetNode<CpuParticles2D>("WalkingDust");
         jumpingDust = GetNode<CpuParticles2D>("JumpingDust");
+        explosionDust = GetNode<CpuParticles2D>("Explosion");
 
         localTimeScale = 1;
         defaultScale = animatedSprite2D.Scale;
@@ -538,42 +540,63 @@ public partial class Player : CharacterBody2D
         IsDashing = false;
     }
 
+    [Export]
+    public float sizeScale;
+
     // create ghost effect for dash animation
     private IEnumerator<double> InstanceGhostDash()
     {
         bool isFirstFrame = true;
         while (IsDashing)
         {
-            if (isFirstFrame)
-                yield return Timing.WaitForOneFrame;
             var _ghost = dashGhostTscn.Instantiate<Sprite2D>();
             _ghost.Scale = animatedSprite2D.Scale;
             _ghost.Texture = animatedSprite2D.SpriteFrames.GetFrameTexture(
                 animatedSprite2D.Animation,
                 animatedSprite2D.Frame
             );
+
             _ghost.FlipH = animatedSprite2D.FlipH;
             _ghost.GlobalPosition = animatedSprite2D.GlobalPosition;
             _ghost.Material = !isFirstFrame ? null : _ghost.Material;
 
             if (_ghost.Material != null && _ghost.Material is ShaderMaterial shaderMaterial)
             {
-                Print("ShaderMaterial");
                 Tween tween = GetTree().CreateTween();
                 float size = (float)shaderMaterial.GetShaderParameter("size");
+                float outeredgeOffset = (float)shaderMaterial.GetShaderParameter("outeredgeOffset");
+
+                explosionDust.Emitting = true;
                 tween
                     .TweenMethod(
                         Callable.From(
-                            (float force) => shaderMaterial.SetShaderParameter("size", force)
+                            (float size) => shaderMaterial.SetShaderParameter("size", size)
                         ),
                         size,
-                        size * 10,
-                        0.5
+                        size * sizeScale,
+                        Data.dashAttackTime
                     )
-                    .SetTrans(Tween.TransitionType.Linear)
-                    .SetEase(Tween.EaseType.Out);
+                    .SetTrans(Tween.TransitionType.Expo)
+                    .SetEase(Tween.EaseType.In);
+                tween
+                    .Parallel()
+                    .TweenMethod(
+                        Callable.From(
+                            (float offset) =>
+                                shaderMaterial.SetShaderParameter("outeredgeOffset", offset)
+                        ),
+                        outeredgeOffset,
+                        0.1f,
+                        Data.dashAttackTime
+                    )
+                    .SetTrans(Tween.TransitionType.Expo)
+                    .SetEase(Tween.EaseType.In);
                 tween.TweenCallback(
-                    Callable.From(() => shaderMaterial.SetShaderParameter("size", size))
+                    Callable.From(() =>
+                    {
+                        shaderMaterial.SetShaderParameter("size", size);
+                        shaderMaterial.SetShaderParameter("outeredgeOffset", outeredgeOffset);
+                    })
                 );
             }
 
