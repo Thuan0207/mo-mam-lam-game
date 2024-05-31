@@ -1,0 +1,8 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://i0wrl8pbgce6"]
+
+[ext_resource type="Shader" path="res://shader/whiten_shader.gdshader" id="1_wdekv"]
+
+[resource]
+shader = ExtResource("1_wdekv")
+shader_parameter/whitened = true
+shader_parameter/mix_weight = 1.0
