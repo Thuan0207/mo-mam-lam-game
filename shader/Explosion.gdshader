@@ -18,7 +18,7 @@ void fragment() {
 	float mask = (1.0 - smoothstep(size - outeredgeOffset, size,length(scaledUV - centre))) 
 	* smoothstep(size - (outeredgeOffset * 2.0), size - (outeredgeOffset),length(scaledUV - centre));
 	vec2 disp = normalize(scaledUV - centre) * force * mask;
-	 COLOR = !monoMode ? texture(TEXTURE, scaledUV - disp) * vec4(vec3(1.0), 0.3) : vec4(vec3(mask), 1);
+	 COLOR = !monoMode ? texture(TEXTURE, scaledUV - disp) * vec4(vec3(1.0), 0.1) : vec4(vec3(mask), 1);
 	//COLOR = vec4(vec3(mask), 1);
 }
 
