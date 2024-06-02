@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Godot;
+using Godot.Collections;
 using MEC;
 using static Godot.GD;
 
@@ -159,7 +162,6 @@ public partial class Player : CharacterBody2D
         }
         #endregion
 
-        DashCheck();
 
         #region GRAVITY PROCESS
         if (!isDashAttacking)
@@ -201,6 +203,8 @@ public partial class Player : CharacterBody2D
             SetGravityScale(0);
         }
         #endregion
+
+        DashCheck();
     }
 
     #region INPUT CALLBACK
@@ -460,12 +464,12 @@ public partial class Player : CharacterBody2D
 
     private bool CanDash()
     {
-        if (!IsDashing && dashesLeft < Data.dashAmount && LastOnGroundTime > 0 && !dashRefilling)
+        if (!IsDashing && dashesLeft < Data.dashAmount && LastOnGroundTime > 0 && !dashRefilling) // refil dash
         {
             Timing.RunCoroutine(RefillDash(1), "RefillDash");
         }
 
-        return dashesLeft > 0;
+        return dashesLeft > 0; // can dash
     }
 
     public void CheckDirectionToFace(bool isMovingRight)
@@ -478,10 +482,9 @@ public partial class Player : CharacterBody2D
     {
         if (CanDash() && LastPressedDashTime > 0)
         {
-            //Freeze game for split second. Adds juiciness and a bit of forgiveness over directional input
-            Sleep(Data.dashSleepTime);
-            //If not direction pressed, dash forward
-            if (_moveInput != Vector2.Zero)
+            Sleep(Data.dashSleepTime); //Freeze game for split second. Adds juiciness and a bit of forgiveness over directional input
+
+            if (_moveInput != Vector2.Zero) //If not direction pressed, dash forward
             {
                 lastDashDir = _moveInput;
             }
@@ -505,7 +508,7 @@ public partial class Player : CharacterBody2D
         LastOnGroundTime = 0;
         LastPressedDashTime = 0;
 
-        Timing.RunCoroutine(InstanceGhostDash());
+        Timing.RunCoroutine(InstanceGhostDash(3));
 
         float startTime = Time.GetTicksMsec();
 
@@ -531,7 +534,7 @@ public partial class Player : CharacterBody2D
         SetGravityScale(Data.GravityScale);
         Velocity = Data.dashEndSpeed * (float)localTimeScale * dir.Normalized();
 
-        while (Time.GetTicksMsec() - startTime <= Data.dashEndTime)
+        while (Time.GetTicksMsec() - startTime <= Data.dashEndTime * 1000)
         {
             yield return Timing.WaitForOneFrame;
         }
@@ -544,9 +547,11 @@ public partial class Player : CharacterBody2D
     public float sizeScale;
 
     // create ghost effect for dash animation
-    private IEnumerator<double> InstanceGhostDash()
+    private IEnumerator<double> InstanceGhostDash(int amount)
     {
         bool isFirstFrame = true;
+        float dashDuration = Data.dashAttackTime + Data.dashEndTime;
+        float lapse = dashDuration / amount;
         while (IsDashing)
         {
             var _ghost = dashGhostTscn.Instantiate<Sprite2D>();
@@ -558,6 +563,7 @@ public partial class Player : CharacterBody2D
 
             _ghost.FlipH = animatedSprite2D.FlipH;
             _ghost.GlobalPosition = animatedSprite2D.GlobalPosition;
+            // positionsX.Add(_ghost.GlobalPosition.X);
             _ghost.Material = !isFirstFrame ? null : _ghost.Material;
 
             if (_ghost.Material != null && _ghost.Material is ShaderMaterial shaderMaterial)
@@ -599,10 +605,9 @@ public partial class Player : CharacterBody2D
                     })
                 );
             }
-
             isFirstFrame = false;
             GetTree().Root.AddChild(_ghost);
-            yield return Timing.WaitForOneFrame;
+            yield return Timing.WaitForSeconds(lapse);
         }
     }
 
@@ -613,7 +618,7 @@ public partial class Player : CharacterBody2D
         dashRefilling = true;
         yield return Timing.WaitForSeconds(Data.dashRefillTime);
         dashRefilling = false;
-        dashesLeft = Mathf.Min(Data.dashAmount, dashesLeft + 1);
+        dashesLeft = Mathf.Min(Data.dashAmount, dashesLeft + amount);
     }
     #endregion
 
@@ -627,8 +632,6 @@ public partial class Player : CharacterBody2D
     private void Sleep(float duration)
     {
         //Method used so we don't need to call StartCoroutine everywhere
-        //nameof() notation means we don't need to input a string directly.
-        //Removes chance of spelling mistakes and will improve error messages if any
         Timing.RunCoroutine(PerformSleep(duration));
     }
 

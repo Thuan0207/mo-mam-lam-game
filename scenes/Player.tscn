@@ -1,10 +1,11 @@
-[gd_scene load_steps=49 format=3 uid="uid://bcb66ab5wjgvt"]
+[gd_scene load_steps=52 format=3 uid="uid://bcb66ab5wjgvt"]
 
 [ext_resource type="Script" path="res://scripts/Player.cs" id="1_htxw0"]
 [ext_resource type="Resource" uid="uid://c8xan60m6mq83" path="res://resources/animation_data.tres" id="2_c0f6y"]
 [ext_resource type="Resource" uid="uid://dee2bfqrs0s0d" path="res://resources/player_data.tres" id="3_xysni"]
 [ext_resource type="PackedScene" uid="uid://cusmre3lypee6" path="res://scenes/VFX/walking_dust.tscn" id="5_be0hw"]
 [ext_resource type="PackedScene" uid="uid://7l3h12fyh70a" path="res://scenes/VFX/jumping_dust.tscn" id="6_u8xcp"]
+[ext_resource type="Shader" path="res://Godot-Post-Process-Plugin-09aa7c2315d57ea9e312b1fef85ff7bbf061b473/addons/post_processing/shaders/chromatic.gdshader" id="7_5reeb"]
 [ext_resource type="Texture2D" uid="uid://cmf26pqowm4ot" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Idle/Battlemage Idle1.png" id="8_2jr03"]
 [ext_resource type="Texture2D" uid="uid://xsbvtnbfs2jl" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Idle/Battlemage Idle2.png" id="9_xtsi5"]
 [ext_resource type="Texture2D" uid="uid://b0jkcpy0gcjgv" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Idle/Battlemage Idle3.png" id="10_h4bie"]
@@ -49,6 +50,10 @@
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5tgh7"]
 size = Vector2(20, 39)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hmqfi"]
+shader = ExtResource("7_5reeb")
+shader_parameter/offset = 1.0
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_w5yw0"]
 animations = [{
@@ -283,6 +288,10 @@ animations = [{
 "speed": 12.0
 }]
 
+[sub_resource type="Gradient" id="Gradient_1l536"]
+offsets = PackedFloat32Array(0, 0.335714, 0.789286, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.553506, 0.553506, 0.553506, 1, 0.85098, 0.85098, 0.85098, 0.705882, 1, 1, 1, 0.0784314)
+
 [node name="Player" type="CharacterBody2D"]
 collision_layer = 2
 script = ExtResource("1_htxw0")
@@ -309,6 +318,7 @@ position = Vector2(0, 19)
 position = Vector2(0, 20)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+material = SubResource("ShaderMaterial_hmqfi")
 position = Vector2(-1, -13)
 scale = Vector2(1.375, 1.35417)
 sprite_frames = SubResource("SpriteFrames_w5yw0")
@@ -320,4 +330,6 @@ position = Vector2(0, 14)
 metadata/_edit_lock_ = true
 
 [node name="Explosion" parent="." instance=ExtResource("46_4u88p")]
-amount = 12
+lifetime = 0.4
+speed_scale = 2.2
+color_ramp = SubResource("Gradient_1l536")

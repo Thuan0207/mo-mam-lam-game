@@ -11,8 +11,6 @@ public partial class DashGhost : Sprite2D
 
     public override void _Ready()
     {
-        Modulate = new Color(Modulate.R, Modulate.G, Modulate.B, 0.3f);
-        // colorRect = GetNode<ColorRect>("ColorRect");
         FadeOut();
     }
 

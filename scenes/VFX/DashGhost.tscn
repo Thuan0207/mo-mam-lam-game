@@ -7,7 +7,4 @@
 z_index = -1
 material = ExtResource("3_0tr8i")
 script = ExtResource("1_temu8")
-
-[node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(0, 1)
-zoom = Vector2(5, 5)
+duration = 0.15
