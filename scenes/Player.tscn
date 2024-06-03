@@ -1,4 +1,4 @@
-[gd_scene load_steps=49 format=3 uid="uid://bcb66ab5wjgvt"]
+[gd_scene load_steps=50 format=3 uid="uid://bcb66ab5wjgvt"]
 
 [ext_resource type="Script" path="res://scripts/Player.cs" id="1_htxw0"]
 [ext_resource type="Resource" uid="uid://c8xan60m6mq83" path="res://resources/animation_data.tres" id="2_c0f6y"]
@@ -283,6 +283,10 @@ animations = [{
 "speed": 12.0
 }]
 
+[sub_resource type="Gradient" id="Gradient_1l536"]
+offsets = PackedFloat32Array(0, 0.335714, 0.789286, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.553506, 0.553506, 0.553506, 1, 0.85098, 0.85098, 0.85098, 0.705882, 1, 1, 1, 0.0784314)
+
 [node name="Player" type="CharacterBody2D"]
 collision_layer = 2
 script = ExtResource("1_htxw0")
@@ -320,4 +324,6 @@ position = Vector2(0, 14)
 metadata/_edit_lock_ = true
 
 [node name="Explosion" parent="." instance=ExtResource("46_4u88p")]
-amount = 12
+lifetime = 0.4
+speed_scale = 2.2
+color_ramp = SubResource("Gradient_1l536")
