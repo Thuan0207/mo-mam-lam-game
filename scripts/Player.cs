@@ -563,7 +563,6 @@ public partial class Player : CharacterBody2D
 
             _ghost.FlipH = animatedSprite2D.FlipH;
             _ghost.GlobalPosition = animatedSprite2D.GlobalPosition;
-            // positionsX.Add(_ghost.GlobalPosition.X);
             _ghost.Material = !isFirstFrame ? null : _ghost.Material;
 
             if (_ghost.Material != null && _ghost.Material is ShaderMaterial shaderMaterial)
