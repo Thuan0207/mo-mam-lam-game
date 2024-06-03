@@ -1,8 +1,9 @@
-[gd_scene load_steps=10 format=3 uid="uid://ckwut2klv8yex"]
+[gd_scene load_steps=11 format=3 uid="uid://ckwut2klv8yex"]
 
 [ext_resource type="Texture2D" uid="uid://r27d4n5dfmiw" path="res://Sprites/Platformer_Dungeon Asset Pack/Platformer_Dungeon Asset Pack/TileSet/TileSet.png" id="1_8apuj"]
 [ext_resource type="Texture2D" uid="uid://jtd66e2f2icb" path="res://Sprites/PixelPlatformerSet1v.1.1/other_and_decorative.png" id="1_xm3e8"]
 [ext_resource type="PackedScene" uid="uid://bcb66ab5wjgvt" path="res://scenes/Player.tscn" id="3_k3dyj"]
+[ext_resource type="PackedScene" uid="uid://by4lqpdcq4a3k" path="res://scenes/SkeletonSword.tscn" id="5_3t7eg"]
 [ext_resource type="Texture2D" uid="uid://6wsjsq503u0v" path="res://Sprites/PixelFantasy_Caves_1.0/RMT0Kk.jpg" id="12_kxpu0"]
 
 [sub_resource type="TileMapPattern" id="TileMapPattern_uhf2b"]
@@ -2018,7 +2019,8 @@ texture = ExtResource("1_8apuj")
 8:4/0/terrains_peering_bit/top_side = 0
 
 [sub_resource type="TileSet" id="TileSet_4v64x"]
-physics_layer_0/collision_layer = 1
+physics_layer_0/collision_layer = 2
+physics_layer_0/collision_mask = 5
 terrain_set_0/mode = 0
 terrain_set_0/terrain_0/name = "Ground"
 terrain_set_0/terrain_0/color = Color(0, 0.817106, 0.483108, 1)
@@ -2053,3 +2055,6 @@ texture_filter = 2
 scale = Vector2(1, 1.06944)
 texture = ExtResource("12_kxpu0")
 centered = false
+
+[node name="SkeletonSword" parent="." instance=ExtResource("5_3t7eg")]
+position = Vector2(495, 379)

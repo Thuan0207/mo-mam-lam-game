@@ -175,8 +175,18 @@ public partial class PlayerData : Resource
     public float dashRefillTime;
 
     [Export(PropertyHint.Range, "0.0f,1.0f,0.1f")]
-    public float dashInputBufferTime;
+    public float DashInputBufferTime;
 
+    #region ATTACK
+    [Export]
+    public float AttackInputBufferTime;
+
+    [Export]
+    public float Damage;
+
+    [Export]
+    public float Health;
+    #endregion
     public PlayerData()
         : this(
             0.95f,
@@ -196,7 +206,10 @@ public partial class PlayerData : Resource
             1.0f,
             1.0f,
             0.2f,
-            0.088f
+            0.088f,
+            0.05f,
+            1,
+            5
         ) { }
 
     public PlayerData(
@@ -217,7 +230,10 @@ public partial class PlayerData : Resource
         float accelInAir = 1.0f,
         float deccelInair = 1.0f,
         float coyoteTime = 0.2f,
-        float jumpInputBufferTime = 0.088f
+        float jumpInputBufferTime = 0.088f,
+        float attackInputBufferTime = 0.05f,
+        float dmg = 1,
+        float health = 5
     )
     {
         RunMaxSpeed = runMaxSpeed;
@@ -238,6 +254,9 @@ public partial class PlayerData : Resource
         JumpHangMaxSpeedMult = jumpHangMaxSpeedMult;
         CoyoteTime = coyoteTime;
         JumpInputBufferTime = jumpInputBufferTime;
+        AttackInputBufferTime = attackInputBufferTime;
+        Damage = dmg;
+        Health = health;
     }
 
     #region assist
@@ -246,6 +265,7 @@ public partial class PlayerData : Resource
         return Mathf.Clamp(number, 0.01f, runMaxSpeed);
     }
     #endregion
+
 
     #region Data calculation
     static float CalculateAccelAmount(float acceleration, float runMaxSpeed)

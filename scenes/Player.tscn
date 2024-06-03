@@ -403,13 +403,13 @@ offsets = PackedFloat32Array(0, 0.335714, 0.789286, 1)
 colors = PackedColorArray(1, 1, 1, 1, 0.553506, 0.553506, 0.553506, 1, 0.85098, 0.85098, 0.85098, 0.705882, 1, 1, 1, 0.0784314)
 
 [node name="Player" type="CharacterBody2D"]
-collision_layer = 2
+collision_mask = 6
 script = ExtResource("1_htxw0")
 AnimationData = ExtResource("2_c0f6y")
 Data = ExtResource("3_xysni")
 sizeScale = 4.5
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="HurtBox" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_5tgh7")
 metadata/_edit_lock_ = true
 
@@ -442,3 +442,7 @@ metadata/_edit_lock_ = true
 lifetime = 0.4
 speed_scale = 2.2
 color_ramp = SubResource("Gradient_1l536")
+
+[node name="AtkRayCast" type="RayCast2D" parent="."]
+target_position = Vector2(40, 0)
+collision_mask = 4

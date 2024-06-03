@@ -26,12 +26,15 @@ public partial class Player : CharacterBody2D
     public bool IsDashing { get; private set; }
     public float LastOnGroundTime { get; private set; }
     public bool IsReadyForDeccelAtMaxSpeed { get; private set; }
+    public bool IsAttacking { get; private set; }
+    public bool IsAtkConnected { get; private set; }
     #endregion
 
     #region INPUT PARAMETERS
     Vector2 _moveInput;
     public float LastPressedJumpTime { get; private set; }
     public float LastPressedDashTime { get; private set; }
+    public float LastPressedAttackTime { get; private set; }
     #endregion
 
     #region Jump
@@ -52,6 +55,7 @@ public partial class Player : CharacterBody2D
     CpuParticles2D walkingDust;
     CpuParticles2D jumpingDust;
     CpuParticles2D explosionDust;
+    RayCast2D atkRayCast;
     #endregion
 
     #region SCENE
@@ -95,10 +99,21 @@ public partial class Player : CharacterBody2D
         jumpingDust = GetNode<CpuParticles2D>("JumpingDust");
         explosionDust = GetNode<CpuParticles2D>("Explosion");
 
+        atkRayCast = GetNode<RayCast2D>("AtkRayCast");
+
         localTimeScale = 1;
         defaultScale = animatedSprite2D.Scale;
 
         dashGhostTscn = ResourceLoader.Load<PackedScene>("res://scenes/VFX/DashGhost.tscn");
+
+        animatedSprite2D.AnimationFinished += () =>
+        {
+            if (animatedSprite2D.Animation == "attack1")
+            {
+                IsAttacking = false;
+                IsAtkConnected = false;
+            }
+        };
 
         SetGravityScale(Data.GravityScale);
     }
@@ -111,6 +126,7 @@ public partial class Player : CharacterBody2D
         LastOnGroundTime -= delta;
         LastPressedJumpTime -= delta;
         LastPressedDashTime -= delta;
+        LastPressedAttackTime -= delta;
         #endregion
 
         #region INPUT HANDLER
@@ -123,6 +139,9 @@ public partial class Player : CharacterBody2D
 
         if (Input.IsActionJustPressed("dash"))
             OnDashInput();
+
+        if (Input.IsActionJustPressed("attack"))
+            OnAttackInput();
         #endregion
 
         // Ground Check
@@ -205,6 +224,7 @@ public partial class Player : CharacterBody2D
         #endregion
 
         DashCheck();
+        AttackCheck();
     }
 
     #region INPUT CALLBACK
@@ -216,7 +236,7 @@ public partial class Player : CharacterBody2D
 
     private void OnDashInput()
     {
-        LastPressedDashTime = Data.dashInputBufferTime;
+        LastPressedDashTime = Data.DashInputBufferTime;
     }
 
     private void OnJumpInput()
@@ -323,8 +343,7 @@ public partial class Player : CharacterBody2D
     #endregion
 
 
-    #region ANIMATION METHODS
-
+    #region ANIMATION METHOD
     void StretchSprite(Vector2 scaleAddend)
     {
         Tween tween = GetTree().CreateTween();
@@ -356,6 +375,9 @@ public partial class Player : CharacterBody2D
 
     private void HandleAnimation(string category)
     {
+        if (animatedSprite2D.IsPlaying() && animatedSprite2D.Animation == "attack1")
+            return;
+
         bool isAirborne = LastOnGroundTime < 0;
         string prevAnimationName = animatedSprite2D.Animation.ToString();
         string[] prevParts = prevAnimationName.Split("_");
@@ -641,5 +663,45 @@ public partial class Player : CharacterBody2D
         localTimeScale = 1;
     }
 
+    #endregion
+
+    #region ATTACK METHODS
+    void OnAttackInput()
+    {
+        LastPressedAttackTime = Data.AttackInputBufferTime;
+    }
+
+    void AttackCheck()
+    {
+        bool isStriking = false; // this is the state where attack frames are allow to connect with the enemy body
+        if (
+            animatedSprite2D.Animation == "attack1"
+            && (
+                animatedSprite2D.Frame == 3
+                || animatedSprite2D.Frame == 4
+                || animatedSprite2D.Frame == 5
+            )
+            && !IsAtkConnected
+        )
+        {
+            isStriking = true;
+        }
+
+        if (LastPressedAttackTime > 0 && !IsAttacking)
+        {
+            IsAttacking = true;
+            animatedSprite2D.Stop();
+            animatedSprite2D.Play("attack1");
+        }
+
+        if (isStriking && atkRayCast.IsColliding())
+        {
+            if (atkRayCast.GetCollider() is SkeletonSword hurtableBody)
+            {
+                hurtableBody.GetHurt(Data.Damage);
+                IsAtkConnected = true;
+            }
+        }
+    }
     #endregion
 }
