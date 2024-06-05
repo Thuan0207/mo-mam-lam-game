@@ -31,6 +31,6 @@ dashEndSpeed = Vector2(400, 200)
 dashEndRunLerp = 0.5
 dashRefillTime = 0.1
 DashInputBufferTime = 0.1
-AttackInputBufferTime = 0.1
+AttackInputBufferTime = 0.3
 Damage = 1.0
 Health = 5.0

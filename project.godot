@@ -30,6 +30,10 @@ project/assembly_name="Mount Hollow"
 
 version_control/autoload_on_startup=true
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/AS2P/plugin.cfg")
+
 [importer_defaults]
 
 animation_library={

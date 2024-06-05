@@ -1,24 +1,33 @@
-using System;
 using Godot;
+using static Godot.GD;
 
-public partial class SkeletonSword : Node2D
+public partial class SkeletonSword : HurtableBody
 {
-    // Called when the node enters the scene tree for the first time.
-    float health;
-
     public override void _Ready()
     {
-        health = 3;
+        Health = 3;
+        OnGetHit += CheckToDie;
     }
 
-    // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta)
     {
-        GD.Print("monster health " + health);
+        Print("Health: ", Health);
     }
 
-    public void GetHurt(float _dmg)
+    public override void GetHit(float _dmg)
     {
-        health -= _dmg;
+        Health -= _dmg;
+        EmitSignal(SignalName.OnGetHit);
+    }
+
+    [Signal]
+    public delegate void OnGetHitEventHandler();
+
+    void CheckToDie()
+    {
+        if (Health == 0)
+        {
+            this.QueueFree();
+        }
     }
 }

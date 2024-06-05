@@ -32,7 +32,7 @@ animations = [{
 "duration": 1.0,
 "texture": ExtResource("7_85ots")
 }],
-"loop": true,
+"loop": false,
 "name": &"attack1",
 "speed": 12.0
 }, {
@@ -62,9 +62,7 @@ script = ExtResource("1_nr8gq")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 scale = Vector2(1.5, 1.5)
 sprite_frames = SubResource("SpriteFrames_bbydp")
-animation = &"idle"
-autoplay = "idle"
-frame_progress = 0.10248
+animation = &"attack1"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, 4.5)
