@@ -30,6 +30,7 @@ public partial class Player : CharacterBody2D
     public bool IsAttacking { get; private set; }
     public bool IsAttackCancelable { get; private set; }
     public bool IsAtkConnected { get; private set; }
+    public bool IsStriking { get; private set; }
     #endregion
 
     #region INPUT PARAMETERS
@@ -46,9 +47,9 @@ public partial class Player : CharacterBody2D
     #endregion
 
     #region ANIMATION PARAMETERS
-    AnimatedSprite2D animatedSprite2D;
     bool isGroundedAnimationPlaying;
     bool isStopAnimationPlaying;
+    bool attackAnimationPlaying;
     #endregion
 
     #region NODE
@@ -58,6 +59,7 @@ public partial class Player : CharacterBody2D
     CpuParticles2D jumpingDust;
     CpuParticles2D explosionDust;
     RayCast2D atkRayCast;
+    AnimatedSprite2D animatedSprite2D;
     #endregion
 
     #region SCENE
@@ -104,7 +106,6 @@ public partial class Player : CharacterBody2D
         walkingDust = GetNode<CpuParticles2D>("WalkingDust");
         jumpingDust = GetNode<CpuParticles2D>("JumpingDust");
         explosionDust = GetNode<CpuParticles2D>("Explosion");
-
         atkRayCast = GetNode<RayCast2D>("AtkRayCast");
 
         localTimeScale = 1;
@@ -230,7 +231,13 @@ public partial class Player : CharacterBody2D
         }
         #endregion
 
+        // Print("start", Time.GetTicksMsec());
+        var start = Time.GetTicksMsec();
         DashCheck();
+        var elapsed = Time.GetTicksMsec() - start;
+        // Print("elapsed", elapsed);
+        // if (elapsed > 1)
+        //     Print("significantElapsed: ", elapsed);
         AttackCheck();
     }
 
@@ -264,15 +271,18 @@ public partial class Player : CharacterBody2D
         else
             v.Y = 0;
 
-        // run
-        if (!IsDashing)
+        if (!IsDashing) // if not dashing then player can run, the horizontal velocity of player at the end of the dash when player can regain some control is reduce by half
             runLerp = 1;
         else if (isDashAttacking)
             runLerp = Data.dashEndRunLerp;
-        else if (IsAttacking)
-            runLerp = 0.5f;
 
-        v.X += CalculateRunForce(runLerp) * delta;
+        if (IsStriking && IsAtkConnected) // push the player slightly back when hit connected
+        {
+            _moveInput = new(IsFacingRight ? -1 : 1, _moveInput.Y);
+            v.X += CalculateRunForce(runLerp) * delta;
+        }
+        else
+            v.X += CalculateRunForce(runLerp) * delta;
 
         // jump
         if (!IsDashing && CanJump() && LastPressedJumpTime > 0)
@@ -382,7 +392,6 @@ public partial class Player : CharacterBody2D
             .TweenProperty(animatedSprite2D, "scale", defaultScale, 0.01)
             .SetTrans(Tween.TransitionType.Quad)
             .SetEase(Tween.EaseType.InOut);
-
     }
 
     private void HandleAnimation(string category)
@@ -400,7 +409,7 @@ public partial class Player : CharacterBody2D
             && (prevCategory == "neutral" || prevCategory == "forward")
                 ? prevCategory
                 : category; // jump related aninamtion need to use the same type of animation through out its life cycle. If it start with jump_forward_up it need to end in jump_forward_down
-        bool attackAnimationPlaying =
+        attackAnimationPlaying =
             animatedSprite2D.IsPlaying() && attackRegex.IsMatch(animatedSprite2D.Animation);
 
         if (attackAnimationPlaying) // nothing interupt attack animation
@@ -409,12 +418,12 @@ public partial class Player : CharacterBody2D
         // if attacking and the current animation is not of type attack then play the animation
         if (LastPressedAttackTime > 0)
         {
-            if (_moveInput.X != 0)
+            if (animatedSprite2D.Scale != defaultScale)
+                ScaleSpriteBackToDefault();
+            if (Mathf.Abs(Velocity.X) > 0.01f)
                 animatedSprite2D.Play("attack2");
             else
                 animatedSprite2D.Play("attack1");
-            if (animatedSprite2D.Scale != defaultScale)
-                ScaleSpriteBackToDefault();
         }
         else if (IsJumping)
         {
@@ -531,16 +540,16 @@ public partial class Player : CharacterBody2D
         {
             Sleep(Data.dashSleepTime); //Freeze game for split second. Adds juiciness and a bit of forgiveness over directional input
 
+            IsDashing = true;
+            IsJumping = false;
+            _isJumpCut = false;
+
             if (_moveInput != Vector2.Zero) //If not direction pressed, dash forward
             {
                 lastDashDir = _moveInput;
             }
             else
                 lastDashDir = IsFacingRight ? Vector2.Right : Vector2.Left;
-
-            IsDashing = true;
-            IsJumping = false;
-            _isJumpCut = false;
 
             Timing.RunCoroutine(StartDash(lastDashDir));
         }
@@ -710,11 +719,11 @@ public partial class Player : CharacterBody2D
 
     void AttackCheck()
     {
-        bool isStriking = false; // this is the state where attack frames are allow to connect with the enemy body
+        IsStriking = false; // this is the state where attack frames are allow to connect with the enemy body
 
-        if (animatedSprite2D.Animation == "attack1" && IsCurrentFrame(3, 4, 5) && !IsAtkConnected) // check for enabling the "dealing-damage" frame
+        if (attackAnimationPlaying && IsCurrentFrame(3, 4, 5) && !IsAtkConnected) // check for enabling the "dealing-damage" frame
         {
-            isStriking = true;
+            IsStriking = true;
         }
 
         if (LastPressedAttackTime > 0 && !IsAttacking)
@@ -722,7 +731,7 @@ public partial class Player : CharacterBody2D
             IsAttacking = true;
         }
 
-        if (isStriking)
+        if (IsStriking)
         {
             AttackCollide();
         }
@@ -736,7 +745,23 @@ public partial class Player : CharacterBody2D
             {
                 hurtableBody.GetHit(Data.Damage);
                 IsAtkConnected = true;
+                BounceBackAfterAttack(IsFacingRight ? -1 : 1);
             }
+        }
+    }
+
+    IEnumerator<double> BounceBackAfterAttack(int dir)
+    {
+        // while (Time.GetTicksMsec() - currentTime < Data.BounceBackDuration)
+        // {
+        //     Velocity = new(CalculateRunForce(1), Velocity.Y);
+        //     yield return Timing.WaitForOneFrame;
+        // }
+
+        while (IsStriking && IsAtkConnected)
+        {
+            Velocity = new(Mathf.Abs(CalculateRunForce(1)) * dir, Velocity.Y);
+            yield return Timing.WaitForOneFrame;
         }
     }
     #endregion

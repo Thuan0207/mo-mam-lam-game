@@ -1,0 +1,34 @@
+[gd_scene load_steps=5 format=3 uid="uid://ckwut2klv8yex"]
+
+[ext_resource type="PackedScene" uid="uid://bk1p8uwu258io" path="res://scenes/Lv1Map.tscn" id="1_1tyto"]
+[ext_resource type="PackedScene" uid="uid://bcb66ab5wjgvt" path="res://scenes/Player.tscn" id="3_g4he3"]
+[ext_resource type="Texture2D" uid="uid://6wsjsq503u0v" path="res://Sprites/PixelFantasy_Caves_1.0/RMT0Kk.jpg" id="4_rw1nn"]
+[ext_resource type="PackedScene" uid="uid://by4lqpdcq4a3k" path="res://scenes/SkeletonSword.tscn" id="5_6ni77"]
+
+[node name="Level 1" type="Node2D"]
+
+[node name="TileMap" parent="." instance=ExtResource("1_1tyto")]
+JumpHeight = 6
+
+[node name="Player" parent="." instance=ExtResource("3_g4he3")]
+position = Vector2(1212, 289)
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+position = Vector2(0, -20)
+zoom = Vector2(1.75, 1.75)
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+
+[node name="ParallaxLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0.1, 0.1)
+motion_mirroring = Vector2(960, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/ParallaxLayer"]
+texture_filter = 2
+scale = Vector2(1, 1.06944)
+texture = ExtResource("4_rw1nn")
+centered = false
+
+[node name="SkeletonSword" parent="." instance=ExtResource("5_6ni77")]
+position = Vector2(1158, 284)
+JumpVelocity = -100000.0

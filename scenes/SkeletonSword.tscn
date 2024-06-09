@@ -1,58 +1,60 @@
-[gd_scene load_steps=13 format=3 uid="uid://by4lqpdcq4a3k"]
+[gd_scene load_steps=11 format=3 uid="uid://by4lqpdcq4a3k"]
 
 [ext_resource type="Script" path="res://scripts/SkeletonSword.cs" id="1_nr8gq"]
-[ext_resource type="Texture2D" uid="uid://cqos8lq4btle1" path="res://asset/skeleton_sword/skeleton_sword/attack1_1.png" id="2_qubrl"]
-[ext_resource type="Texture2D" uid="uid://tnc57kfaq3px" path="res://asset/skeleton_sword/skeleton_sword/attack1_2.png" id="3_14j6y"]
-[ext_resource type="Texture2D" uid="uid://bl0r5fq6apfou" path="res://asset/skeleton_sword/skeleton_sword/attack1_3.png" id="4_gu6d5"]
-[ext_resource type="Texture2D" uid="uid://dpimy0ywv1bcb" path="res://asset/skeleton_sword/skeleton_sword/attack1_4.png" id="5_rgid8"]
-[ext_resource type="Texture2D" uid="uid://clpbjka85cv32" path="res://asset/skeleton_sword/skeleton_sword/attack1_5.png" id="6_lk1bv"]
-[ext_resource type="Texture2D" uid="uid://chslj4fkm2emk" path="res://asset/skeleton_sword/skeleton_sword/attack1_6.png" id="7_85ots"]
-[ext_resource type="Texture2D" uid="uid://hcf4tj4spmvh" path="res://asset/skeleton_sword/skeleton_sword/ready_1.png" id="8_i6wlg"]
-[ext_resource type="Texture2D" uid="uid://1oxbeqhntteb" path="res://asset/skeleton_sword/skeleton_sword/ready_2.png" id="9_x35os"]
-[ext_resource type="Texture2D" uid="uid://dxevhjv0hqryi" path="res://asset/skeleton_sword/skeleton_sword/ready_3.png" id="10_8nqtc"]
+[ext_resource type="Texture2D" uid="uid://curpgucrhqy8o" path="res://asset/Rat/OutlinedRat/rat-idle-outline.png" id="2_vojcd"]
 
-[sub_resource type="SpriteFrames" id="SpriteFrames_bbydp"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_lo8b7"]
+atlas = ExtResource("2_vojcd")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fpvfd"]
+atlas = ExtResource("2_vojcd")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lya31"]
+atlas = ExtResource("2_vojcd")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_khx8t"]
+atlas = ExtResource("2_vojcd")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cellx"]
+atlas = ExtResource("2_vojcd")
+region = Rect2(128, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_psjqh"]
+atlas = ExtResource("2_vojcd")
+region = Rect2(160, 0, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_lgu6t"]
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": ExtResource("2_qubrl")
+"texture": SubResource("AtlasTexture_lo8b7")
 }, {
 "duration": 1.0,
-"texture": ExtResource("3_14j6y")
+"texture": SubResource("AtlasTexture_fpvfd")
 }, {
 "duration": 1.0,
-"texture": ExtResource("4_gu6d5")
+"texture": SubResource("AtlasTexture_lya31")
 }, {
 "duration": 1.0,
-"texture": ExtResource("5_rgid8")
+"texture": SubResource("AtlasTexture_khx8t")
 }, {
 "duration": 1.0,
-"texture": ExtResource("6_lk1bv")
+"texture": SubResource("AtlasTexture_cellx")
 }, {
 "duration": 1.0,
-"texture": ExtResource("7_85ots")
-}],
-"loop": false,
-"name": &"attack1",
-"speed": 12.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": ExtResource("8_i6wlg")
-}, {
-"duration": 1.0,
-"texture": ExtResource("9_x35os")
-}, {
-"duration": 1.0,
-"texture": ExtResource("10_8nqtc")
+"texture": SubResource("AtlasTexture_psjqh")
 }],
 "loop": true,
 "name": &"idle",
-"speed": 5.0
+"speed": 8.0
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s2hjp"]
-size = Vector2(26, 45)
+size = Vector2(54.25, 24)
 
 [node name="SkeletonSword" type="CharacterBody2D"]
 collision_layer = 4
@@ -60,11 +62,13 @@ collision_mask = 3
 script = ExtResource("1_nr8gq")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
-scale = Vector2(1.5, 1.5)
-sprite_frames = SubResource("SpriteFrames_bbydp")
-animation = &"attack1"
+position = Vector2(3, -20)
+scale = Vector2(2, 2)
+sprite_frames = SubResource("SpriteFrames_lgu6t")
+animation = &"idle"
+frame = 5
+frame_progress = 0.286967
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, 4.5)
 shape = SubResource("RectangleShape2D_s2hjp")
 debug_color = Color(0, 0.6, 0.701961, 0.419608)

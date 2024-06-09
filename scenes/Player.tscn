@@ -21,7 +21,7 @@ collision_mask = 6
 script = ExtResource("1_htxw0")
 AnimationData = ExtResource("2_c0f6y")
 Data = ExtResource("3_xysni")
-sizeScale = 4.5
+sizeScale = 12.0
 
 [node name="HurtBox" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_5tgh7")
@@ -47,8 +47,6 @@ scale = Vector2(1.375, 1.35417)
 sprite_frames = ExtResource("7_8nd4t")
 animation = &"attack1"
 metadata/_edit_lock_ = true
-
-[node name="AnimationPlayer" type="AnimationPlayer" parent="AnimatedSprite2D"]
 
 [node name="JumpingParticlesMarker" type="Marker2D" parent="."]
 position = Vector2(0, 14)
