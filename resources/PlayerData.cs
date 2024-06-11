@@ -189,6 +189,9 @@ public partial class PlayerData : Resource
 
     [Export]
     public float BounceBackDuration;
+
+    [Export]
+    public float BounceBackForce;
     #endregion
     public PlayerData()
         : this(
@@ -213,7 +216,8 @@ public partial class PlayerData : Resource
             0.05f,
             1,
             5,
-            0.2f
+            0.2f,
+            100
         ) { }
 
     public PlayerData(
@@ -238,7 +242,8 @@ public partial class PlayerData : Resource
         float attackInputBufferTime = 0.05f,
         float dmg = 1,
         float health = 5,
-        float bounceBackDuration = 0.2f
+        float bounceBackDuration = 0.2f,
+        float bounceBackForce = 100
     )
     {
         RunMaxSpeed = runMaxSpeed;
@@ -263,6 +268,7 @@ public partial class PlayerData : Resource
         Damage = dmg;
         Health = health;
         BounceBackDuration = bounceBackDuration;
+		BounceBackForce = bounceBackForce;
     }
 
     #region assist

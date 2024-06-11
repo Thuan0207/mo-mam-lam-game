@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Godot;
-using Godot.Collections;
 using MEC;
 using static Godot.GD;
 
@@ -16,6 +14,7 @@ public partial class Player : CharacterBody2D
 
     [Export]
     public PlayerData Data;
+
     float playerGravity;
 
     #endregion
@@ -58,8 +57,10 @@ public partial class Player : CharacterBody2D
     CpuParticles2D walkingDust;
     CpuParticles2D jumpingDust;
     CpuParticles2D explosionDust;
-    RayCast2D atkRayCast;
     AnimatedSprite2D animatedSprite2D;
+
+    Area2D _hitboxLeft;
+    Area2D _hitboxRight;
     #endregion
 
     #region SCENE
@@ -106,7 +107,8 @@ public partial class Player : CharacterBody2D
         walkingDust = GetNode<CpuParticles2D>("WalkingDust");
         jumpingDust = GetNode<CpuParticles2D>("JumpingDust");
         explosionDust = GetNode<CpuParticles2D>("Explosion");
-        atkRayCast = GetNode<RayCast2D>("AtkRayCast");
+        _hitboxLeft = GetNode<Area2D>("HitBoxLeft");
+        _hitboxRight = GetNode<Area2D>("HitBoxRight");
 
         localTimeScale = 1;
         defaultScale = animatedSprite2D.Scale;
@@ -122,6 +124,9 @@ public partial class Player : CharacterBody2D
                 IsAtkConnected = false;
             }
         };
+
+        _hitboxRight.BodyEntered += OnAttackCollideEvent;
+        _hitboxLeft.BodyEntered += OnAttackCollideEvent;
 
         SetGravityScale(Data.GravityScale);
     }
@@ -701,6 +706,18 @@ public partial class Player : CharacterBody2D
         Timing.RunCoroutine(PerformSleep(duration));
     }
 
+    private IEnumerator<double> _FrameFreeze(float timeScale, float duration, Vector2? zoom = null)
+    {
+        zoom ??= new(0.1f, 0.1f);
+        var camera = GetParent().GetNode<Camera2D>("Camera2D");
+        Print("get call");
+        // GetParent().GetNode("PhantomCamera2D").Call("set_priority", 0);
+        Engine.TimeScale = timeScale;
+        yield return Timing.WaitForSeconds(duration * timeScale);
+        // GetParent().GetNode("PhantomCamera2D").Call("set_priority", 10);
+        Engine.TimeScale = 1;
+    }
+
     private IEnumerator<double> PerformSleep(float duration)
     {
         localTimeScale = 0;
@@ -719,6 +736,8 @@ public partial class Player : CharacterBody2D
 
     void AttackCheck()
     {
+        _hitboxLeft.Monitoring = false;
+        _hitboxRight.Monitoring = false;
         IsStriking = false; // this is the state where attack frames are allow to connect with the enemy body
 
         if (attackAnimationPlaying && IsCurrentFrame(3, 4, 5) && !IsAtkConnected) // check for enabling the "dealing-damage" frame
@@ -733,34 +752,30 @@ public partial class Player : CharacterBody2D
 
         if (IsStriking)
         {
-            AttackCollide();
+            if (animatedSprite2D.FlipH)
+                _hitboxLeft.Monitoring = true;
+            else
+                _hitboxRight.Monitoring = true;
         }
     }
 
-    void AttackCollide()
+    void OnAttackCollideEvent(Node2D body)
     {
-        if (atkRayCast.IsColliding()) // check to deal damage
+        Print("Attakc collidedd");
+        if (body is HurtableBody hurtableBody)
         {
-            if (atkRayCast.GetCollider() is HurtableBody hurtableBody)
-            {
-                hurtableBody.GetHit(Data.Damage);
-                IsAtkConnected = true;
-                BounceBackAfterAttack(IsFacingRight ? -1 : 1);
-            }
+            IsAtkConnected = true;
+            hurtableBody.GetHit(Data.Damage);
+            Timing.RunCoroutine(_BounceBackAfterAttack(IsFacingRight ? -1 : 1));
+            Timing.RunCoroutine(_FrameFreeze(0.05f, 1f));
         }
     }
 
-    IEnumerator<double> BounceBackAfterAttack(int dir)
+    IEnumerator<double> _BounceBackAfterAttack(int dir)
     {
-        // while (Time.GetTicksMsec() - currentTime < Data.BounceBackDuration)
-        // {
-        //     Velocity = new(CalculateRunForce(1), Velocity.Y);
-        //     yield return Timing.WaitForOneFrame;
-        // }
-
-        while (IsStriking && IsAtkConnected)
+        while (IsStriking)
         {
-            Velocity = new(Mathf.Abs(CalculateRunForce(1)) * dir, Velocity.Y);
+            Velocity = new(Data.BounceBackForce * dir, Velocity.Y);
             yield return Timing.WaitForOneFrame;
         }
     }

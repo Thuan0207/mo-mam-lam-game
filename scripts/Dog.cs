@@ -29,7 +29,9 @@ public partial class Dog : HurtableBody
     public float gravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
     public AnimatedSprite2D animatedSprite2D;
 
-    float _health;
+    float _health = 3;
+
+    [Export]
     public override float Health
     {
         get => _health;
@@ -84,7 +86,7 @@ public partial class Dog : HurtableBody
 
     void PathFinding()
     {
-        if (_player != null && IsOnFloor() && _prevPlayerPosition != _player.Position)
+        if (_player != null && IsOnFloor())
         {
             _pathQueue = _tileMapPathFind.GetPlatform2DPath(Position, _player.Position);
             GoToNextPointInPath();
@@ -131,7 +133,6 @@ public partial class Dog : HurtableBody
         animatedSprite2D = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
         animatedSprite2D.Play("idle");
         _tileMapPathFind = GetParent().GetNode<TileMapPathFind>("TileMap");
-        Health = 3;
         _detectionArea = GetNode<Area2D>("DetectionArea");
         _detectionArea.BodyEntered += OnBodyEntered;
         _detectionArea.BodyExited += OnBodyExited;
@@ -139,7 +140,8 @@ public partial class Dog : HurtableBody
 
     public override void _Process(double delta)
     {
-        PathFinding();
+        if (_player != null && _prevPlayerPosition != _player.Position)
+            PathFinding();
         if (Direction.X < 0)
             animatedSprite2D.FlipH = true;
         else
@@ -303,6 +305,7 @@ public partial class Dog : HurtableBody
     private void OnBodyEntered(Node2D body)
     {
         _player = (Player)body;
+        PathFinding();
     }
 
     #endregion

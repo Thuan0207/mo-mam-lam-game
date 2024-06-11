@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://bcb66ab5wjgvt"]
+[gd_scene load_steps=12 format=3 uid="uid://bcb66ab5wjgvt"]
 
 [ext_resource type="Script" path="res://scripts/Player.cs" id="1_htxw0"]
 [ext_resource type="Resource" uid="uid://c8xan60m6mq83" path="res://resources/animation_data.tres" id="2_c0f6y"]
@@ -15,6 +15,9 @@ size = Vector2(20, 39)
 [sub_resource type="Gradient" id="Gradient_1l536"]
 offsets = PackedFloat32Array(0, 0.335714, 0.789286, 1)
 colors = PackedColorArray(1, 1, 1, 1, 0.553506, 0.553506, 0.553506, 1, 0.85098, 0.85098, 0.85098, 0.705882, 1, 1, 1, 0.0784314)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8pvkp"]
+size = Vector2(20, 38)
 
 [node name="Player" type="CharacterBody2D"]
 collision_mask = 6
@@ -57,6 +60,22 @@ lifetime = 0.4
 speed_scale = 2.2
 color_ramp = SubResource("Gradient_1l536")
 
-[node name="AtkRayCast" type="RayCast2D" parent="."]
-target_position = Vector2(40, 0)
+[node name="HitBoxRight" type="Area2D" parent="."]
+collision_layer = 64
 collision_mask = 4
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBoxRight"]
+position = Vector2(20, 0)
+shape = SubResource("RectangleShape2D_8pvkp")
+
+[node name="HitBoxLeft" type="Area2D" parent="."]
+collision_layer = 64
+collision_mask = 4
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBoxLeft"]
+position = Vector2(-20, 0)
+shape = SubResource("RectangleShape2D_8pvkp")

@@ -13,8 +13,12 @@ config_version=5
 config/name="Mount Hollow"
 run/main_scene="res://scenes/Level1.tscn"
 config/features=PackedStringArray("4.2", "C#", "GL Compatibility")
-run/max_fps=30
+run/max_fps=60
 config/icon="res://icon.svg"
+
+[autoload]
+
+PhantomCameraManager="*res://addons/phantom_camera/scripts/managers/phantom_camera_manager.gd"
 
 [display]
 
@@ -32,7 +36,7 @@ version_control/autoload_on_startup=true
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/AS2P/plugin.cfg")
+enabled=PackedStringArray("res://addons/AS2P/plugin.cfg", "res://addons/phantom_camera/plugin.cfg", "res://addons/smoothing/plugin.cfg")
 
 [importer_defaults]
 
@@ -103,7 +107,8 @@ left_mouse={
 2d_physics/layer_1="Player"
 2d_physics/layer_2="Ground"
 2d_physics/layer_3="Hurtable"
-2d_physics/layer_8="area"
+2d_physics/layer_7="HitBox"
+2d_physics/layer_8="detection_area"
 
 [rendering]
 
