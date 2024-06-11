@@ -160,7 +160,7 @@ public partial class Player : CharacterBody2D
         if (_moveInput.X != 0)
         {
             HandleAnimation("forward");
-            CheckDirectionToFace(_moveInput.X > 0);
+            CheckDirectionToFace(isMovingRight: _moveInput.X > 0);
         }
         else
         {

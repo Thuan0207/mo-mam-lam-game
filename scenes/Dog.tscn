@@ -1,7 +1,10 @@
-[gd_scene load_steps=11 format=3 uid="uid://by4lqpdcq4a3k"]
+[gd_scene load_steps=12 format=3 uid="uid://by4lqpdcq4a3k"]
 
-[ext_resource type="Script" path="res://scripts/SkeletonSword.cs" id="1_nr8gq"]
+[ext_resource type="Script" path="res://scripts/Dog.cs" id="1_nr8gq"]
 [ext_resource type="Texture2D" uid="uid://curpgucrhqy8o" path="res://asset/Rat/OutlinedRat/rat-idle-outline.png" id="2_vojcd"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_s2hjp"]
+size = Vector2(39.125, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_lo8b7"]
 atlas = ExtResource("2_vojcd")
@@ -53,22 +56,35 @@ animations = [{
 "speed": 8.0
 }]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_s2hjp"]
-size = Vector2(54.25, 24)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_eygw4"]
+size = Vector2(562, 408.75)
 
-[node name="SkeletonSword" type="CharacterBody2D"]
+[node name="Dog" type="CharacterBody2D"]
+position = Vector2(-1, 25)
 collision_layer = 4
 collision_mask = 3
 script = ExtResource("1_nr8gq")
+TinyJumpVelocity = -450.0
+SmallJumpVelocity = -480.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(17.5625, -10)
+shape = SubResource("RectangleShape2D_s2hjp")
+debug_color = Color(0, 0.6, 0.701961, 0.419608)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
-position = Vector2(3, -20)
+position = Vector2(14, -30)
 scale = Vector2(2, 2)
 sprite_frames = SubResource("SpriteFrames_lgu6t")
 animation = &"idle"
 frame = 5
 frame_progress = 0.286967
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_s2hjp")
-debug_color = Color(0, 0.6, 0.701961, 0.419608)
+[node name="DetectionArea" type="Area2D" parent="."]
+position = Vector2(33, -13)
+collision_layer = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionArea"]
+position = Vector2(0, 1)
+scale = Vector2(1.08127, -1.40352)
+shape = SubResource("RectangleShape2D_eygw4")
