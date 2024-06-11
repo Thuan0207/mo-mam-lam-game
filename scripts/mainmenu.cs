@@ -19,7 +19,7 @@ public partial class mainmenu : Control
     private void OnStartButtonPressed()
     {
         // Transition to your game scene
-        GetTree().ChangeSceneToFile("res://scenes/level_1.tscn");
+        GetTree().ChangeSceneToFile("res://scenes/Level1.tscn");
     }
 
     // Method to handle Quit button press

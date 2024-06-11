@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://cd37isthp344y"]
+[gd_scene load_steps=5 format=3 uid="uid://d0oe4p26agyhr"]
 
 [ext_resource type="Texture2D" uid="uid://6wsjsq503u0v" path="res://Sprites/PixelFantasy_Caves_1.0/RMT0Kk.jpg" id="1_njloa"]
 [ext_resource type="Script" path="res://scripts/mainmenu.cs" id="1_v5rr3"]
