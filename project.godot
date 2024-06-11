@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Mount Hollow"
-run/main_scene="res://scenes/Level1.tscn"
+run/main_scene="res://scenes/mainmenu.tscn"
 config/features=PackedStringArray("4.2", "C#", "GL Compatibility")
 run/max_fps=60
 config/icon="res://icon.svg"
