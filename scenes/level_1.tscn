@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://ckwut2klv8yex"]
+[gd_scene load_steps=14 format=3 uid="uid://ckwut2klv8yex"]
 
 [ext_resource type="Texture2D" uid="uid://r27d4n5dfmiw" path="res://Sprites/Platformer_Dungeon Asset Pack/Platformer_Dungeon Asset Pack/TileSet/TileSet.png" id="1_8apuj"]
 [ext_resource type="Texture2D" uid="uid://jtd66e2f2icb" path="res://Sprites/PixelPlatformerSet1v.1.1/other_and_decorative.png" id="1_xm3e8"]
@@ -7,6 +7,45 @@
 [ext_resource type="Texture2D" uid="uid://c6a1uewfabkvb" path="res://Sprites/PixelFantasy_Caves_1.0/PSD/ParallaxBackground/DownLayer.png" id="5_pw2ma"]
 [ext_resource type="Texture2D" uid="uid://dupl4qckdgjdo" path="res://Sprites/PixelFantasy_Caves_1.0/PSD/ParallaxBackground/MiddleLayer.png" id="6_281pg"]
 [ext_resource type="Texture2D" uid="uid://b7qeajfmcyo3e" path="res://Sprites/PixelFantasy_Caves_1.0/PSD/ParallaxBackground/TopLayer.png" id="7_fj53k"]
+
+[sub_resource type="CSharpScript" id="CSharpScript_v0713"]
+script/source = "using Godot;
+using System;
+
+public partial class Globalscript : Node2D
+{
+	private Control _pausedMenu;
+
+	public override void _Ready()
+	{
+		// Lấy tham chiếu đến đối tượng PausedMenu và ẩn nó
+		_pausedMenu = GetNode<Control>(\"../PausedMenu\");
+		_pausedMenu.Visible = false;
+
+		// Đăng ký sự kiện nhấn phím Esc
+		InputEventKey pauseKey = new InputEventKey();
+		pauseKey.Scancode = (int)KeyList.Escape;
+		InputMap.AddAction(\"paused_menu\", pauseKey);
+	}
+
+	public override void _Process(float delta)
+	{
+		// Kiểm tra nếu phím Esc được nhấn
+		if (Input.IsActionJustPressed(\"paused_menu\"))
+		{
+			TogglePauseMenu();
+		}
+	}
+
+	private void TogglePauseMenu()
+	{
+		// Đảo trạng thái tạm dừng của trò chơi
+		GetTree().Paused = !GetTree().Paused;
+		// Hiển thị hoặc ẩn menu tạm dừng
+		_pausedMenu.Visible = !_pausedMenu.Visible;
+	}
+}
+"
 
 [sub_resource type="TileMapPattern" id="TileMapPattern_uhf2b"]
 tile_data = PackedInt32Array(0, 5, 3, 1, 393221, 0, 65537, 5, 2, 2, 327685, 0, 65538, 131077, 2, 3, 131077, 3)
@@ -2031,6 +2070,7 @@ pattern_0 = SubResource("TileMapPattern_uhf2b")
 pattern_1 = SubResource("TileMapPattern_xtxm6")
 
 [node name="Level 1" type="Node2D"]
+script = SubResource("CSharpScript_v0713")
 
 [node name="TileMap" type="TileMap" parent="."]
 position = Vector2(325, 215)
