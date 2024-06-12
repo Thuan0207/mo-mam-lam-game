@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bnxmjal3dtmqn"]
+
+[ext_resource type="AudioStream" uid="uid://bn8jmd886sl7w" path="res://asset/Audio/jumps-65494 (mp3cut.net).mp3" id="1_uvwgt"]
+
+[node name="AudioStreamPlayerJump" type="AudioStreamPlayer2D"]
+stream = ExtResource("1_uvwgt")
+volume_db = 0.189
+pitch_scale = 1.53

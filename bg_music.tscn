@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://bvs518cmsbeo"]
+
+[ext_resource type="AudioStream" uid="uid://hc8sh5t3pvm2" path="res://asset/Audio/one-wilderness-189534.mp3" id="1_6w1nk"]
+
+[node name="Audio_Background" type="AudioStreamPlayer"]
+stream = ExtResource("1_6w1nk")
+volume_db = 8.072
+pitch_scale = 1.38
+autoplay = true
