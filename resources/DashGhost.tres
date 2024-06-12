@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://ctee5q1b6wrb"]
+
+[ext_resource type="Shader" path="res://shader/Explosion.gdshader" id="1_fbyva"]
+
+[resource]
+shader = ExtResource("1_fbyva")
+shader_parameter/centre = Vector2(0.5, 0.57)
+shader_parameter/force = 40.0
+shader_parameter/size = 0.44
+shader_parameter/outeredgeOffset = 0.2
+shader_parameter/monoMode = false

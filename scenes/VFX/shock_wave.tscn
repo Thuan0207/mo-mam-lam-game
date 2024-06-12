@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://x08mdmp6r66x"]
+
+[ext_resource type="Texture2D" uid="uid://bu3ny72cbk452" path="res://asset/anyImg.jpg" id="1_e7lyi"]
+[ext_resource type="Material" uid="uid://ctee5q1b6wrb" path="res://resources/DashGhost.tres" id="2_6bo7l"]
+
+[node name="CanvasLayer" type="CanvasLayer"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = ExtResource("2_6bo7l")
+texture = ExtResource("1_e7lyi")
