@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using Godot;
-using Godot.Collections;
 using MEC;
 using static Godot.GD;
 
@@ -15,6 +14,7 @@ public partial class Player : CharacterBody2D
 
     [Export]
     public PlayerData Data;
+
     float playerGravity;
 
     #endregion
@@ -26,12 +26,17 @@ public partial class Player : CharacterBody2D
     public bool IsDashing { get; private set; }
     public float LastOnGroundTime { get; private set; }
     public bool IsReadyForDeccelAtMaxSpeed { get; private set; }
+    public bool IsAttacking { get; private set; }
+    public bool IsAttackCancelable { get; private set; }
+    public bool IsAtkConnected { get; private set; }
+    public bool IsStriking { get; private set; }
     #endregion
 
     #region INPUT PARAMETERS
     Vector2 _moveInput;
     public float LastPressedJumpTime { get; private set; }
     public float LastPressedDashTime { get; private set; }
+    public float LastPressedAttackTime { get; private set; }
     #endregion
 
     #region Jump
@@ -41,9 +46,9 @@ public partial class Player : CharacterBody2D
     #endregion
 
     #region ANIMATION PARAMETERS
-    AnimatedSprite2D animatedSprite2D;
     bool isGroundedAnimationPlaying;
     bool isStopAnimationPlaying;
+    bool attackAnimationPlaying;
     #endregion
 
     #region NODE
@@ -52,6 +57,10 @@ public partial class Player : CharacterBody2D
     CpuParticles2D walkingDust;
     CpuParticles2D jumpingDust;
     CpuParticles2D explosionDust;
+    AnimatedSprite2D animatedSprite2D;
+
+    Area2D _hitboxLeft;
+    Area2D _hitboxRight;
     #endregion
 
     #region SCENE
@@ -65,9 +74,11 @@ public partial class Player : CharacterBody2D
     bool isDashAttacking; // Dash attack is the first phase in dash (the first few ms) where player can not do change anything
     #endregion
 
-    #region GENERAL PARAMETERS
+    #region GENERAL VARIABLES
     Vector2 defaultScale;
     double localTimeScale;
+    readonly Regex attackRegex = new(@"^attack\d+$");
+    float runLerp;
     #endregion
 
 
@@ -82,6 +93,8 @@ public partial class Player : CharacterBody2D
             AnimationData = animationData;
         }
 
+        runLerp = 1;
+
         isGroundedAnimationPlaying = false;
         isStopAnimationPlaying = false;
 
@@ -94,11 +107,26 @@ public partial class Player : CharacterBody2D
         walkingDust = GetNode<CpuParticles2D>("WalkingDust");
         jumpingDust = GetNode<CpuParticles2D>("JumpingDust");
         explosionDust = GetNode<CpuParticles2D>("Explosion");
+        _hitboxLeft = GetNode<Area2D>("HitBoxLeft");
+        _hitboxRight = GetNode<Area2D>("HitBoxRight");
 
         localTimeScale = 1;
         defaultScale = animatedSprite2D.Scale;
 
         dashGhostTscn = ResourceLoader.Load<PackedScene>("res://scenes/VFX/DashGhost.tscn");
+
+        animatedSprite2D.AnimationFinished += () =>
+        {
+            // if currently attack animation
+            if (attackRegex.IsMatch(animatedSprite2D.Animation))
+            {
+                IsAttacking = false;
+                IsAtkConnected = false;
+            }
+        };
+
+        _hitboxRight.BodyEntered += OnAttackCollideEvent;
+        _hitboxLeft.BodyEntered += OnAttackCollideEvent;
 
         SetGravityScale(Data.GravityScale);
     }
@@ -111,6 +139,7 @@ public partial class Player : CharacterBody2D
         LastOnGroundTime -= delta;
         LastPressedJumpTime -= delta;
         LastPressedDashTime -= delta;
+        LastPressedAttackTime -= delta;
         #endregion
 
         #region INPUT HANDLER
@@ -123,6 +152,9 @@ public partial class Player : CharacterBody2D
 
         if (Input.IsActionJustPressed("dash"))
             OnDashInput();
+
+        if (Input.IsActionJustPressed("attack"))
+            OnAttackInput();
         #endregion
 
         // Ground Check
@@ -133,7 +165,7 @@ public partial class Player : CharacterBody2D
         if (_moveInput.X != 0)
         {
             HandleAnimation("forward");
-            CheckDirectionToFace(_moveInput.X > 0);
+            CheckDirectionToFace(isMovingRight: _moveInput.X > 0);
         }
         else
         {
@@ -204,7 +236,14 @@ public partial class Player : CharacterBody2D
         }
         #endregion
 
+        // Print("start", Time.GetTicksMsec());
+        var start = Time.GetTicksMsec();
         DashCheck();
+        var elapsed = Time.GetTicksMsec() - start;
+        // Print("elapsed", elapsed);
+        // if (elapsed > 1)
+        //     Print("significantElapsed: ", elapsed);
+        AttackCheck();
     }
 
     #region INPUT CALLBACK
@@ -216,7 +255,7 @@ public partial class Player : CharacterBody2D
 
     private void OnDashInput()
     {
-        LastPressedDashTime = Data.dashInputBufferTime;
+        LastPressedDashTime = Data.DashInputBufferTime;
     }
 
     private void OnJumpInput()
@@ -237,11 +276,18 @@ public partial class Player : CharacterBody2D
         else
             v.Y = 0;
 
-        // run
-        if (!IsDashing)
-            v.X += CalculateRunForce(1) * delta;
+        if (!IsDashing) // if not dashing then player can run, the horizontal velocity of player at the end of the dash when player can regain some control is reduce by half
+            runLerp = 1;
         else if (isDashAttacking)
-            v.X += CalculateRunForce(Data.dashEndRunLerp) * delta;
+            runLerp = Data.dashEndRunLerp;
+
+        if (IsStriking && IsAtkConnected) // push the player slightly back when hit connected
+        {
+            _moveInput = new(IsFacingRight ? -1 : 1, _moveInput.Y);
+            v.X += CalculateRunForce(runLerp) * delta;
+        }
+        else
+            v.X += CalculateRunForce(runLerp) * delta;
 
         // jump
         if (!IsDashing && CanJump() && LastPressedJumpTime > 0)
@@ -323,8 +369,7 @@ public partial class Player : CharacterBody2D
     #endregion
 
 
-    #region ANIMATION METHODS
-
+    #region ANIMATION METHOD
     void StretchSprite(Vector2 scaleAddend)
     {
         Tween tween = GetTree().CreateTween();
@@ -364,30 +409,46 @@ public partial class Player : CharacterBody2D
         string prevDirection = prevParts.Length == 3 ? prevParts[2] : null;
         bool jumpGroundedAnimationPlaying = prevType == "jump" && prevDirection == "grounded";
         bool jumpDownAnimationPlaying = prevType == "jump" && prevDirection == "down";
-        string jumpType =
-            (isAirborne || jumpGroundedAnimationPlaying) && prevCategory != null
+        string jumpCategory =
+            (isAirborne || jumpGroundedAnimationPlaying)
+            && (prevCategory == "neutral" || prevCategory == "forward")
                 ? prevCategory
                 : category; // jump related aninamtion need to use the same type of animation through out its life cycle. If it start with jump_forward_up it need to end in jump_forward_down
+        attackAnimationPlaying =
+            animatedSprite2D.IsPlaying() && attackRegex.IsMatch(animatedSprite2D.Animation);
 
-        if (IsJumping)
+        if (attackAnimationPlaying) // nothing interupt attack animation
+            return;
+
+        // if attacking and the current animation is not of type attack then play the animation
+        if (LastPressedAttackTime > 0)
         {
-            animatedSprite2D.Play($"jump_{jumpType}_up");
-            if (jumpType == "neutral")
+            if (animatedSprite2D.Scale != defaultScale)
+                ScaleSpriteBackToDefault();
+            if (Mathf.Abs(Velocity.X) > 0.01f)
+                animatedSprite2D.Play("attack2");
+            else
+                animatedSprite2D.Play("attack1");
+        }
+        else if (IsJumping)
+        {
+            animatedSprite2D.Play($"jump_{jumpCategory}_up");
+            if (jumpCategory == "neutral")
                 SquatchSprite(AnimationData.NeutralSquashScaleAddend);
             else
                 SquatchSprite(AnimationData.ForwardSquashScaleAddend);
         }
         else if (IsFalling)
         {
-            animatedSprite2D.Play($"jump_{jumpType}_down");
-            if (jumpType == "neutral")
+            animatedSprite2D.Play($"jump_{jumpCategory}_down");
+            if (jumpCategory == "neutral")
                 StretchSprite(AnimationData.NeutralStretchScaleAddend);
             else
                 StretchSprite(AnimationData.ForwardStretchScaleAddend);
         }
         else if (jumpDownAnimationPlaying && LastOnGroundTime > 0)
         {
-            animatedSprite2D.Play($"jump_{jumpType}_grounded");
+            animatedSprite2D.Play($"jump_{jumpCategory}_grounded");
             isGroundedAnimationPlaying = true;
         }
         // wait for the animation to finish
@@ -395,7 +456,7 @@ public partial class Player : CharacterBody2D
         {
             // 3 is the last frame
             isGroundedAnimationPlaying = animatedSprite2D.Frame != 3;
-            animatedSprite2D.Play($"jump_{jumpType}_grounded");
+            animatedSprite2D.Play($"jump_{jumpCategory}_grounded");
         }
         else
         {
@@ -484,16 +545,16 @@ public partial class Player : CharacterBody2D
         {
             Sleep(Data.dashSleepTime); //Freeze game for split second. Adds juiciness and a bit of forgiveness over directional input
 
+            IsDashing = true;
+            IsJumping = false;
+            _isJumpCut = false;
+
             if (_moveInput != Vector2.Zero) //If not direction pressed, dash forward
             {
                 lastDashDir = _moveInput;
             }
             else
                 lastDashDir = IsFacingRight ? Vector2.Right : Vector2.Left;
-
-            IsDashing = true;
-            IsJumping = false;
-            _isJumpCut = false;
 
             Timing.RunCoroutine(StartDash(lastDashDir));
         }
@@ -563,7 +624,6 @@ public partial class Player : CharacterBody2D
 
             _ghost.FlipH = animatedSprite2D.FlipH;
             _ghost.GlobalPosition = animatedSprite2D.GlobalPosition;
-            // positionsX.Add(_ghost.GlobalPosition.X);
             _ghost.Material = !isFirstFrame ? null : _ghost.Material;
 
             if (_ghost.Material != null && _ghost.Material is ShaderMaterial shaderMaterial)
@@ -623,6 +683,17 @@ public partial class Player : CharacterBody2D
     #endregion
 
     #region GENERAL METHODS
+
+    bool IsCurrentFrame(params int[] frames)
+    {
+        return frames.Contains(animatedSprite2D.Frame);
+    }
+
+    void SharpStopAnyMovement()
+    {
+        _moveInput = Vector2.Zero;
+    }
+
     private void SetGravityScale(float gravityScale)
     {
         float globalGravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
@@ -635,6 +706,18 @@ public partial class Player : CharacterBody2D
         Timing.RunCoroutine(PerformSleep(duration));
     }
 
+    private IEnumerator<double> _FrameFreeze(float timeScale, float duration, Vector2? zoom = null)
+    {
+        zoom ??= new(0.1f, 0.1f);
+        var camera = GetParent().GetNode<Camera2D>("Camera2D");
+        Print("get call");
+        // GetParent().GetNode("PhantomCamera2D").Call("set_priority", 0);
+        Engine.TimeScale = timeScale;
+        yield return Timing.WaitForSeconds(duration * timeScale);
+        // GetParent().GetNode("PhantomCamera2D").Call("set_priority", 10);
+        Engine.TimeScale = 1;
+    }
+
     private IEnumerator<double> PerformSleep(float duration)
     {
         localTimeScale = 0;
@@ -642,5 +725,59 @@ public partial class Player : CharacterBody2D
         localTimeScale = 1;
     }
 
+    #endregion
+
+    #region ATTACK METHODS
+    void OnAttackInput()
+    {
+        LastPressedAttackTime = Data.AttackInputBufferTime;
+        _moveInput = Vector2.Zero;
+    }
+
+    void AttackCheck()
+    {
+        _hitboxLeft.Monitoring = false;
+        _hitboxRight.Monitoring = false;
+        IsStriking = false; // this is the state where attack frames are allow to connect with the enemy body
+
+        if (attackAnimationPlaying && IsCurrentFrame(3, 4, 5) && !IsAtkConnected) // check for enabling the "dealing-damage" frame
+        {
+            IsStriking = true;
+        }
+
+        if (LastPressedAttackTime > 0 && !IsAttacking)
+        {
+            IsAttacking = true;
+        }
+
+        if (IsStriking)
+        {
+            if (animatedSprite2D.FlipH)
+                _hitboxLeft.Monitoring = true;
+            else
+                _hitboxRight.Monitoring = true;
+        }
+    }
+
+    void OnAttackCollideEvent(Node2D body)
+    {
+        Print("Attakc collidedd");
+        if (body is HurtableBody hurtableBody)
+        {
+            IsAtkConnected = true;
+            hurtableBody.GetHit(Data.Damage);
+            Timing.RunCoroutine(_BounceBackAfterAttack(IsFacingRight ? -1 : 1));
+            Timing.RunCoroutine(_FrameFreeze(0.05f, 1f));
+        }
+    }
+
+    IEnumerator<double> _BounceBackAfterAttack(int dir)
+    {
+        while (IsStriking)
+        {
+            Velocity = new(Data.BounceBackForce * dir, Velocity.Y);
+            yield return Timing.WaitForOneFrame;
+        }
+    }
     #endregion
 }

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bu3ny72cbk452"
-path="res://.godot/imported/anyImg.jpg-73363d5d1d865b9df4da194926bf8a69.ctex"
+uid="uid://cowcu36jxnq5h"
+path="res://.godot/imported/Effect3 Gameboy Spritesheet.png-78d34dbb8b2a9b845c8e50982dfc5a47.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://asset/anyImg.jpg"
-dest_files=["res://.godot/imported/anyImg.jpg-73363d5d1d865b9df4da194926bf8a69.ctex"]
+source_file="res://asset/Effects/Effect3 Gameboy Spritesheet.png"
+dest_files=["res://.godot/imported/Effect3 Gameboy Spritesheet.png-78d34dbb8b2a9b845c8e50982dfc5a47.ctex"]
 
 [params]
 

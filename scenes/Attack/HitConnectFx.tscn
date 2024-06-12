@@ -1,0 +1,53 @@
+[gd_scene load_steps=5 format=3 uid="uid://bn88c5712kwvt"]
+
+[ext_resource type="Texture2D" uid="uid://hi3oblnbahwf" path="res://asset/Thrust/Thrusts 1 SpriteSheet.png" id="1_3h8jb"]
+
+[sub_resource type="Animation" id="Animation_y8oha"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [1]
+}
+
+[sub_resource type="Animation" id="Animation_vqq7j"]
+resource_name = "thrust"
+length = 0.400007
+loop_mode = 1
+step = 0.0666667
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0666667, 0.133333, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [1, 2, 3, 4]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_h8adi"]
+_data = {
+"RESET": SubResource("Animation_y8oha"),
+"thrust": SubResource("Animation_vqq7j")
+}
+
+[node name="HitConnectFx" type="Sprite2D"]
+position = Vector2(0, -1)
+texture = ExtResource("1_3h8jb")
+vframes = 6
+frame = 1
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_h8adi")
+}
