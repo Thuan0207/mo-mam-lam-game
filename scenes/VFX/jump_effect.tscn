@@ -1,0 +1,36 @@
+[gd_scene load_steps=7 format=3 uid="uid://cavwts0cyf55i"]
+
+[ext_resource type="Texture2D" uid="uid://df8yaiprad3jt" path="res://asset/dust/dust1.png" id="1_57qs4"]
+[ext_resource type="Texture2D" uid="uid://bhy5dxyhrunxv" path="res://asset/dust/dust2.png" id="2_mrkmm"]
+[ext_resource type="Texture2D" uid="uid://bnagvrnpl8qjw" path="res://asset/dust/dust3.png" id="3_r6iqy"]
+[ext_resource type="Texture2D" uid="uid://pian0t5xnqi" path="res://asset/dust/dust4.png" id="4_pqmh8"]
+[ext_resource type="Script" path="res://scripts/JumpEffect.cs" id="5_dudmx"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_8vrpt"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_57qs4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_mrkmm")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_r6iqy")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_pqmh8")
+}],
+"loop": false,
+"name": &"default",
+"speed": 12.0
+}]
+
+[node name="JumpEffect" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_8vrpt")
+autoplay = "default"
+frame = 1
+frame_progress = 0.989124
+script = ExtResource("5_dudmx")
+
+[connection signal="animation_finished" from="." to="." method="_on_animation_finished"]

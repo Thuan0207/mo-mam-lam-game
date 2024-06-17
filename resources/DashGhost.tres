@@ -4,8 +4,8 @@
 
 [resource]
 shader = ExtResource("1_fbyva")
-shader_parameter/centre = Vector2(0.5, 0.8)
-shader_parameter/force = 10.0
-shader_parameter/size = 0.2
-shader_parameter/outeredgeOffset = 0.08
+shader_parameter/centre = Vector2(0.5, 0.57)
+shader_parameter/force = 40.0
+shader_parameter/size = 0.44
+shader_parameter/outeredgeOffset = 0.2
 shader_parameter/monoMode = false

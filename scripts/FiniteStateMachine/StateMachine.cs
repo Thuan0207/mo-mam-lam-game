@@ -21,7 +21,7 @@ public partial class StateMachine : Node
             {
                 states[_node.Name] = _stateChild;
                 _stateChild.StateMachine = this;
-                _stateChild.Prepared();
+                _stateChild.Prep();
                 _stateChild.Exit(); // reset
             }
         }

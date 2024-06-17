@@ -1,0 +1,113 @@
+[gd_scene load_steps=15 format=3 uid="uid://by4lqpdcq4a3k"]
+
+[ext_resource type="Script" path="res://scripts/Dog.cs" id="1_nr8gq"]
+[ext_resource type="Texture2D" uid="uid://d3nk2wqi1s6lg" path="res://asset/23.7.14 dark fantasy monster pack 2 - free/pack 2 m1.png" id="2_g133s"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_s2hjp"]
+size = Vector2(16, 34)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_51bcs"]
+atlas = ExtResource("2_g133s")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rkhd0"]
+atlas = ExtResource("2_g133s")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0hcec"]
+atlas = ExtResource("2_g133s")
+region = Rect2(96, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cexvg"]
+atlas = ExtResource("2_g133s")
+region = Rect2(144, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_m7vfr"]
+atlas = ExtResource("2_g133s")
+region = Rect2(192, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ic8sr"]
+atlas = ExtResource("2_g133s")
+region = Rect2(240, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_x2vkg"]
+atlas = ExtResource("2_g133s")
+region = Rect2(288, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n0p8q"]
+atlas = ExtResource("2_g133s")
+region = Rect2(336, 0, 48, 48)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_x1b5l"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_51bcs")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rkhd0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0hcec")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cexvg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_m7vfr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ic8sr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_x2vkg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n0p8q")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 8.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_eygw4"]
+size = Vector2(513.21, 335.529)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_112g0"]
+size = Vector2(16, 34.0625)
+
+[node name="Dog" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 2
+script = ExtResource("1_nr8gq")
+Health = 10000.0
+SmallJumpVelocity = -380.0
+_bounceBackOffsetX = 20
+_bounceBackOffsetY = 0.0
+_bounceBackDuration = 0.2
+_stunDurationAfterBounceBack = 0.2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -1)
+shape = SubResource("RectangleShape2D_s2hjp")
+debug_color = Color(0, 0.6, 0.701961, 0.419608)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(2, 2)
+sprite_frames = SubResource("SpriteFrames_x1b5l")
+animation = &"idle"
+frame_progress = 0.785458
+
+[node name="DetectionArea" type="Area2D" parent="."]
+collision_layer = 128
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionArea"]
+scale = Vector2(1.4, -1.818)
+shape = SubResource("RectangleShape2D_eygw4")
+
+[node name="HitBox" type="Area2D" parent="."]
+collision_layer = 64
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox"]
+position = Vector2(0, -0.96875)
+shape = SubResource("RectangleShape2D_112g0")
