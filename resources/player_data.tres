@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_65lj8")
-FallGravityMult = 0.85
+FallGravityMult = 1.1
 MaxFallSpeed = 10.0
 FastFallGravityMult = 1.3
 MaxFastFallSpeed = 30.0
@@ -31,8 +31,10 @@ dashEndSpeed = Vector2(385, 200)
 dashEndRunLerp = 0.5
 dashRefillTime = 0.1
 DashInputBufferTime = 0.1
-AttackInputBufferTime = 0.3
+AttackInputBufferTime = 0.2
 Damage = 1.0
 Health = 5.0
 BounceBackDuration = 0.2
-BounceBackForce = 500.0
+BounceBackForce = 1.86
+FreezeDuration = 0.3
+FreezeScale = 0.1

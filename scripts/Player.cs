@@ -6,7 +6,7 @@ using Godot;
 using MEC;
 using static Godot.GD;
 
-public partial class Player : CharacterBody2D
+public partial class Player : CharacterBody2D, IHurtableBody
 {
     #region EDTIOR VARIABLES
     [Export]
@@ -14,7 +14,6 @@ public partial class Player : CharacterBody2D
 
     [Export]
     public PlayerData Data;
-
     float playerGravity;
 
     #endregion
@@ -59,12 +58,13 @@ public partial class Player : CharacterBody2D
     CpuParticles2D explosionDust;
     AnimatedSprite2D animatedSprite2D;
 
-    Area2D _hitboxLeft;
-    Area2D _hitboxRight;
+    ShapeCast2D _hitboxLeft;
+    ShapeCast2D _hitboxRight;
     #endregion
 
     #region SCENE
-    PackedScene dashGhostTscn;
+    PackedScene _dashGhostTscn;
+    PackedScene _impactHitTscn;
     #endregion
 
     #region DASH
@@ -81,6 +81,10 @@ public partial class Player : CharacterBody2D
     float runLerp;
     #endregion
 
+    #region STATUS
+    public double Health;
+    #endregion
+
 
     public override void _Ready()
     {
@@ -94,6 +98,7 @@ public partial class Player : CharacterBody2D
         }
 
         runLerp = 1;
+        Health = Data.Health;
 
         isGroundedAnimationPlaying = false;
         isStopAnimationPlaying = false;
@@ -107,14 +112,15 @@ public partial class Player : CharacterBody2D
         walkingDust = GetNode<CpuParticles2D>("WalkingDust");
         jumpingDust = GetNode<CpuParticles2D>("JumpingDust");
         explosionDust = GetNode<CpuParticles2D>("Explosion");
-        _hitboxLeft = GetNode<Area2D>("HitBoxLeft");
-        _hitboxRight = GetNode<Area2D>("HitBoxRight");
+        _hitboxLeft = GetNode<ShapeCast2D>("HitBoxLeft");
+        _hitboxRight = GetNode<ShapeCast2D>("HitBoxRight");
 
         localTimeScale = 1;
         defaultScale = animatedSprite2D.Scale;
 
-        dashGhostTscn = ResourceLoader.Load<PackedScene>("res://scenes/VFX/DashGhost.tscn");
-
+        _dashGhostTscn = ResourceLoader.Load<PackedScene>("res://scenes/VFX/DashGhost.tscn");
+        _impactHitTscn = ResourceLoader.Load<PackedScene>("uid://chxjths3qoinh");
+        ;
         animatedSprite2D.AnimationFinished += () =>
         {
             // if currently attack animation
@@ -124,9 +130,6 @@ public partial class Player : CharacterBody2D
                 IsAtkConnected = false;
             }
         };
-
-        _hitboxRight.BodyEntered += OnAttackCollideEvent;
-        _hitboxLeft.BodyEntered += OnAttackCollideEvent;
 
         SetGravityScale(Data.GravityScale);
     }
@@ -143,18 +146,22 @@ public partial class Player : CharacterBody2D
         #endregion
 
         #region INPUT HANDLER
-        _moveInput = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
-        if (Input.IsActionJustPressed("jump"))
-            OnJumpInput();
+        if (!_isInputDisabled)
+        {
+            _moveInput = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
 
-        if (Input.IsActionJustReleased("jump"))
-            OnJumpUpInput();
+            if (Input.IsActionJustPressed("jump"))
+                OnJumpInput();
 
-        if (Input.IsActionJustPressed("dash"))
-            OnDashInput();
+            if (Input.IsActionJustReleased("jump"))
+                OnJumpUpInput();
 
-        if (Input.IsActionJustPressed("attack"))
-            OnAttackInput();
+            if (Input.IsActionJustPressed("dash"))
+                OnDashInput();
+
+            if (Input.IsActionJustPressed("attack"))
+                OnAttackInput();
+        }
         #endregion
 
         // Ground Check
@@ -281,13 +288,7 @@ public partial class Player : CharacterBody2D
         else if (isDashAttacking)
             runLerp = Data.dashEndRunLerp;
 
-        if (IsStriking && IsAtkConnected) // push the player slightly back when hit connected
-        {
-            _moveInput = new(IsFacingRight ? -1 : 1, _moveInput.Y);
-            v.X += CalculateRunForce(runLerp) * delta;
-        }
-        else
-            v.X += CalculateRunForce(runLerp) * delta;
+        v.X += CalculateRunForce(runLerp, _moveInput.X) * delta;
 
         // jump
         if (!IsDashing && CanJump() && LastPressedJumpTime > 0)
@@ -307,10 +308,10 @@ public partial class Player : CharacterBody2D
 
     // Velocity METHODS
     #region RUN METHODS
-    float CalculateRunForce(float lerpAmount)
+    float CalculateRunForce(float lerpAmount, float direction)
     {
         // calculate direction
-        float targetSpeed = _moveInput.X * Data.RunMaxSpeed;
+        float targetSpeed = direction * Data.RunMaxSpeed;
 
         //We can reduce are control using Lerp() this smooths changes to are direction and speed
         targetSpeed = Mathf.Lerp(Velocity.X, targetSpeed, lerpAmount);
@@ -556,7 +557,7 @@ public partial class Player : CharacterBody2D
             else
                 lastDashDir = IsFacingRight ? Vector2.Right : Vector2.Left;
 
-            Timing.RunCoroutine(StartDash(lastDashDir));
+            Timing.RunCoroutine(StartDash(lastDashDir), Segment.PhysicsProcess);
         }
     }
     #endregion
@@ -615,7 +616,7 @@ public partial class Player : CharacterBody2D
         float lapse = dashDuration / amount;
         while (IsDashing)
         {
-            var _ghost = dashGhostTscn.Instantiate<Sprite2D>();
+            var _ghost = _dashGhostTscn.Instantiate<Sprite2D>();
             _ghost.Scale = animatedSprite2D.Scale;
             _ghost.Texture = animatedSprite2D.SpriteFrames.GetFrameTexture(
                 animatedSprite2D.Animation,
@@ -703,41 +704,44 @@ public partial class Player : CharacterBody2D
     private void Sleep(float duration)
     {
         //Method used so we don't need to call StartCoroutine everywhere
-        Timing.RunCoroutine(PerformSleep(duration));
+        Timing.RunCoroutine(_PerformSleep(duration));
     }
 
-    private IEnumerator<double> _FrameFreeze(float timeScale, float duration, Vector2? zoom = null)
+    private IEnumerator<double> _PerformSleep(float duration)
     {
-        zoom ??= new(0.1f, 0.1f);
-        var camera = GetParent().GetNode<Camera2D>("Camera2D");
-        Print("get call");
-        // GetParent().GetNode("PhantomCamera2D").Call("set_priority", 0);
-        Engine.TimeScale = timeScale;
-        yield return Timing.WaitForSeconds(duration * timeScale);
-        // GetParent().GetNode("PhantomCamera2D").Call("set_priority", 10);
+        Engine.TimeScale = 0.05f;
+        yield return Timing.WaitForSeconds(duration * duration);
         Engine.TimeScale = 1;
-    }
-
-    private IEnumerator<double> PerformSleep(float duration)
-    {
-        localTimeScale = 0;
-        yield return Timing.WaitForSeconds(duration);
-        localTimeScale = 1;
     }
 
     #endregion
 
     #region ATTACK METHODS
+    bool _isInputDisabled;
+    bool _isInInvincibleFrame;
+
     void OnAttackInput()
     {
         LastPressedAttackTime = Data.AttackInputBufferTime;
         _moveInput = Vector2.Zero;
     }
 
+    private IEnumerator<double> _FrameFreezeNZoom(float timeScale, float duration)
+    {
+        Node pcam = GetParent().GetNode("PhantomCamera2D");
+        Engine.TimeScale = timeScale;
+        pcam.Call("set_tween_duration", timeScale * duration);
+        pcam.Call("set_priority", 0);
+        yield return Timing.WaitForSeconds(duration * timeScale);
+        pcam.Call("set_tween_duration", duration);
+        pcam.Call("set_priority", 10);
+        Engine.TimeScale = 1;
+    }
+
     void AttackCheck()
     {
-        _hitboxLeft.Monitoring = false;
-        _hitboxRight.Monitoring = false;
+        // _hitboxLeft.Monitoring = false;
+        // _hitboxRight.Monitoring = false;
         IsStriking = false; // this is the state where attack frames are allow to connect with the enemy body
 
         if (attackAnimationPlaying && IsCurrentFrame(3, 4, 5) && !IsAtkConnected) // check for enabling the "dealing-damage" frame
@@ -752,32 +756,121 @@ public partial class Player : CharacterBody2D
 
         if (IsStriking)
         {
+            // every attack would push the player slightly back. check in physics process
             if (animatedSprite2D.FlipH)
-                _hitboxLeft.Monitoring = true;
+                AtkLeft();
             else
-                _hitboxRight.Monitoring = true;
+                AtkRight();
+        }
+        else if (animatedSprite2D.FlipH)
+            _hitboxLeft.ClearExceptions();
+        else
+            _hitboxRight.ClearExceptions();
+    }
+
+    void AtkRight()
+    {
+        _hitboxRight.ForceShapecastUpdate();
+        if (_hitboxRight.IsColliding())
+        {
+            var count = _hitboxRight.GetCollisionCount();
+            for (int i = 0; i < count; i++)
+            {
+                var curr = (CollisionObject2D)_hitboxRight.GetCollider(i);
+                IsAtkConnected = DealDmgToCollider(curr);
+
+                if (IsAtkConnected)
+                {
+                    _hitboxRight.AddException(curr);
+                    ImpactHitAnimation(
+                        globalPos: (GlobalPosition + _hitboxRight.TargetPosition).Lerp(
+                            curr.GlobalPosition,
+                            0.5f
+                        )
+                    );
+                }
+            }
         }
     }
 
-    void OnAttackCollideEvent(Node2D body)
+    void AtkLeft()
     {
-        Print("Attakc collidedd");
-        if (body is HurtableBody hurtableBody)
+        _hitboxLeft.ForceShapecastUpdate();
+        if (_hitboxLeft.IsColliding())
         {
-            IsAtkConnected = true;
+            var count = _hitboxLeft.GetCollisionCount();
+            for (int i = 0; i < count; i++)
+            {
+                var curr = (CollisionObject2D)_hitboxLeft.GetCollider(i);
+                IsAtkConnected = DealDmgToCollider(curr);
+
+                if (IsAtkConnected)
+                {
+                    _hitboxLeft.AddException(curr);
+                    ImpactHitAnimation(
+                        globalPos: (GlobalPosition + _hitboxLeft.TargetPosition).Lerp(
+                            curr.GlobalPosition,
+                            0.5f
+                        )
+                    );
+                }
+            }
+        }
+    }
+
+    void ImpactHitAnimation(Vector2 globalPos)
+    {
+        var impactHit = _impactHitTscn.Instantiate<ImpactHit>();
+        GetTree().Root.AddChild(impactHit);
+        impactHit.GlobalPosition = globalPos;
+        impactHit.OnCriticalFrame += () => Timing.RunCoroutine(_RunTaskOnCriticalAttackFrame());
+    }
+
+    IEnumerator<double> _RunTaskOnCriticalAttackFrame()
+    {
+        _isInputDisabled = true;
+        _isInInvincibleFrame = true;
+        Timing.RunCoroutine(_BounceBack(Data.BounceBackForce, Data.BounceBackDuration));
+        yield return Timing.WaitUntilDone(
+            Timing.RunCoroutine(_FrameFreezeNZoom(Data.FreezeScale, Data.FreezeDuration))
+        );
+        _isInputDisabled = false;
+        _isInInvincibleFrame = false;
+    }
+
+    bool DealDmgToCollider(Node2D body)
+    {
+        if (body is IHurtableBody hurtableBody)
+        {
             hurtableBody.GetHit(Data.Damage);
-            Timing.RunCoroutine(_BounceBackAfterAttack(IsFacingRight ? -1 : 1));
-            Timing.RunCoroutine(_FrameFreeze(0.05f, 1f));
+            return true;
         }
+        return false;
     }
 
-    IEnumerator<double> _BounceBackAfterAttack(int dir)
+    IEnumerator<double> _BounceBack(float lerp, float duration)
     {
-        while (IsStriking)
+        var time = Time.GetTicksMsec();
+        while (Time.GetTicksMsec() - time < duration * 1000)
         {
-            Velocity = new(Data.BounceBackForce * dir, Velocity.Y);
+            var velocity = Velocity;
+            var direction = IsFacingRight ? -1 : 1; // opposite of the facing direction
+            velocity.X += CalculateRunForce(lerp, direction) / Engine.PhysicsTicksPerSecond;
+            Velocity = velocity;
+            Print("Velocity: ", Velocity);
+            MoveAndSlide();
             yield return Timing.WaitForOneFrame;
         }
     }
+
+    public void GetHit(float _dmg)
+    {
+        if (!_isInInvincibleFrame)
+        {
+            Print("GetHit");
+            Health -= _dmg;
+        }
+    }
+
     #endregion
 }

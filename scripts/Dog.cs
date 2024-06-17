@@ -2,9 +2,16 @@ using System.Collections.Generic;
 using Godot;
 using MEC;
 
-public partial class Dog : HurtableBody
+public partial class Dog : CharacterBody2D, IHurtableBody
 {
+    #region GENERAL
     private float JumpDistanceHeightThreshold = 60.0f;
+
+    [Export]
+    public double Health = 3;
+
+    [Export]
+    public double Damage = 1;
 
     [Export]
     public float Speed = 200.0f;
@@ -19,6 +26,18 @@ public partial class Dog : HurtableBody
     public float SmallJumpVelocity = -350f;
 
     [Export]
+    public bool IsMovementAllowed = true;
+
+    public Vector2 Direction;
+
+    public float Gravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
+    public AnimatedSprite2D Sprite;
+
+    Area2D _hitBox;
+    #endregion
+
+    #region PATH FIND
+    [Export]
     int _targetXThreshold = 30;
 
     [Export]
@@ -26,31 +45,16 @@ public partial class Dog : HurtableBody
 
     [Export]
     float _directionChangedDelay = 1f; // in seconds
-    public float gravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
-    public AnimatedSprite2D animatedSprite2D;
-
-    float _health = 3;
-
-    [Export]
-    public override float Health
-    {
-        get => _health;
-        set { _health = value; }
-    }
-
-    #region PATH FIND
     TileMapPathFind _tileMapPathFind;
     Queue<PointInfo> _pathQueue = new();
     PointInfo _target = null;
     PointInfo _prevTarget = null;
     bool _isDirectionChangable = true;
 
-    public Vector2 Direction;
-
     Player _player;
     Area2D _detectionArea;
-    Vector2 _prevPlayerPosition;
     Area2D _targetDetectionArea;
+    Vector2 _prevPlayerPosition;
     bool _isTargetReached = false;
 
     void GoToNextPointInPath()
@@ -92,16 +96,6 @@ public partial class Dog : HurtableBody
             GoToNextPointInPath();
         }
     }
-
-    IEnumerator<double> _PathFindingWithDelay(float duration)
-    {
-        if (_player != null && IsOnFloor() && _prevPlayerPosition != _player.Position)
-        {
-            _pathQueue = _tileMapPathFind.GetPlatform2DPath(Position, _player.Position);
-            yield return Timing.WaitForSeconds(duration);
-            GoToNextPointInPath();
-        }
-    }
     #endregion
 
     #region GAME PROCESS
@@ -130,12 +124,14 @@ public partial class Dog : HurtableBody
 
     public override void _Ready()
     {
-        animatedSprite2D = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-        animatedSprite2D.Play("idle");
+        Sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+        Sprite.Play("idle");
         _tileMapPathFind = GetParent().GetNode<TileMapPathFind>("TileMap");
         _detectionArea = GetNode<Area2D>("DetectionArea");
-        _detectionArea.BodyEntered += OnBodyEntered;
-        _detectionArea.BodyExited += OnBodyExited;
+        _detectionArea.BodyEntered += OnBodyEnteredDetectionArea;
+        _detectionArea.BodyExited += OnBodyExitedDetectionArea;
+        _hitBox = GetNode<Area2D>("HitBox");
+        _hitBox.BodyEntered += OnBodyEnteredHitBox;
     }
 
     public override void _Process(double delta)
@@ -143,9 +139,9 @@ public partial class Dog : HurtableBody
         if (_player != null && _prevPlayerPosition != _player.Position)
             PathFinding();
         if (Direction.X < 0)
-            animatedSprite2D.FlipH = true;
+            Sprite.FlipH = true;
         else
-            animatedSprite2D.FlipH = false;
+            Sprite.FlipH = false;
     }
 
     public override void _PhysicsProcess(double delta)
@@ -153,8 +149,81 @@ public partial class Dog : HurtableBody
         Vector2 velocity = Velocity;
 
         if (!IsOnFloor())
-            velocity.Y += gravity * (float)delta;
+            velocity.Y += Gravity * (float)delta;
 
+        if (_player != null)
+            _prevPlayerPosition = _player.Position;
+
+        if (IsMovementAllowed)
+            MoveToTargetLocation(ref velocity);
+
+        Velocity = velocity;
+        MoveAndSlide();
+    }
+
+    #endregion
+
+
+    #region MOVEMENT
+    IEnumerator<double> _KeepDirection(float duration)
+    {
+        _isDirectionChangable = false;
+        yield return Timing.WaitForSeconds(duration);
+        _isDirectionChangable = true;
+    }
+
+    bool CanJumpDownFromRightToLeftEdge()
+    {
+        return _prevTarget.IsRightEdge
+            && _target.IsLeftEdge
+            && _prevTarget.Position.Y <= _target.Position.Y // previous target is above the current target
+            && _prevTarget.Position.X < _target.Position.X; // previous is to the left of target
+    }
+
+    bool CanJumpDownFromLeftToRightEdge()
+    {
+        return _prevTarget.IsLeftEdge
+            && _target.IsRightEdge
+            && _prevTarget.Position.Y <= _target.Position.Y // previous target is above the current target
+            && _prevTarget.Position.X > _target.Position.X; // previous is to the right of target
+    }
+
+    private void Jump(ref Vector2 velocity)
+    {
+        if (_prevTarget == null || _target == null || _target.IsPositionPoint)
+            return;
+
+        // if the target can be drop to reach then we don't need to jump
+        if (_prevTarget.Position.Y < _target.Position.Y && _target.IsFallTile)
+            return;
+
+        if (
+            _prevTarget.Position.Y < _target.Position.Y
+            && _prevTarget.Position.DistanceTo(_target.Position) < JumpDistanceHeightThreshold
+        )
+            velocity.Y = SmallJumpVelocity;
+
+        if (
+            _prevTarget.Position.Y > _target.Position.Y // can jump up
+            || CanJumpDownFromLeftToRightEdge()
+            || CanJumpDownFromRightToLeftEdge()
+        )
+        {
+            int heightDistance = Mathf.Abs(
+                _tileMapPathFind.LocalToMap(_target.Position).Y
+                    - _tileMapPathFind.LocalToMap(_prevTarget.Position).Y
+            );
+            if (heightDistance <= 2)
+                velocity.Y = TinyJumpVelocity;
+            else if (heightDistance == 3)
+                velocity.Y = SmallJumpVelocity;
+            else
+                velocity.Y = JumpVelocity;
+        }
+    }
+
+    void MoveToTargetLocation(ref Vector2 velocity)
+    {
         if (_target != null)
         {
             var distance = _target.Position - Position;
@@ -206,85 +275,81 @@ public partial class Dog : HurtableBody
             velocity.X = Mathf.Sign(Direction.X) * Speed;
         else
             velocity.X = Mathf.MoveToward(Velocity.X, 0, Speed);
-
-        if (_player != null)
-            _prevPlayerPosition = _player.Position;
-
-        Velocity = velocity;
-        MoveAndSlide();
-    }
-
-    IEnumerator<double> _KeepDirection(float duration)
-    {
-        _isDirectionChangable = false;
-        yield return Timing.WaitForSeconds(duration);
-        _isDirectionChangable = true;
     }
 
     #endregion
 
-    #region MOVEMENT
-    bool CanJumpDownFromRightToLeftEdge()
+    #region COMBAT
+    [Export(PropertyHint.Range, "0,100,0.1,,or_greater")]
+    int _bounceBackOffsetX = 1;
+
+    [Export(PropertyHint.Range, "0,100,0.1,,or_greater")]
+    float _bounceBackOffsetY = 10;
+
+    [Export]
+    float _bounceBackDuration = 1;
+
+    [Export]
+    float _stunDurationAfterBounceBack = 1;
+
+    private void OnBodyEnteredHitBox(Node2D body)
     {
-        return _prevTarget.IsRightEdge
-            && _target.IsLeftEdge
-            && _prevTarget.Position.Y <= _target.Position.Y // previous target is above the current target
-            && _prevTarget.Position.X < _target.Position.X; // previous is to the left of target
-    }
-
-    bool CanJumpDownFromLeftToRightEdge()
-    {
-        return _prevTarget.IsLeftEdge
-            && _target.IsRightEdge
-            && _prevTarget.Position.Y <= _target.Position.Y // previous target is above the current target
-            && _prevTarget.Position.X > _target.Position.X; // previous is to the right of target
-    }
-
-    private void Jump(ref Vector2 velocity)
-    {
-        if (_prevTarget == null || _target == null || _target.IsPositionPoint)
-            return;
-
-        // if the target can be drop to reach then we don't need to jump
-        if (_prevTarget.Position.Y < _target.Position.Y && _target.IsFallTile)
-            return;
-
-        if (
-            _prevTarget.Position.Y < _target.Position.Y
-            && _prevTarget.Position.DistanceTo(_target.Position) < JumpDistanceHeightThreshold
-        )
-            velocity.Y = SmallJumpVelocity;
-
-        if (
-            _prevTarget.Position.Y > _target.Position.Y // can jump up
-            || CanJumpDownFromLeftToRightEdge()
-            || CanJumpDownFromRightToLeftEdge()
-        )
+        if (body is Player player)
         {
-            int heightDistance = Mathf.Abs(
-                _tileMapPathFind.LocalToMap(_target.Position).Y
-                    - _tileMapPathFind.LocalToMap(_prevTarget.Position).Y
-            );
-            if (heightDistance <= 2)
-                velocity.Y = TinyJumpVelocity;
-            else if (heightDistance == 3)
-                velocity.Y = SmallJumpVelocity;
-            else
-                velocity.Y = JumpVelocity;
+            player.GetHit((float)Damage);
         }
     }
+
+    void BounceBack(bool isBounceRight, float offsetX = 1, float offsetY = 0, float duration = 1)
+    {
+        IsMovementAllowed = false;
+        var tween = GetTree().CreateTween();
+        var directionX = isBounceRight ? 1 : -1;
+        float directionY = 0;
+
+        var targetPosition =
+            GlobalPosition + new Vector2(directionX * offsetX, directionY * offsetY);
+        var distance = GlobalPosition.DistanceTo(targetPosition);
+        var accel = distance / duration;
+        var targetVelocity = new Vector2(accel * directionX, accel * directionY);
+
+        tween
+            .TweenProperty(this, "velocity", targetVelocity, duration)
+            .SetTrans(Tween.TransitionType.Quart)
+            .SetEase(Tween.EaseType.InOut);
+        tween
+            .TweenCallback(
+                Callable.From(() =>
+                {
+                    Velocity = Vector2.Zero;
+                })
+            )
+            .SetDelay(duration);
+        tween
+            .TweenCallback(
+                Callable.From(() =>
+                {
+                    IsMovementAllowed = true;
+                })
+            )
+            .SetDelay(duration + _stunDurationAfterBounceBack);
+    }
+
     #endregion
 
     #region CONTACT
-    public override void GetHit(float _dmg)
+    public void GetHit(float _dmg)
     {
         Health -= _dmg;
         CheckToDie();
-        EmitSignal(SignalName.OnGetHit);
-    }
 
-    [Signal]
-    public delegate void OnGetHitEventHandler();
+        BounceBack(
+            _player.IsFacingRight,
+            _bounceBackOffsetX,
+            _bounceBackOffsetY,
+            _bounceBackDuration
+        );
+    }
 
     void CheckToDie()
     {
@@ -296,13 +361,13 @@ public partial class Dog : HurtableBody
     #endregion
 
     #region EVENT HANDLER
-    private void OnBodyExited(Node2D body)
+    private void OnBodyExitedDetectionArea(Node2D body)
     {
         // we don't want to delete player while the character still chasing it.
         _player = null;
     }
 
-    private void OnBodyEntered(Node2D body)
+    private void OnBodyEnteredDetectionArea(Node2D body)
     {
         _player = (Player)body;
         PathFinding();
