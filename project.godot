@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Mount Hollow"
-run/main_scene="res://scenes/mainmenu.tscn"
+run/main_scene="res://scenes/Level1.tscn"
 config/features=PackedStringArray("4.2", "C#", "GL Compatibility")
 run/max_fps=60
 config/icon="res://icon.svg"
@@ -112,7 +112,8 @@ left_mouse={
 
 2d_physics/layer_1="Player"
 2d_physics/layer_2="Ground"
-2d_physics/layer_3="Hurtable"
+2d_physics/layer_3="Enemy"
+2d_physics/layer_6="HurtBox"
 2d_physics/layer_7="HitBox"
 2d_physics/layer_8="detection_area"
 

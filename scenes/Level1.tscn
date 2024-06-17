@@ -10,9 +10,9 @@
 
 [sub_resource type="Resource" id="Resource_5psxu"]
 script = ExtResource("7_gemm8")
-duration = 0.6
+duration = 0.1
 transition = 3
-ease = 2
+ease = 1
 
 [node name="Level 1" type="Node2D"]
 
@@ -22,16 +22,30 @@ layer_0/tile_data = PackedInt32Array(1769553, 65541, 1, 1769554, 65541, 1, 17695
 JumpHeight = 6
 
 [node name="SkeletonSword" parent="." instance=ExtResource("5_6ni77")]
+modulate = Color(0.603922, 0.298039, 0.6, 1)
 position = Vector2(5635, 1427)
-TinyJumpVelocity = -300.0
-SmallJumpVelocity = -350.0
+Speed = 100.0
+_targetXThreshold = 10
+_targetYThreshold = 10
+_directionChangedDelay = 0.75
+
+[node name="SkeletonSword2" parent="." instance=ExtResource("5_6ni77")]
+modulate = Color(0.733333, 0.227451, 0.341176, 1)
+self_modulate = Color(0, 0.552941, 0.556863, 1)
+position = Vector2(5682, 1426)
+Speed = 100.0
+_targetXThreshold = 10
+_targetYThreshold = 10
+_directionChangedDelay = 0.75
 
 [node name="Player" parent="." instance=ExtResource("3_g4he3")]
-position = Vector2(4849, 1359)
+position = Vector2(5523, 1416)
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(4849, 1359)
+offset = Vector2(0, -50)
 zoom = Vector2(1.8, 1.8)
+process_callback = 0
 
 [node name="PhantomCameraHost" type="Node" parent="Camera2D"]
 script = ExtResource("4_tfrbc")
@@ -49,25 +63,32 @@ texture = ExtResource("4_rw1nn")
 centered = false
 
 [node name="PhantomCamera2D" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
-position = Vector2(4849, 1359)
+position = Vector2(5523, 1416)
 script = ExtResource("6_c36g6")
 priority = 10
-follow_mode = 5
+follow_mode = 1
 follow_target = NodePath("../Player")
 zoom = Vector2(1.8, 1.8)
+snap_to_pixel = true
 tween_resource = SubResource("Resource_5psxu")
-dead_zone_width = 0.2
-dead_zone_height = 0.2
+follow_offset = Vector2(30, -30)
+follow_damping = true
+follow_damping_value = Vector2(0.2, 0.5)
+dead_zone_width = 1.0
+dead_zone_height = 0.624
+show_viewfinder_in_play = true
 draw_limits = true
 
 [node name="PhantomCamera2DZoom" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
-position = Vector2(4849, 1359)
+position = Vector2(5523, 1416)
 script = ExtResource("6_c36g6")
 priority = 1
-follow_mode = 5
+follow_mode = 1
 follow_target = NodePath("../Player")
-zoom = Vector2(1.9, 1.9)
+zoom = Vector2(1.86, 1.86)
 tween_resource = SubResource("Resource_5psxu")
+follow_damping = true
+follow_damping_value = Vector2(0.2, 0.5)
 dead_zone_width = 0.2
 dead_zone_height = 0.2
 draw_limits = true

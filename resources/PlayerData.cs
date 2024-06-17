@@ -176,6 +176,9 @@ public partial class PlayerData : Resource
 
     [Export(PropertyHint.Range, "0.0f,1.0f,0.1f")]
     public float DashInputBufferTime;
+    #region STATUS
+    double MaxHeath;
+    #endregion
 
     #region ATTACK
     [Export]
@@ -192,6 +195,12 @@ public partial class PlayerData : Resource
 
     [Export]
     public float BounceBackForce;
+
+    [Export]
+    public float FreezeDuration;
+
+    [Export]
+    public float FreezeScale;
     #endregion
     public PlayerData()
         : this(
@@ -217,7 +226,10 @@ public partial class PlayerData : Resource
             1,
             5,
             0.2f,
-            100
+            100,
+            0.2f,
+            0.05f,
+            5
         ) { }
 
     public PlayerData(
@@ -243,7 +255,10 @@ public partial class PlayerData : Resource
         float dmg = 1,
         float health = 5,
         float bounceBackDuration = 0.2f,
-        float bounceBackForce = 100
+        float bounceBackForce = 100,
+        float freezeDuration = 0.2f,
+        float freezeScale = 0.05f,
+        double maxHeath = 5
     )
     {
         RunMaxSpeed = runMaxSpeed;
@@ -268,7 +283,10 @@ public partial class PlayerData : Resource
         Damage = dmg;
         Health = health;
         BounceBackDuration = bounceBackDuration;
-		BounceBackForce = bounceBackForce;
+        BounceBackForce = bounceBackForce;
+        FreezeDuration = freezeDuration;
+        FreezeScale = freezeScale;
+        MaxHeath = maxHeath;
     }
 
     #region assist

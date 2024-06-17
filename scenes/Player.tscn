@@ -16,11 +16,11 @@ size = Vector2(20, 39)
 offsets = PackedFloat32Array(0, 0.335714, 0.789286, 1)
 colors = PackedColorArray(1, 1, 1, 1, 0.553506, 0.553506, 0.553506, 1, 0.85098, 0.85098, 0.85098, 0.705882, 1, 1, 1, 0.0784314)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_8pvkp"]
-size = Vector2(20, 38)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4xjv3"]
+size = Vector2(20, 39)
 
 [node name="Player" type="CharacterBody2D"]
-collision_mask = 6
+collision_mask = 2
 script = ExtResource("1_htxw0")
 AnimationData = ExtResource("2_c0f6y")
 Data = ExtResource("3_xysni")
@@ -49,6 +49,8 @@ position = Vector2(-1, -13)
 scale = Vector2(1.375, 1.35417)
 sprite_frames = ExtResource("7_8nd4t")
 animation = &"attack1"
+frame = 6
+frame_progress = 1.0
 metadata/_edit_lock_ = true
 
 [node name="JumpingParticlesMarker" type="Marker2D" parent="."]
@@ -60,22 +62,16 @@ lifetime = 0.4
 speed_scale = 2.2
 color_ramp = SubResource("Gradient_1l536")
 
-[node name="HitBoxRight" type="Area2D" parent="."]
-collision_layer = 64
-collision_mask = 4
-monitoring = false
-monitorable = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBoxRight"]
+[node name="HitBoxRight" type="ShapeCast2D" parent="."]
 position = Vector2(20, 0)
-shape = SubResource("RectangleShape2D_8pvkp")
-
-[node name="HitBoxLeft" type="Area2D" parent="."]
-collision_layer = 64
+enabled = false
+shape = SubResource("RectangleShape2D_4xjv3")
+target_position = Vector2(6, 0)
 collision_mask = 4
-monitoring = false
-monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBoxLeft"]
+[node name="HitBoxLeft" type="ShapeCast2D" parent="."]
 position = Vector2(-20, 0)
-shape = SubResource("RectangleShape2D_8pvkp")
+enabled = false
+shape = SubResource("RectangleShape2D_4xjv3")
+target_position = Vector2(-6, 0)
+collision_mask = 4

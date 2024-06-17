@@ -1,4 +1,3 @@
-@tool
 extends Node
 
 const PHANTOM_CAMERA_CONSTS = preload("res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_constants.gd")
