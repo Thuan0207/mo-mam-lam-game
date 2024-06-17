@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3 uid="uid://7l3h12fyh70a"]
+
+[sub_resource type="Curve" id="Curve_3nexg"]
+_data = [Vector2(0, 0.516488), 0.0, 0.0, 0, 0, Vector2(0.996875, 0.985046), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Gradient" id="Gradient_1l536"]
+offsets = PackedFloat32Array(0, 0.335714, 0.789286, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.553506, 0.553506, 0.553506, 1, 0.85098, 0.85098, 0.85098, 0.705882, 1, 1, 1, 0.0784314)
+
+[node name="JumpingDust" type="CPUParticles2D"]
+emitting = false
+amount = 4
+lifetime = 0.5
+one_shot = true
+speed_scale = 2.0
+explosiveness = 0.8
+randomness = 0.5
+lifetime_randomness = 0.5
+emission_shape = 3
+emission_rect_extents = Vector2(16, 2)
+gravity = Vector2(0, -120)
+radial_accel_min = -100.0
+radial_accel_max = -20.0
+scale_amount_min = 2.0
+scale_amount_max = 3.5
+scale_amount_curve = SubResource("Curve_3nexg")
+color_ramp = SubResource("Gradient_1l536")
