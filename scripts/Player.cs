@@ -550,12 +550,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
             IsJumping = false;
             _isJumpCut = false;
 
-            if (_moveInput != Vector2.Zero) //If not direction pressed, dash forward
-            {
-                lastDashDir = _moveInput;
-            }
-            else
-                lastDashDir = IsFacingRight ? Vector2.Right : Vector2.Left;
+            lastDashDir = IsFacingRight ? Vector2.Right : Vector2.Left;
 
             Timing.RunCoroutine(StartDash(lastDashDir), Segment.PhysicsProcess);
         }
@@ -582,7 +577,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         //We keep the player's velocity at the dash speed during the "attack" phase (in celeste the first 0.15s)
         while (Time.GetTicksMsec() - startTime <= Data.dashAttackTime * 1000)
         {
-            Velocity = Data.dashSpeed * (float)localTimeScale * dir.Normalized();
+            Velocity = Data.dashSpeed * (float)localTimeScale * dir;
             //Pauses the loop until the next frame, creating something of a Update loop.
             //This is a cleaner implementation opposed to multiple timers and this coroutine approach is actually what is used in Celeste :D
             yield return Timing.WaitForOneFrame;
@@ -594,7 +589,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
         //Begins the "end" of our dash where we return some control to the player but still limit run acceleration (see Update() and Run())
         SetGravityScale(Data.GravityScale);
-        Velocity = Data.dashEndSpeed * (float)localTimeScale * dir.Normalized();
+        Velocity = Data.dashEndSpeed * (float)localTimeScale * dir;
 
         while (Time.GetTicksMsec() - startTime <= Data.dashEndTime * 1000)
         {
