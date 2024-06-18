@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -26,7 +25,6 @@ public partial class Player : CharacterBody2D, IHurtableBody
     public float LastOnGroundTime { get; private set; }
     public bool IsReadyForDeccelAtMaxSpeed { get; private set; }
     public bool IsAttacking { get; private set; }
-    public bool IsAttackCancelable { get; private set; }
     public bool IsAtkConnected { get; private set; }
     public bool IsStriking { get; private set; }
     #endregion
@@ -46,8 +44,10 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
     #region ANIMATION PARAMETERS
     bool isGroundedAnimationPlaying;
-    bool isStopAnimationPlaying;
-    bool attackAnimationPlaying;
+    bool isAttackAnimationPlaying;
+    bool isHurtAnimationPlaying;
+    bool isDieAnimationPlaying;
+    bool isDashAnimationPlaying;
     #endregion
 
     #region NODE
@@ -82,9 +82,11 @@ public partial class Player : CharacterBody2D, IHurtableBody
     #endregion
 
     #region STATUS
-    public double Health;
+    int _health;
     #endregion
 
+    [Signal]
+    public delegate void HealthChangedEventHandler(int currentHealth);
 
     public override void _Ready()
     {
@@ -98,10 +100,10 @@ public partial class Player : CharacterBody2D, IHurtableBody
         }
 
         runLerp = 1;
-        Health = Data.Health;
+
+        _health = Data.MaxHealth;
 
         isGroundedAnimationPlaying = false;
-        isStopAnimationPlaying = false;
 
         IsFacingRight = true;
         IsFalling = false;
@@ -129,6 +131,10 @@ public partial class Player : CharacterBody2D, IHurtableBody
                 IsAttacking = false;
                 IsAtkConnected = false;
             }
+            else if (animatedSprite2D.Animation == "end_dash")
+                ResetAllPlayingAnimation();
+            else if (animatedSprite2D.Animation == "hurt")
+                ResetAllPlayingAnimation();
         };
 
         SetGravityScale(Data.GravityScale);
@@ -168,7 +174,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         if (IsOnFloor() && !IsJumping && !IsDashing)
             LastOnGroundTime = Data.CoyoteTime;
 
-        #region MOVING PROCESS
+        #region DIRECTION
         if (_moveInput.X != 0)
         {
             HandleAnimation("forward");
@@ -243,13 +249,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         }
         #endregion
 
-        // Print("start", Time.GetTicksMsec());
-        var start = Time.GetTicksMsec();
         DashCheck();
-        var elapsed = Time.GetTicksMsec() - start;
-        // Print("elapsed", elapsed);
-        // if (elapsed > 1)
-        //     Print("significantElapsed: ", elapsed);
         AttackCheck();
     }
 
@@ -302,7 +302,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         Velocity = v;
         MoveAndSlide();
 
-        if (Math.Round(Velocity.X) != 0)
+        if (Mathf.Round(Velocity.X) != 0)
             EmitRunningDust();
     }
 
@@ -371,6 +371,16 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
 
     #region ANIMATION METHOD
+
+    void ResetAllPlayingAnimation()
+    {
+        isDashAnimationPlaying = false;
+        isDieAnimationPlaying = false;
+        isHurtAnimationPlaying = false;
+        isAttackAnimationPlaying = false;
+        isGroundedAnimationPlaying = false;
+    }
+
     void StretchSprite(Vector2 scaleAddend)
     {
         Tween tween = GetTree().CreateTween();
@@ -415,10 +425,20 @@ public partial class Player : CharacterBody2D, IHurtableBody
             && (prevCategory == "neutral" || prevCategory == "forward")
                 ? prevCategory
                 : category; // jump related aninamtion need to use the same type of animation through out its life cycle. If it start with jump_forward_up it need to end in jump_forward_down
-        attackAnimationPlaying =
+        isAttackAnimationPlaying =
             animatedSprite2D.IsPlaying() && attackRegex.IsMatch(animatedSprite2D.Animation);
 
-        if (attackAnimationPlaying) // nothing interupt attack animation
+        isHurtAnimationPlaying =
+            animatedSprite2D.IsPlaying() && animatedSprite2D.Animation == "hurt";
+
+        isDieAnimationPlaying = animatedSprite2D.IsPlaying() && animatedSprite2D.Animation == "die";
+
+        if (
+            isAttackAnimationPlaying
+            || isHurtAnimationPlaying
+            || isDieAnimationPlaying
+            || isDashAnimationPlaying
+        ) // nothing interupt these animation
             return;
 
         // if attacking and the current animation is not of type attack then play the animation
@@ -447,12 +467,13 @@ public partial class Player : CharacterBody2D, IHurtableBody
             else
                 StretchSprite(AnimationData.ForwardStretchScaleAddend);
         }
+        // play grounded animation
         else if (jumpDownAnimationPlaying && LastOnGroundTime > 0)
         {
             animatedSprite2D.Play($"jump_{jumpCategory}_grounded");
             isGroundedAnimationPlaying = true;
         }
-        // wait for the animation to finish
+        // wait for grounded animation to finish
         else if (isGroundedAnimationPlaying)
         {
             // 3 is the last frame
@@ -552,7 +573,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
             lastDashDir = IsFacingRight ? Vector2.Right : Vector2.Left;
 
-            Timing.RunCoroutine(StartDash(lastDashDir), Segment.PhysicsProcess);
+            Timing.RunCoroutine(StartDash(lastDashDir), Segment.PhysicsProcess, "StartDash");
         }
     }
     #endregion
@@ -574,6 +595,8 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
         SetGravityScale(0);
 
+        animatedSprite2D.Play("start_dash");
+        isDashAnimationPlaying = true;
         //We keep the player's velocity at the dash speed during the "attack" phase (in celeste the first 0.15s)
         while (Time.GetTicksMsec() - startTime <= Data.dashAttackTime * 1000)
         {
@@ -582,6 +605,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
             //This is a cleaner implementation opposed to multiple timers and this coroutine approach is actually what is used in Celeste :D
             yield return Timing.WaitForOneFrame;
         }
+        animatedSprite2D.Play("end_dash");
 
         startTime = Time.GetTicksMsec();
 
@@ -598,6 +622,15 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
         //Dash over
         IsDashing = false;
+    }
+
+    void KillDash()
+    {
+        isDashAttacking = false;
+        IsDashing = false;
+        Velocity = Vector2.Zero;
+        SetGravityScale(Data.GravityScale);
+        Timing.KillCoroutines("StartDash");
     }
 
     [Export]
@@ -711,7 +744,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
     #endregion
 
-    #region ATTACK METHODS
+    #region  COMBAT
     bool _isInputDisabled;
     bool _isInInvincibleFrame;
 
@@ -739,7 +772,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         // _hitboxRight.Monitoring = false;
         IsStriking = false; // this is the state where attack frames are allow to connect with the enemy body
 
-        if (attackAnimationPlaying && IsCurrentFrame(3, 4, 5) && !IsAtkConnected) // check for enabling the "dealing-damage" frame
+        if (isAttackAnimationPlaying && IsCurrentFrame(3, 4, 5) && !IsAtkConnected) // check for enabling the "dealing-damage" frame
         {
             IsStriking = true;
         }
@@ -772,7 +805,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
             for (int i = 0; i < count; i++)
             {
                 var curr = (CollisionObject2D)_hitboxRight.GetCollider(i);
-                IsAtkConnected = DealDmgToCollider(curr);
+                IsAtkConnected = DealDmgToEnemy(curr);
 
                 if (IsAtkConnected)
                 {
@@ -797,7 +830,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
             for (int i = 0; i < count; i++)
             {
                 var curr = (CollisionObject2D)_hitboxLeft.GetCollider(i);
-                IsAtkConnected = DealDmgToCollider(curr);
+                IsAtkConnected = DealDmgToEnemy(curr);
 
                 if (IsAtkConnected)
                 {
@@ -830,14 +863,20 @@ public partial class Player : CharacterBody2D, IHurtableBody
             Timing.RunCoroutine(_FrameFreezeNZoom(Data.FreezeScale, Data.FreezeDuration))
         );
         _isInputDisabled = false;
-        _isInInvincibleFrame = false;
+        Timing.CallDelayed(
+            0.3f,
+            () =>
+            {
+                _isInInvincibleFrame = false;
+            }
+        );
     }
 
-    bool DealDmgToCollider(Node2D body)
+    bool DealDmgToEnemy(Node2D body)
     {
-        if (body is IHurtableBody hurtableBody)
+        if (body is IHurtableBody enemy)
         {
-            hurtableBody.GetHit(Data.Damage);
+            enemy.GetHit(Data.Damage);
             return true;
         }
         return false;
@@ -852,18 +891,35 @@ public partial class Player : CharacterBody2D, IHurtableBody
             var direction = IsFacingRight ? -1 : 1; // opposite of the facing direction
             velocity.X += CalculateRunForce(lerp, direction) / Engine.PhysicsTicksPerSecond;
             Velocity = velocity;
-            Print("Velocity: ", Velocity);
             MoveAndSlide();
             yield return Timing.WaitForOneFrame;
         }
     }
 
-    public void GetHit(float _dmg)
+    public void GetHit(int _dmg)
     {
+        if (_health == 0)
+            return;
+
         if (!_isInInvincibleFrame)
         {
-            Print("GetHit");
-            Health -= _dmg;
+            _health -= _dmg;
+
+            KillDash();
+
+            ResetAllPlayingAnimation();
+            animatedSprite2D.Play("hurt");
+
+            EmitSignal(SignalName.HealthChanged, _health);
+            ImpactHitAnimation(globalPos: GlobalPosition);
+        }
+
+        if (_health == 0)
+        {
+            ResetAllPlayingAnimation();
+            animatedSprite2D.Play("die");
+            SetProcess(false);
+            SetPhysicsProcess(false);
         }
     }
 

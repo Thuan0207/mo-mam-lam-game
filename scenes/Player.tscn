@@ -48,9 +48,7 @@ position = Vector2(0, 20)
 position = Vector2(-1, -13)
 scale = Vector2(1.375, 1.35417)
 sprite_frames = ExtResource("7_8nd4t")
-animation = &"attack1"
-frame = 6
-frame_progress = 1.0
+animation = &"crouch_attack"
 metadata/_edit_lock_ = true
 
 [node name="JumpingParticlesMarker" type="Marker2D" parent="."]
