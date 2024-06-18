@@ -1,4 +1,4 @@
-[gd_resource type="SpriteFrames" load_steps=76 format=3 uid="uid://b3j1manoorfjf"]
+[gd_resource type="SpriteFrames" load_steps=97 format=3 uid="uid://b3j1manoorfjf"]
 
 [ext_resource type="Texture2D" uid="uid://baxrruomikwsr" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Attack 1/Battlemage Attack 1.png" id="1_kjqaq"]
 [ext_resource type="Texture2D" uid="uid://rjnfavssyylv" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Attack 1/Battlemage Attack 2.png" id="2_gwar6"]
@@ -38,23 +38,40 @@
 [ext_resource type="Texture2D" uid="uid://8i3totdyddy0" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running6.png" id="31_rq7vv"]
 [ext_resource type="Texture2D" uid="uid://bxvlbugmh2s6q" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Crouch Attack/Battlemage Crouch Attack7.png" id="31_s2ah2"]
 [ext_resource type="Texture2D" uid="uid://b6mwjdo7r6m8m" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running7.png" id="32_acc1d"]
+[ext_resource type="Texture2D" uid="uid://vb5jqmm331u4" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Death/Battlemage Death1.png" id="32_rbqhu"]
 [ext_resource type="Texture2D" uid="uid://bib63vxn1eyqd" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running8.png" id="33_3tviw"]
+[ext_resource type="Texture2D" uid="uid://boghhk66eswsl" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Death/Battlemage Death2.png" id="33_v8phh"]
+[ext_resource type="Texture2D" uid="uid://bs6qra2riwtsf" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Death/Battlemage Death3.png" id="34_bwdhy"]
 [ext_resource type="Texture2D" uid="uid://wkegq7gn51o3" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running9.png" id="34_rjjxl"]
+[ext_resource type="Texture2D" uid="uid://0o35axthygcw" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Death/Battlemage Death4.png" id="35_32rek"]
 [ext_resource type="Texture2D" uid="uid://blpy72clmv0yx" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Running/Battlemage Running10.png" id="35_xmaoi"]
+[ext_resource type="Texture2D" uid="uid://ckqsd82xoirbx" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Death/Battlemage Death5.png" id="36_fje47"]
 [ext_resource type="Texture2D" uid="uid://b6fmvnili66si" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Foward/Going Up/Battlemage Foward up1.png" id="36_j5737"]
+[ext_resource type="Texture2D" uid="uid://dl6hw0jfj7nld" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Death/Battlemage Death6.png" id="37_a6rw4"]
 [ext_resource type="Texture2D" uid="uid://dmd5kxuu8cdox" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Foward/Going Up/Battlemage Foward up2.png" id="37_dta6e"]
 [ext_resource type="Texture2D" uid="uid://cd2irgjjbr7nv" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Foward/Going Down/Battlemage Foward down1.png" id="38_1vjcp"]
+[ext_resource type="Texture2D" uid="uid://20r2tx00o2fj" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Death/Battlemage Death7.png" id="38_u8571"]
+[ext_resource type="Texture2D" uid="uid://n8abqgatvki1" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Death/Battlemage Death8.png" id="39_2jvpi"]
 [ext_resource type="Texture2D" uid="uid://bsqg32gm6jwsl" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Foward/Going Down/Battlemage Foward down2.png" id="39_hfjub"]
+[ext_resource type="Texture2D" uid="uid://cjs0m6a1ugu6p" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Death/Battlemage Death9.png" id="40_1xjxq"]
 [ext_resource type="Texture2D" uid="uid://b81nbd2w343mo" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Foward/Going Down/Battlemage Foward down3.png" id="40_ygwmy"]
+[ext_resource type="Texture2D" uid="uid://bx5ljykj60rud" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Death/Battlemage Death10.png" id="41_l13jp"]
 [ext_resource type="Texture2D" uid="uid://c182rkrf4hmif" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Foward/Going Down/Battlemage Foward down4.png" id="41_lon7d"]
+[ext_resource type="Texture2D" uid="uid://c7lod67pdlnvl" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Death/Battlemage Death11.png" id="42_bpoic"]
+[ext_resource type="Texture2D" uid="uid://cvv85vo6s1jy0" path="res://asset/Battlemage Fantasy Character/Battlemage Complete (Sprite Sheet)/Hurt 1 n 2/Hurt 2.png" id="42_jx08v"]
 [ext_resource type="Texture2D" uid="uid://1cqywigy0xqr" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Foward/Going Down/Battlemage Foward down5.png" id="42_o4erh"]
 [ext_resource type="Texture2D" uid="uid://gif0tkjfttb3" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Attack/Battlemage Jump attack1.png" id="42_updpt"]
+[ext_resource type="Texture2D" uid="uid://dju2wtc01ercc" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Death/Battlemage Death12.png" id="43_0fswp"]
+[ext_resource type="Texture2D" uid="uid://b2bbq54et2d0p" path="res://asset/Battlemage Fantasy Character/Battlemage Complete (Sprite Sheet)/Hurt 1 n 2/Hurt 1.png" id="43_50im0"]
 [ext_resource type="Texture2D" uid="uid://bxuurxwhar7mk" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Foward/Grounded/Battlemage Foward Grounded1.png" id="43_ool1u"]
 [ext_resource type="Texture2D" uid="uid://bxqpctoowdmvt" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Attack/Battlemage Jump attack2.png" id="43_pvupo"]
 [ext_resource type="Texture2D" uid="uid://fmdat3y5elfy" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Attack/Battlemage Jump attack3.png" id="44_amho3"]
 [ext_resource type="Texture2D" uid="uid://rhrp48004lcu" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Foward/Grounded/Battlemage Foward Grounded2.png" id="44_s23rq"]
+[ext_resource type="Texture2D" uid="uid://cb8enl57huo0" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Dash/Battlemage Dash5.png" id="44_t28bc"]
 [ext_resource type="Texture2D" uid="uid://4d0ectxkai14" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Foward/Grounded/Battlemage Foward Grounded3.png" id="45_4i6hc"]
+[ext_resource type="Texture2D" uid="uid://cdxowv3waqsrj" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Dash/Battlemage Dash6.png" id="45_cynpm"]
 [ext_resource type="Texture2D" uid="uid://dm3etc24iu5ci" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Attack/Battlemage Jump attack4.png" id="45_gx2ib"]
+[ext_resource type="Texture2D" uid="uid://co0kp8fbnxi53" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Dash/Battlemage Dash7.png" id="46_ld4p3"]
 [ext_resource type="Texture2D" uid="uid://dmdsbgxgumpsr" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Foward/Grounded/Battlemage Foward Grounded4.png" id="46_m0c5t"]
 [ext_resource type="Texture2D" uid="uid://bov0p4c0qy43t" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Attack/Battlemage Jump attack5.png" id="46_wji0l"]
 [ext_resource type="Texture2D" uid="uid://c2d24poshbkqu" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Jump Neutral/Going Up/Battlemage Neutral up1.png" id="47_3enem"]
@@ -75,6 +92,10 @@
 [ext_resource type="Texture2D" uid="uid://ce3x31gubey12" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Idle/Battlemage Idle6.png" id="62_ohqcn"]
 [ext_resource type="Texture2D" uid="uid://bjiik0ibv4l7g" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Idle/Battlemage Idle7.png" id="63_acbok"]
 [ext_resource type="Texture2D" uid="uid://c68lnv3k1joyp" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Idle/Battlemage Idle8.png" id="64_8tjjj"]
+[ext_resource type="Texture2D" uid="uid://dl034ryv0cfci" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Dash/Battlemage Dash1.png" id="93_j4gh2"]
+[ext_resource type="Texture2D" uid="uid://ribhu1ecxgys" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Dash/Battlemage Dash2.png" id="94_fpe70"]
+[ext_resource type="Texture2D" uid="uid://dai5sud3it5v" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Dash/Battlemage Dash3.png" id="95_2u443"]
+[ext_resource type="Texture2D" uid="uid://c10aj1vansg0q" path="res://asset/Battlemage Fantasy Character/Battlemage (Separeted Frames)/Dash/Battlemage Dash4.png" id="96_wuvg5"]
 
 [resource]
 animations = [{
@@ -193,6 +214,61 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": ExtResource("32_rbqhu")
+}, {
+"duration": 1.0,
+"texture": ExtResource("33_v8phh")
+}, {
+"duration": 1.0,
+"texture": ExtResource("34_bwdhy")
+}, {
+"duration": 1.0,
+"texture": ExtResource("35_32rek")
+}, {
+"duration": 1.0,
+"texture": ExtResource("36_fje47")
+}, {
+"duration": 1.0,
+"texture": ExtResource("37_a6rw4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("38_u8571")
+}, {
+"duration": 1.0,
+"texture": ExtResource("39_2jvpi")
+}, {
+"duration": 1.0,
+"texture": ExtResource("40_1xjxq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("41_l13jp")
+}, {
+"duration": 1.0,
+"texture": ExtResource("42_bpoic")
+}, {
+"duration": 1.0,
+"texture": ExtResource("43_0fswp")
+}],
+"loop": false,
+"name": &"die",
+"speed": 22.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("44_t28bc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("45_cynpm")
+}, {
+"duration": 1.0,
+"texture": ExtResource("46_ld4p3")
+}],
+"loop": false,
+"name": &"end_dash",
+"speed": 15.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": ExtResource("26_3ngty")
 }, {
 "duration": 1.0,
@@ -225,6 +301,17 @@ animations = [{
 "loop": true,
 "name": &"forward",
 "speed": 15.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("43_50im0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("42_jx08v")
+}],
+"loop": false,
+"name": &"hurt",
+"speed": 8.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -440,4 +527,21 @@ animations = [{
 "loop": true,
 "name": &"neutral",
 "speed": 12.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("93_j4gh2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("94_fpe70")
+}, {
+"duration": 1.0,
+"texture": ExtResource("95_2u443")
+}, {
+"duration": 1.0,
+"texture": ExtResource("96_wuvg5")
+}],
+"loop": true,
+"name": &"start_dash",
+"speed": 15.0
 }]

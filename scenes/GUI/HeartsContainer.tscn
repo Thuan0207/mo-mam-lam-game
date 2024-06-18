@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://cdjjtjgx04og7"]
+
+[ext_resource type="Script" path="res://scripts/GUI/HeartsContainer.cs" id="1_4j5fr"]
+
+[node name="HeartsContainer" type="HBoxContainer"]
+offset_right = 194.0
+offset_bottom = 30.0
+theme_override_constants/separation = 40
+alignment = 1
+script = ExtResource("1_4j5fr")

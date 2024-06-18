@@ -1,7 +1,6 @@
 using System.Linq;
 using Godot;
 using Godot.Collections;
-using static Godot.GD;
 
 public partial class TileMapPathFind : TileMap
 {

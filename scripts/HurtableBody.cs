@@ -2,5 +2,5 @@ using Godot;
 
 interface IHurtableBody
 {
-    public void GetHit(float _dmg);
+    public void GetHit(int _dmg);
 }

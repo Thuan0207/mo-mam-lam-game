@@ -1,9 +1,9 @@
 [gd_scene load_steps=8 format=3 uid="uid://chxjths3qoinh"]
 
-[ext_resource type="Texture2D" uid="uid://cp745psnaybse" path="res://asset/Thrust/Thrust 2 SpriteSheet.png" id="1_ivqqa"]
-[ext_resource type="Script" path="res://scripts/ImpactHit.cs" id="1_j76kp"]
-[ext_resource type="Texture2D" uid="uid://c5nw5brs2oa0w" path="res://asset/Effects/Effect 1 - Sprite Sheet.png" id="2_wb18y"]
-[ext_resource type="Texture2D" uid="uid://dtk5nj7s82cpl" path="res://asset/Effects/Effect 2 - Sprite Sheet.png" id="4_aaftf"]
+[ext_resource type="Script" path="res://scripts/VFX/ImpactHit.cs" id="1_1aj6e"]
+[ext_resource type="Texture2D" uid="uid://cp745psnaybse" path="res://asset/Thrust/Thrust 2 SpriteSheet.png" id="2_n6jyf"]
+[ext_resource type="Texture2D" uid="uid://c5nw5brs2oa0w" path="res://asset/Effects/Effect 1 - Sprite Sheet.png" id="3_rwl53"]
+[ext_resource type="Texture2D" uid="uid://dtk5nj7s82cpl" path="res://asset/Effects/Effect 2 - Sprite Sheet.png" id="4_m1ec8"]
 
 [sub_resource type="Animation" id="Animation_igrcv"]
 length = 0.001
@@ -91,9 +91,9 @@ _data = {
 "Thrust": SubResource("Animation_2s2ny")
 }
 
-[node name="ImpactHit" type="Node2D"]
-script = ExtResource("1_j76kp")
-_criticalFramePosition = 0.033
+[node name="ImpactHit" type="Node2D" node_paths=PackedStringArray("_thrustSprite")]
+script = ExtResource("1_1aj6e")
+_thrustSprite = NodePath("Thrust")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
@@ -103,14 +103,14 @@ autoplay = "Thrust"
 
 [node name="Thrust" type="Sprite2D" parent="."]
 scale = Vector2(2, 2)
-texture = ExtResource("1_ivqqa")
+texture = ExtResource("2_n6jyf")
 vframes = 6
 
 [node name="Impact" type="Sprite2D" parent="."]
-texture = ExtResource("2_wb18y")
+texture = ExtResource("3_rwl53")
 vframes = 6
 
 [node name="Impact2" type="Sprite2D" parent="."]
 scale = Vector2(1.7, 1.7)
-texture = ExtResource("4_aaftf")
+texture = ExtResource("4_m1ec8")
 vframes = 5

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Godot;
 using MEC;
 
-public partial class Dog : CharacterBody2D, IHurtableBody
+public partial class Ghoul : CharacterBody2D, IHurtableBody
 {
     #region GENERAL
     private float JumpDistanceHeightThreshold = 60.0f;
@@ -11,7 +11,7 @@ public partial class Dog : CharacterBody2D, IHurtableBody
     public double Health = 3;
 
     [Export]
-    public double Damage = 1;
+    public int Damage = 1;
 
     [Export]
     public float Speed = 200.0f;
@@ -31,7 +31,7 @@ public partial class Dog : CharacterBody2D, IHurtableBody
     public Vector2 Direction;
 
     public float Gravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
-    public AnimatedSprite2D Sprite;
+    AnimatedSprite2D _animatedSprite;
 
     Area2D _hitBox;
     #endregion
@@ -45,6 +45,8 @@ public partial class Dog : CharacterBody2D, IHurtableBody
 
     [Export]
     float _directionChangedDelay = 1f; // in seconds
+
+    [Export]
     TileMapPathFind _tileMapPathFind;
     Queue<PointInfo> _pathQueue = new();
     PointInfo _target = null;
@@ -64,7 +66,7 @@ public partial class Dog : CharacterBody2D, IHurtableBody
             _prevTarget = null;
             _target = null;
 
-            _targetDetectionArea.Position = Vector2.Zero;
+            _targetDetectionArea.GlobalPosition = Vector2.Zero;
             return;
         }
 
@@ -76,7 +78,7 @@ public partial class Dog : CharacterBody2D, IHurtableBody
 
     private void AddTargetDetectionArea(Vector2 pos)
     {
-        _targetDetectionArea.Position = pos;
+        _targetDetectionArea.GlobalPosition = pos;
     }
 
     private void OnBodyEnteredTargetDetectionArea(Node2D body)
@@ -92,7 +94,7 @@ public partial class Dog : CharacterBody2D, IHurtableBody
     {
         if (_player != null && IsOnFloor())
         {
-            _pathQueue = _tileMapPathFind.GetPlatform2DPath(Position, _player.Position);
+            _pathQueue = _tileMapPathFind.GetPlatform2DPath(GlobalPosition, _player.GlobalPosition);
             GoToNextPointInPath();
         }
     }
@@ -112,6 +114,7 @@ public partial class Dog : CharacterBody2D, IHurtableBody
                 Shape = new RectangleShape2D() { Size = new(_targetXThreshold, _targetYThreshold) },
             };
         _targetDetectionArea.BodyEntered += OnBodyEnteredTargetDetectionArea;
+        _targetDetectionArea.GlobalPosition = GlobalPosition;
         _targetDetectionArea.AddChild(collisionShape);
 
         GetParent().CallDeferred("add_child", _targetDetectionArea);
@@ -124,24 +127,41 @@ public partial class Dog : CharacterBody2D, IHurtableBody
 
     public override void _Ready()
     {
-        Sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-        Sprite.Play("idle");
-        _tileMapPathFind = GetParent().GetNode<TileMapPathFind>("TileMap");
+        _animatedSprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+        _animatedSprite.Play("idle");
         _detectionArea = GetNode<Area2D>("DetectionArea");
         _detectionArea.BodyEntered += OnBodyEnteredDetectionArea;
         _detectionArea.BodyExited += OnBodyExitedDetectionArea;
         _hitBox = GetNode<Area2D>("HitBox");
         _hitBox.BodyEntered += OnBodyEnteredHitBox;
+
+        _animatedSprite.AnimationFinished += () =>
+        {
+            if (_animatedSprite.Animation == "die")
+            {
+                var tween = GetTree().CreateTween();
+                tween
+                    .TweenProperty(_animatedSprite, "modulate:a", 0, 1)
+                    .SetTrans(Tween.TransitionType.Linear)
+                    .SetEase(Tween.EaseType.Out);
+                tween.TweenCallback(Callable.From(this.QueueFree)).SetDelay(1);
+            }
+        };
     }
 
     public override void _Process(double delta)
     {
-        if (_player != null && _prevPlayerPosition != _player.Position)
+        if (_player != null && _prevPlayerPosition != _player.GlobalPosition)
             PathFinding();
         if (Direction.X < 0)
-            Sprite.FlipH = true;
+            _animatedSprite.FlipH = true;
         else
-            Sprite.FlipH = false;
+            _animatedSprite.FlipH = false;
+
+        if (Mathf.Round(Velocity.X) == 0)
+            _animatedSprite.Play("idle");
+        else
+            _animatedSprite.Play("running");
     }
 
     public override void _PhysicsProcess(double delta)
@@ -152,7 +172,7 @@ public partial class Dog : CharacterBody2D, IHurtableBody
             velocity.Y += Gravity * (float)delta;
 
         if (_player != null)
-            _prevPlayerPosition = _player.Position;
+            _prevPlayerPosition = _player.GlobalPosition;
 
         if (IsMovementAllowed)
             MoveToTargetLocation(ref velocity);
@@ -160,7 +180,6 @@ public partial class Dog : CharacterBody2D, IHurtableBody
         Velocity = velocity;
         MoveAndSlide();
     }
-
     #endregion
 
 
@@ -236,7 +255,7 @@ public partial class Dog : CharacterBody2D, IHurtableBody
                 Jump(ref velocity);
                 _isTargetReached = false;
                 _isDirectionChangable = true;
-                Timing.KillCoroutines("KeepDirection");
+                Timing.KillCoroutines("DogCoroutines");
             }
 
             if (
@@ -246,16 +265,13 @@ public partial class Dog : CharacterBody2D, IHurtableBody
                 && _isDirectionChangable
             )
             {
-                // // this case happen when character perform a jump and fail
-                // if (Position.Y > _target.Position.Y) // if character is below the target
-                //     PathFinding();
-                if (Position.Y != _target.Position.Y)
+                if (GlobalPosition.Y != _target.Position.Y)
                 // this help to fix with edge case where the character is a the edge and about to fall down. But its  horizontal position have to go past the target position in order for its collision shape to not in contact with the ground so it can fall down. When this happen, direction is recalculate every physic frame so it will apply a opposite force in order for the character to return to the horizontal threshold. Effectively put the chracter in a stand still loop. This is a fix for that. We delay direction change when we standing above our target
                 {
                     Timing.RunCoroutine(
                         _KeepDirection(_directionChangedDelay).CancelWith(this),
                         segment: Segment.PhysicsProcess,
-                        tag: "KeepDirection"
+                        tag: "DogCoroutines"
                     );
                 }
             }
@@ -294,9 +310,9 @@ public partial class Dog : CharacterBody2D, IHurtableBody
 
     private void OnBodyEnteredHitBox(Node2D body)
     {
-        if (body is Player player)
+        if (body is Player player && Health > 0)
         {
-            player.GetHit((float)Damage);
+            player.GetHit(Damage);
         }
     }
 
@@ -332,16 +348,25 @@ public partial class Dog : CharacterBody2D, IHurtableBody
                     IsMovementAllowed = true;
                 })
             )
-            .SetDelay(duration + _stunDurationAfterBounceBack);
+            .SetDelay(_stunDurationAfterBounceBack);
     }
 
     #endregion
 
     #region CONTACT
-    public void GetHit(float _dmg)
+    public void GetHit(int _dmg)
     {
+        if (Health == 0)
+            return;
+
         Health -= _dmg;
-        CheckToDie();
+
+        if (Health == 0)
+        {
+            _animatedSprite.Play("die");
+            SetProcess(false);
+            SetPhysicsProcess(false);
+        }
 
         BounceBack(
             _player.IsFacingRight,
@@ -351,13 +376,6 @@ public partial class Dog : CharacterBody2D, IHurtableBody
         );
     }
 
-    void CheckToDie()
-    {
-        if (Health == 0)
-        {
-            QueueFree();
-        }
-    }
     #endregion
 
     #region EVENT HANDLER
