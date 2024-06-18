@@ -254,7 +254,7 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_eygw4"]
-size = Vector2(513.21, 335.529)
+size = Vector2(513.21, 138.063)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_112g0"]
 size = Vector2(16, 34.0625)
@@ -264,6 +264,8 @@ collision_layer = 4
 collision_mask = 6
 script = ExtResource("1_fdukx")
 SmallJumpVelocity = -380.0
+_targetXThreshold = 50
+_targetYThreshold = 50
 _bounceBackOffsetX = 20
 _bounceBackOffsetY = 0.0
 _bounceBackDuration = 0.2

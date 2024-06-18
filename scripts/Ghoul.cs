@@ -66,7 +66,7 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
             _prevTarget = null;
             _target = null;
 
-            _targetDetectionArea.Position = Vector2.Zero;
+            _targetDetectionArea.GlobalPosition = Vector2.Zero;
             return;
         }
 
@@ -78,7 +78,7 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
 
     private void AddTargetDetectionArea(Vector2 pos)
     {
-        _targetDetectionArea.Position = pos;
+        _targetDetectionArea.GlobalPosition = pos;
     }
 
     private void OnBodyEnteredTargetDetectionArea(Node2D body)
@@ -94,7 +94,7 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
     {
         if (_player != null && IsOnFloor())
         {
-            _pathQueue = _tileMapPathFind.GetPlatform2DPath(Position, _player.Position);
+            _pathQueue = _tileMapPathFind.GetPlatform2DPath(GlobalPosition, _player.GlobalPosition);
             GoToNextPointInPath();
         }
     }
@@ -114,6 +114,7 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
                 Shape = new RectangleShape2D() { Size = new(_targetXThreshold, _targetYThreshold) },
             };
         _targetDetectionArea.BodyEntered += OnBodyEnteredTargetDetectionArea;
+        _targetDetectionArea.GlobalPosition = GlobalPosition;
         _targetDetectionArea.AddChild(collisionShape);
 
         GetParent().CallDeferred("add_child", _targetDetectionArea);
@@ -150,7 +151,7 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
 
     public override void _Process(double delta)
     {
-        if (_player != null && _prevPlayerPosition != _player.Position)
+        if (_player != null && _prevPlayerPosition != _player.GlobalPosition)
             PathFinding();
         if (Direction.X < 0)
             _animatedSprite.FlipH = true;
@@ -171,7 +172,7 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
             velocity.Y += Gravity * (float)delta;
 
         if (_player != null)
-            _prevPlayerPosition = _player.Position;
+            _prevPlayerPosition = _player.GlobalPosition;
 
         if (IsMovementAllowed)
             MoveToTargetLocation(ref velocity);
@@ -179,7 +180,6 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         Velocity = velocity;
         MoveAndSlide();
     }
-
     #endregion
 
 
@@ -265,7 +265,7 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
                 && _isDirectionChangable
             )
             {
-                if (Position.Y != _target.Position.Y)
+                if (GlobalPosition.Y != _target.Position.Y)
                 // this help to fix with edge case where the character is a the edge and about to fall down. But its  horizontal position have to go past the target position in order for its collision shape to not in contact with the ground so it can fall down. When this happen, direction is recalculate every physic frame so it will apply a opposite force in order for the character to return to the horizontal threshold. Effectively put the chracter in a stand still loop. This is a fix for that. We delay direction change when we standing above our target
                 {
                     Timing.RunCoroutine(

@@ -3,7 +3,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Godot;
 using MEC;
-using static Godot.GD;
 
 public partial class Player : CharacterBody2D, IHurtableBody
 {
