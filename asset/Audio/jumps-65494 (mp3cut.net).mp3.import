@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bn8jmd886sl7w"
+path="res://.godot/imported/jumps-65494 (mp3cut.net).mp3-d552bfc113159c882fe096a42fa646e2.mp3str"
+
+[deps]
+
+source_file="res://asset/Audio/jumps-65494 (mp3cut.net).mp3"
+dest_files=["res://.godot/imported/jumps-65494 (mp3cut.net).mp3-d552bfc113159c882fe096a42fa646e2.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bu7s772qkf6al"]
+
+[ext_resource type="AudioStream" uid="uid://c5sh8j8rpc1rb" path="res://asset/Audio/running-sounds-6003.mp3" id="1_lxu0j"]
+
+[node name="AudioStreamPlayerRunning" type="AudioStreamPlayer2D"]
+stream = ExtResource("1_lxu0j")
+volume_db = 10.895
+pitch_scale = 1.04
