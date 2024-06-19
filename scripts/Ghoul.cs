@@ -86,13 +86,13 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         if (body == this)
         {
             _isTargetReached = true;
-            GoToNextPointInPath();
+            // GoToNextPointInPath();
         }
     }
 
     void PathFinding()
     {
-        if (_player != null && IsOnFloor())
+        if (_player != null && IsOnFloor() && _player.IsOnFloor())
         {
             _pathQueue = _tileMapPathFind.GetPlatform2DPath(GlobalPosition, _player.GlobalPosition);
             GoToNextPointInPath();
@@ -151,8 +151,7 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
 
     public override void _Process(double delta)
     {
-        if (_player != null && _prevPlayerPosition != _player.GlobalPosition)
-            PathFinding();
+        PathFinding();
         if (Direction.X < 0)
             _animatedSprite.FlipH = true;
         else
@@ -249,12 +248,17 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
             var currDirection = distance.Normalized();
 
             // the player have reach the target threshold
-            if (_isTargetReached && IsOnFloor())
+            if (
+                Mathf.Abs(distance.X) <= _targetXThreshold // meet x threshold
+                && Mathf.Abs(distance.Y) <= _targetYThreshold //  meet y threshold
+                && IsOnFloor()
+            )
             {
                 // we call jump here because every jumpable point must also be a target point
                 Jump(ref velocity);
                 _isTargetReached = false;
                 _isDirectionChangable = true;
+                GoToNextPointInPath();
                 Timing.KillCoroutines("DogCoroutines");
             }
 
@@ -365,7 +369,6 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         {
             _animatedSprite.Play("die");
             SetProcess(false);
-            SetPhysicsProcess(false);
         }
 
         BounceBack(
@@ -387,8 +390,9 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
 
     private void OnBodyEnteredDetectionArea(Node2D body)
     {
-        _player = (Player)body;
-        PathFinding();
+        if (body is Player player)
+            _player = player;
+        GD.Print("Player entered detection area, playerType: ", body.GetType(), body.Name);
     }
 
     #endregion

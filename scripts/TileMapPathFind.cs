@@ -90,18 +90,6 @@ public partial class TileMapPathFind : TileMap
         return newPointInfo;
     }
 
-    static System.Collections.Generic.Stack<PointInfo> ReversedPathStack(
-        System.Collections.Generic.Stack<PointInfo> pathStack
-    )
-    {
-        System.Collections.Generic.Stack<PointInfo> pathStackReversed = new();
-        while (pathStack.Count != 0)
-        {
-            pathStackReversed.Push(pathStack.Pop());
-        }
-        return pathStackReversed;
-    }
-
     public System.Collections.Generic.Queue<PointInfo> GetPlatform2DPath(
         Vector2 startPos,
         Vector2 endPos
@@ -135,7 +123,7 @@ public partial class TileMapPathFind : TileMap
                     < currPoint.Position.DistanceTo(secondPoint.Position)
                 )
                 {
-                    // pathQueue.Enqueue(startPoint);
+                    pathQueue.Enqueue(startPoint);
                     continue;
                 }
             }
