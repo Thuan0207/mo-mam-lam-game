@@ -4,5 +4,5 @@
 
 [node name="AudioStreamPlayerJump" type="AudioStreamPlayer2D"]
 stream = ExtResource("1_uvwgt")
-volume_db = 0.189
+volume_db = 10.094
 pitch_scale = 1.53

@@ -18,10 +18,15 @@ public partial class Player : CharacterBody2D
     float playerGravity;
 
     #endregion
+    #region 
+    public AudioStreamPlayer2D AudioStreamPlayerJump ;
+    public AudioStreamPlayer2D AudioStreamPlayerRunning ;
+    #endregion
 
     #region STATE PARAMETERS
     public bool IsFacingRight { get; private set; }
     public bool IsJumping { get; private set; }
+
     public bool IsFalling { get; private set; }
     public bool IsDashing { get; private set; }
     public float LastOnGroundTime { get; private set; }
@@ -100,7 +105,8 @@ public partial class Player : CharacterBody2D
 
         IsFacingRight = true;
         IsFalling = false;
-
+        AudioStreamPlayerJump = GetNode<AudioStreamPlayer2D>("AudioStreamPlayerJump");
+        AudioStreamPlayerRunning = GetNode<AudioStreamPlayer2D>("AudioStreamPlayerRunning");
         animatedSprite2D = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
         runningDustLeft = GetNode<CpuParticles2D>("RunningDustLeft");
         runningDustRight = GetNode<CpuParticles2D>("RunningDustRight");
@@ -164,12 +170,16 @@ public partial class Player : CharacterBody2D
         #region MOVING PROCESS
         if (_moveInput.X != 0)
         {
+            
             HandleAnimation("forward");
             CheckDirectionToFace(isMovingRight: _moveInput.X > 0);
+            
         }
         else
         {
             HandleAnimation("neutral");
+            
+            
         }
         #endregion
 
@@ -266,10 +276,10 @@ public partial class Player : CharacterBody2D
     #endregion
 
     public override void _PhysicsProcess(double _d)
+
     {
         float delta = (float)(_d * localTimeScale);
         Vector2 v = Velocity;
-
         // apply gravity
         if (!IsOnFloor())
             v.Y += playerGravity * delta;
@@ -296,10 +306,31 @@ public partial class Player : CharacterBody2D
             _isJumpCut = false;
             _isJumpFalling = false;
             v.Y -= CalculateJumpForce();
+        
         }
-
+        // audio jum
+        if(IsOnFloor() && Input.IsActionJustPressed("jump"))
+            {
+                AudioStreamPlayerJump.Play();
+            }
+        // audio run
+        if( Input.IsActionJustPressed("left") || Input.IsActionJustPressed("right") && IsOnFloor())
+            {
+                AudioStreamPlayerRunning.Play();
+                
+            }
+            
+        if(Input.IsActionJustReleased("left") || Input.IsActionJustReleased("right") && IsOnFloor() )
+            {
+                AudioStreamPlayerRunning.Stop();
+                 
+            }
+            
+        
+        
         Velocity = v;
         MoveAndSlide();
+        
 
         if (Math.Round(Velocity.X) != 0)
             EmitRunningDust();

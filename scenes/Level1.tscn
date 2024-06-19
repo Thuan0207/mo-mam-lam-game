@@ -1,10 +1,12 @@
-[gd_scene load_steps=9 format=3 uid="uid://ckwut2klv8yex"]
+[gd_scene load_steps=11 format=3 uid="uid://bn5747s54spb4"]
 
-[ext_resource type="PackedScene" uid="uid://bk1p8uwu258io" path="res://scenes/Lv1Map.tscn" id="1_1tyto"]
+[ext_resource type="PackedScene" path="res://scenes/Lv1Map.tscn" id="1_1tyto"]
 [ext_resource type="PackedScene" uid="uid://bcb66ab5wjgvt" path="res://scenes/Player.tscn" id="3_g4he3"]
+[ext_resource type="PackedScene" uid="uid://bnxmjal3dtmqn" path="res://AudioStreamPlayerJump.tscn" id="4_kn3o2"]
 [ext_resource type="Texture2D" uid="uid://6wsjsq503u0v" path="res://Sprites/PixelFantasy_Caves_1.0/RMT0Kk.jpg" id="4_rw1nn"]
 [ext_resource type="Script" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="4_tfrbc"]
-[ext_resource type="PackedScene" uid="uid://by4lqpdcq4a3k" path="res://scenes/Dog.tscn" id="5_6ni77"]
+[ext_resource type="PackedScene" path="res://scenes/Dog.tscn" id="5_6ni77"]
+[ext_resource type="PackedScene" uid="uid://bu7s772qkf6al" path="res://AudioStreamPlayerRunning.tscn" id="5_tvisb"]
 [ext_resource type="Script" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_2d.gd" id="6_c36g6"]
 [ext_resource type="Script" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="7_gemm8"]
 
@@ -28,6 +30,12 @@ SmallJumpVelocity = -350.0
 
 [node name="Player" parent="." instance=ExtResource("3_g4he3")]
 position = Vector2(4849, 1359)
+
+[node name="AudioStreamPlayerJump" parent="Player" instance=ExtResource("4_kn3o2")]
+volume_db = 4.152
+
+[node name="AudioStreamPlayerRunning" parent="Player" instance=ExtResource("5_tvisb")]
+volume_db = 10.704
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(4849, 1359)

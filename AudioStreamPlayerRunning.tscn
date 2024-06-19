@@ -4,5 +4,5 @@
 
 [node name="AudioStreamPlayerRunning" type="AudioStreamPlayer2D"]
 stream = ExtResource("1_lxu0j")
-volume_db = 1.981
+volume_db = 10.895
 pitch_scale = 1.04
