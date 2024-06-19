@@ -797,7 +797,9 @@ public partial class Player : CharacterBody2D, IHurtableBody
         // _hitboxRight.Monitoring = false;
         IsStriking = false; // this is the state where attack frames are allow to connect with the enemy body
 
-        if (isAttackAnimationPlaying && IsCurrentFrame(3, 4, 5) && !IsAtkConnected) // check for enabling the "dealing-damage" frame
+		// && IsCurrentFrame(3, 4, 5)
+
+        if (isAttackAnimationPlaying && !IsAtkConnected) // check for enabling the "dealing-damage" frame
         {
             IsStriking = true;
         }
