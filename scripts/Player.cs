@@ -137,9 +137,9 @@ public partial class Player : CharacterBody2D, IHurtableBody
                 IsAtkConnected = false;
             }
             else if (animatedSprite2D.Animation == "end_dash")
-                ResetAllPlayingAnimation();
+                ResetAllPlayingAnimationCheck();
             else if (animatedSprite2D.Animation == "hurt")
-                ResetAllPlayingAnimation();
+                ResetAllPlayingAnimationCheck();
         };
 
         SetGravityScale(Data.GravityScale);
@@ -397,7 +397,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
     #region ANIMATION METHOD
 
-    void ResetAllPlayingAnimation()
+    void ResetAllPlayingAnimationCheck()
     {
         isDashAnimationPlaying = false;
         isDieAnimationPlaying = false;
@@ -934,7 +934,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
             KillDash();
 
-            ResetAllPlayingAnimation();
+            ResetAllPlayingAnimationCheck();
             animatedSprite2D.Play("hurt");
 
             EmitSignal(SignalName.HealthChanged, _health);
@@ -943,7 +943,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
         if (_health == 0)
         {
-            ResetAllPlayingAnimation();
+            ResetAllPlayingAnimationCheck();
             animatedSprite2D.Play("die");
             SetProcess(false);
             SetPhysicsProcess(false);
