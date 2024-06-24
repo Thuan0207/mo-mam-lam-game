@@ -11,8 +11,6 @@ public partial class State : Node
     //  The state machine node will set it.
     public StateMachine StateMachine;
 
-    // Virtual function. Receives events from the `_ready()` callback.
-
     // Virtual function. Receives events from the `_unhandled_input()` callback.
     public virtual void HandleInput(InputEvent @event) { }
 
@@ -24,10 +22,7 @@ public partial class State : Node
 
     // Virtual function. Called by the state machine upon changing the active state. The `msg` parameter
     // is a dictionary with arbitrary data the state can use to initialize itself.
-    public virtual void Enter(Dictionary<string, dynamic> _msg = null)
-    {
-        _msg ??= new Dictionary<string, dynamic>();
-    }
+    public virtual void Enter(Dictionary<string, dynamic> _msg = null) { }
 
     // Virtual function. Called by the state machine before changing the active state. Use this function
     // to clean up the state.

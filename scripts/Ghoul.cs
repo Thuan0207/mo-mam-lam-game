@@ -5,7 +5,10 @@ using MEC;
 public partial class Ghoul : CharacterBody2D, IHurtableBody
 {
     #region GENERAL
-    private float JumpDistanceHeightThreshold = 60.0f;
+    const float JUMP_HEIGHT_THRESHOLD = 60.0f;
+
+    [Export]
+    public CharacterData Data;
 
     [Export]
     public double Health = 3;
@@ -17,13 +20,16 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
     public float Speed = 200.0f;
 
     [Export]
+    public float RunLerp = 0.75f;
+
+    [Export]
     public float JumpVelocity = -450.0f;
 
     [Export]
     public float TinyJumpVelocity = -300.0f;
 
     [Export]
-    public float SmallJumpVelocity = -350f;
+    const float SmallJumpVelocity = -350f;
 
     [Export]
     public bool IsMovementAllowed = true;
@@ -44,20 +50,15 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
     int _targetYThreshold = 30;
 
     [Export]
-    float _directionChangedDelay = 1f; // in seconds
-
-    [Export]
     TileMapPathFind _tileMapPathFind;
     Queue<PointInfo> _pathQueue = new();
-    PointInfo _target = null;
-    PointInfo _prevTarget = null;
-    bool _isDirectionChangable = true;
-
-    Player _player;
+#nullable enable
+    PointInfo? _target = null;
+    PointInfo? _prevTarget = null;
+    Player? _player;
+#nullable disable
     Area2D _detectionArea;
     Area2D _targetDetectionArea;
-    Vector2 _prevPlayerPosition;
-    bool _isTargetReached = false;
 
     void GoToNextPointInPath()
     {
@@ -73,26 +74,35 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         _prevTarget = _target;
         _target = _pathQueue.Dequeue();
 
+        var distance = _target.Position - GlobalPosition;
+
+        // if the we are within the threshold of current target we skip to the next one when possible
+        if (
+            _pathQueue.Count > 0
+            && Mathf.Abs(distance.X) <= _targetXThreshold
+            && Mathf.Abs(distance.Y) <= _targetYThreshold
+        ) // Enter target threshold
+            _target = _pathQueue.Dequeue();
+
         AddTargetDetectionArea(_target.Position);
     }
 
     private void AddTargetDetectionArea(Vector2 pos)
     {
-        _targetDetectionArea.GlobalPosition = pos;
+        _targetDetectionArea.Position = pos;
     }
 
     private void OnBodyEnteredTargetDetectionArea(Node2D body)
     {
         if (body == this)
         {
-            _isTargetReached = true;
             // GoToNextPointInPath();
         }
     }
 
     void PathFinding()
     {
-        if (_player != null && IsOnFloor() && _player.IsOnFloor())
+        if (_player != null && IsOnFloor() && Health > 0)
         {
             _pathQueue = _tileMapPathFind.GetPlatform2DPath(GlobalPosition, _player.GlobalPosition);
             GoToNextPointInPath();
@@ -108,13 +118,14 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
             CollisionMask = 4, // can only collide with enemy
             CollisionLayer = 128 // area layer
         };
+
         CollisionShape2D collisionShape =
             new()
             {
                 Shape = new RectangleShape2D() { Size = new(_targetXThreshold, _targetYThreshold) },
             };
+
         _targetDetectionArea.BodyEntered += OnBodyEnteredTargetDetectionArea;
-        _targetDetectionArea.GlobalPosition = GlobalPosition;
         _targetDetectionArea.AddChild(collisionShape);
 
         GetParent().CallDeferred("add_child", _targetDetectionArea);
@@ -127,31 +138,24 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
 
     public override void _Ready()
     {
+        #region NODES ASSIGNMENTS
+        _hitBox = GetNode<Area2D>("HitBox");
         _animatedSprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-        _animatedSprite.Play("idle");
         _detectionArea = GetNode<Area2D>("DetectionArea");
+        #endregion
+
+        #region EVENTS ASSIGNMENTS
         _detectionArea.BodyEntered += OnBodyEnteredDetectionArea;
         _detectionArea.BodyExited += OnBodyExitedDetectionArea;
-        _hitBox = GetNode<Area2D>("HitBox");
         _hitBox.BodyEntered += OnBodyEnteredHitBox;
-
-        _animatedSprite.AnimationFinished += () =>
-        {
-            if (_animatedSprite.Animation == "die")
-            {
-                var tween = GetTree().CreateTween();
-                tween
-                    .TweenProperty(_animatedSprite, "modulate:a", 0, 1)
-                    .SetTrans(Tween.TransitionType.Linear)
-                    .SetEase(Tween.EaseType.Out);
-                tween.TweenCallback(Callable.From(this.QueueFree)).SetDelay(1);
-            }
-        };
+        _animatedSprite.AnimationFinished += OnAnimationFinished;
+        #endregion
     }
 
     public override void _Process(double delta)
     {
         PathFinding();
+
         if (Direction.X < 0)
             _animatedSprite.FlipH = true;
         else
@@ -170,11 +174,8 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         if (!IsOnFloor())
             velocity.Y += Gravity * (float)delta;
 
-        if (_player != null)
-            _prevPlayerPosition = _player.GlobalPosition;
-
         if (IsMovementAllowed)
-            MoveToTargetLocation(ref velocity);
+            MoveToTargetLocation(ref velocity, delta);
 
         Velocity = velocity;
         MoveAndSlide();
@@ -183,13 +184,8 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
 
 
     #region MOVEMENT
-    IEnumerator<double> _KeepDirection(float duration)
-    {
-        _isDirectionChangable = false;
-        yield return Timing.WaitForSeconds(duration);
-        _isDirectionChangable = true;
-    }
 
+    #region jump
     bool CanJumpDownFromRightToLeftEdge()
     {
         return _prevTarget.IsRightEdge
@@ -208,44 +204,49 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
 
     private void Jump(ref Vector2 velocity)
     {
-        if (_prevTarget == null || _target == null || _target.IsPositionPoint)
+        if (_target == null || _target.IsPositionPoint)
             return;
 
         // if the target can be drop to reach then we don't need to jump
-        if (_prevTarget.Position.Y < _target.Position.Y && _target.IsFallTile)
+        if (GlobalPosition.Y < _target.Position.Y && _target.IsFallTile)
             return;
 
         if (
-            _prevTarget.Position.Y < _target.Position.Y
-            && _prevTarget.Position.DistanceTo(_target.Position) < JumpDistanceHeightThreshold
+            (
+                GlobalPosition.Y < _target.Position.Y
+                && GlobalPosition.DistanceTo(_target.Position) < JUMP_HEIGHT_THRESHOLD
+            )
         )
-            velocity.Y = SmallJumpVelocity;
+            velocity.Y = -Mathf.Sqrt(2 * 4 * _tileMapPathFind.TileSet.TileSize.Y * Gravity);
 
         if (
-            _prevTarget.Position.Y > _target.Position.Y // can jump up
+            GlobalPosition.Y > _target.Position.Y // can jump up
             || CanJumpDownFromLeftToRightEdge()
             || CanJumpDownFromRightToLeftEdge()
         )
         {
             int heightDistance = Mathf.Abs(
                 _tileMapPathFind.LocalToMap(_target.Position).Y
-                    - _tileMapPathFind.LocalToMap(_prevTarget.Position).Y
+                    - _tileMapPathFind.LocalToMap(GlobalPosition).Y
             );
+
             if (heightDistance <= 2)
-                velocity.Y = TinyJumpVelocity;
+                velocity.Y = Mathf.Sqrt(2 * 4 * _tileMapPathFind.TileSet.TileSize.Y * Gravity);
             else if (heightDistance == 3)
-                velocity.Y = SmallJumpVelocity;
+                velocity.Y = Mathf.Sqrt(2 * 6 * _tileMapPathFind.TileSet.TileSize.Y * Gravity);
             else
-                velocity.Y = JumpVelocity;
+                velocity.Y = Mathf.Sqrt(2 * 8 * _tileMapPathFind.TileSet.TileSize.Y * Gravity);
+
+            velocity.Y = -1 * velocity.Y;
         }
     }
+    #endregion
 
-    void MoveToTargetLocation(ref Vector2 velocity)
+    void MoveToTargetLocation(ref Vector2 velocity, double delta)
     {
         if (_target != null)
         {
             var distance = _target.Position - Position;
-            var currDirection = distance.Normalized();
 
             // the player have reach the target threshold
             if (
@@ -255,48 +256,26 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
             )
             {
                 // we call jump here because every jumpable point must also be a target point
+
                 Jump(ref velocity);
-                _isTargetReached = false;
-                _isDirectionChangable = true;
                 GoToNextPointInPath();
-                Timing.KillCoroutines("DogCoroutines");
+
+                if (_target != null)
+                    distance = _target.Position - Position;
             }
 
             if (
-                Mathf.Abs(distance.X) <= _targetXThreshold // meet x threshold
-                && Mathf.Abs(distance.Y) > _targetYThreshold // doesn't meet y threshold
-                && Direction != Vector2.Zero
-                && _isDirectionChangable
+                Mathf.Abs(distance.X) > _targetXThreshold //doesn't meet target x threshold
             )
-            {
-                if (GlobalPosition.Y != _target.Position.Y)
-                // this help to fix with edge case where the character is a the edge and about to fall down. But its  horizontal position have to go past the target position in order for its collision shape to not in contact with the ground so it can fall down. When this happen, direction is recalculate every physic frame so it will apply a opposite force in order for the character to return to the horizontal threshold. Effectively put the chracter in a stand still loop. This is a fix for that. We delay direction change when we standing above our target
-                {
-                    Timing.RunCoroutine(
-                        _KeepDirection(_directionChangedDelay).CancelWith(this),
-                        segment: Segment.PhysicsProcess,
-                        tag: "DogCoroutines"
-                    );
-                }
-            }
-
-            if (
-                _isDirectionChangable
-                && Mathf.Abs(distance.X) > _targetXThreshold //doesn't meet target x threshold
-            )
-                Direction = currDirection;
+                Direction = distance.Normalized();
         }
         else
-        {
             Direction = Vector2.Zero;
-        }
 
-        if (Direction != Vector2.Zero)
-            velocity.X = Mathf.Sign(Direction.X) * Speed;
-        else
-            velocity.X = Mathf.MoveToward(Velocity.X, 0, Speed);
+        velocity.X = Mathf.Lerp(Velocity.X, Mathf.Sign(Direction.X) * Speed, RunLerp);
+
+        GD.Print("Velocity: ", Velocity);
     }
-
     #endregion
 
     #region COMBAT
@@ -317,6 +296,13 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         if (body is Player player && Health > 0)
         {
             player.GetHit(Damage);
+
+            BounceBack(
+                _player.IsFacingRight,
+                _bounceBackOffsetX,
+                _bounceBackOffsetY,
+                _bounceBackDuration
+            );
         }
     }
 
@@ -354,7 +340,6 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
             )
             .SetDelay(_stunDurationAfterBounceBack);
     }
-
     #endregion
 
     #region CONTACT
@@ -385,14 +370,26 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
     private void OnBodyExitedDetectionArea(Node2D body)
     {
         // we don't want to delete player while the character still chasing it.
-        _player = null;
+        // _player = null;
     }
 
     private void OnBodyEnteredDetectionArea(Node2D body)
     {
         if (body is Player player)
             _player = player;
-        GD.Print("Player entered detection area, playerType: ", body.GetType(), body.Name);
+    }
+
+    void OnAnimationFinished()
+    {
+        if (_animatedSprite.Animation == "die")
+        {
+            var tween = GetTree().CreateTween();
+            tween
+                .TweenProperty(_animatedSprite, "modulate:a", 0, 1)
+                .SetTrans(Tween.TransitionType.Linear)
+                .SetEase(Tween.EaseType.Out);
+            tween.TweenCallback(Callable.From(this.QueueFree)).SetDelay(1);
+        }
     }
 
     #endregion

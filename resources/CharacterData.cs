@@ -1,7 +1,7 @@
 using Godot;
 
 [Tool]
-public partial class PlayerData : Resource
+public partial class CharacterData : Resource
 {
     [ExportCategory("Movement")]
     [ExportGroup("Gravity")]
@@ -200,7 +200,7 @@ public partial class PlayerData : Resource
     [Export]
     public int MaxHealth;
     #endregion
-    public PlayerData()
+    public CharacterData()
         : this(
             0.95f,
             20f,
@@ -229,7 +229,7 @@ public partial class PlayerData : Resource
             5
         ) { }
 
-    public PlayerData(
+    public CharacterData(
         float fallGravityMult = 0.95f,
         float maxFallSpeed = 20,
         float fastFallGravityMult = 1.28f,

@@ -1,8 +1,9 @@
-[gd_scene load_steps=14 format=3 uid="uid://bgxkjum08qdwc"]
+[gd_scene load_steps=27 format=3 uid="uid://bgxkjum08qdwc"]
 
 [ext_resource type="Script" path="res://scripts/World.cs" id="1_cr1qx"]
 [ext_resource type="PackedScene" uid="uid://c1wxr4lp1jlig" path="res://scenes/Level1Map.tscn" id="2_pk6ig"]
 [ext_resource type="PackedScene" uid="uid://by4lqpdcq4a3k" path="res://scenes/Ghoul.tscn" id="4_n46as"]
+[ext_resource type="Script" path="res://resources/CharacterData.cs" id="4_yivs4"]
 [ext_resource type="PackedScene" uid="uid://bcb66ab5wjgvt" path="res://scenes/Player.tscn" id="6_3b7ge"]
 [ext_resource type="Script" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="7_eu7qd"]
 [ext_resource type="Script" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="7_t0r1w"]
@@ -12,6 +13,462 @@
 [ext_resource type="Texture2D" uid="uid://dupl4qckdgjdo" path="res://Sprites/PixelFantasy_Caves_1.0/PSD/ParallaxBackground/MiddleLayer.png" id="12_jyslh"]
 [ext_resource type="Texture2D" uid="uid://b7qeajfmcyo3e" path="res://Sprites/PixelFantasy_Caves_1.0/PSD/ParallaxBackground/TopLayer.png" id="13_t2r5g"]
 [ext_resource type="PackedScene" uid="uid://cdjjtjgx04og7" path="res://scenes/GUI/HeartsContainer.tscn" id="14_hqyya"]
+
+[sub_resource type="Resource" id="Resource_hggcj"]
+resource_local_to_scene = true
+script = ExtResource("4_yivs4")
+FallGravityMult = 1.2
+MaxFallSpeed = 10.0
+FastFallGravityMult = 1.3
+MaxFastFallSpeed = 30.0
+JumpHeight = 90.0
+JumpTimeToApex = 0.37
+JumpCutGravityMult = 1.1
+JumpHangGravityMult = 0.8
+JumpHangThreshold = 16.0
+JumpHangAccelerationMult = 1.0
+JumpHangMaxSpeedMult = 1.1
+_runMaxSpeed = 230.0
+Acceleration = 120.0
+Decceleration = 120.0
+AccelInAir = 0.8
+DeccelInAir = 0.8
+CoyoteTime = 0.2
+JumpInputBufferTime = 0.1
+dashAmount = 1
+dashSpeed = 645.0
+dashSleepTime = 0.025
+dashAttackTime = 0.175
+dashEndTime = 0.01
+dashEndSpeed = Vector2(385, 200)
+dashEndRunLerp = 0.5
+dashRefillTime = 0.1
+DashInputBufferTime = 0.1
+AttackInputBufferTime = 0.2
+Damage = 1
+BounceBackDuration = 0.2
+BounceBackForce = 1.86
+FreezeDuration = 0.3
+FreezeScale = 0.1
+MaxHealth = 5
+
+[sub_resource type="Resource" id="Resource_tulyu"]
+resource_local_to_scene = true
+script = ExtResource("4_yivs4")
+FallGravityMult = 1.1
+MaxFallSpeed = 10.0
+FastFallGravityMult = 1.3
+MaxFastFallSpeed = 30.0
+JumpHeight = 90.0
+JumpTimeToApex = 0.37
+JumpCutGravityMult = 1.1
+JumpHangGravityMult = 0.8
+JumpHangThreshold = 16.0
+JumpHangAccelerationMult = 1.0
+JumpHangMaxSpeedMult = 1.1
+_runMaxSpeed = 230.0
+Acceleration = 120.0
+Decceleration = 120.0
+AccelInAir = 0.8
+DeccelInAir = 0.8
+CoyoteTime = 0.2
+JumpInputBufferTime = 0.1
+dashAmount = 1
+dashSpeed = 645.0
+dashSleepTime = 0.025
+dashAttackTime = 0.175
+dashEndTime = 0.01
+dashEndSpeed = Vector2(385, 200)
+dashEndRunLerp = 0.5
+dashRefillTime = 0.1
+DashInputBufferTime = 0.1
+AttackInputBufferTime = 0.2
+Damage = 1
+BounceBackDuration = 0.2
+BounceBackForce = 1.86
+FreezeDuration = 0.3
+FreezeScale = 0.1
+MaxHealth = 5
+
+[sub_resource type="Resource" id="Resource_u1dj0"]
+resource_local_to_scene = true
+script = ExtResource("4_yivs4")
+FallGravityMult = 1.1
+MaxFallSpeed = 10.0
+FastFallGravityMult = 1.3
+MaxFastFallSpeed = 30.0
+JumpHeight = 90.0
+JumpTimeToApex = 0.37
+JumpCutGravityMult = 1.1
+JumpHangGravityMult = 0.8
+JumpHangThreshold = 16.0
+JumpHangAccelerationMult = 1.0
+JumpHangMaxSpeedMult = 1.1
+_runMaxSpeed = 230.0
+Acceleration = 120.0
+Decceleration = 120.0
+AccelInAir = 0.8
+DeccelInAir = 0.8
+CoyoteTime = 0.2
+JumpInputBufferTime = 0.1
+dashAmount = 1
+dashSpeed = 645.0
+dashSleepTime = 0.025
+dashAttackTime = 0.175
+dashEndTime = 0.01
+dashEndSpeed = Vector2(385, 200)
+dashEndRunLerp = 0.5
+dashRefillTime = 0.1
+DashInputBufferTime = 0.1
+AttackInputBufferTime = 0.2
+Damage = 1
+BounceBackDuration = 0.2
+BounceBackForce = 1.86
+FreezeDuration = 0.3
+FreezeScale = 0.1
+MaxHealth = 5
+
+[sub_resource type="Resource" id="Resource_t6e1i"]
+resource_local_to_scene = true
+script = ExtResource("4_yivs4")
+FallGravityMult = 1.1
+MaxFallSpeed = 10.0
+FastFallGravityMult = 1.3
+MaxFastFallSpeed = 30.0
+JumpHeight = 90.0
+JumpTimeToApex = 0.37
+JumpCutGravityMult = 1.1
+JumpHangGravityMult = 0.8
+JumpHangThreshold = 16.0
+JumpHangAccelerationMult = 1.0
+JumpHangMaxSpeedMult = 1.1
+_runMaxSpeed = 230.0
+Acceleration = 120.0
+Decceleration = 120.0
+AccelInAir = 0.8
+DeccelInAir = 0.8
+CoyoteTime = 0.2
+JumpInputBufferTime = 0.1
+dashAmount = 1
+dashSpeed = 645.0
+dashSleepTime = 0.025
+dashAttackTime = 0.175
+dashEndTime = 0.01
+dashEndSpeed = Vector2(385, 200)
+dashEndRunLerp = 0.5
+dashRefillTime = 0.1
+DashInputBufferTime = 0.1
+AttackInputBufferTime = 0.2
+Damage = 1
+BounceBackDuration = 0.2
+BounceBackForce = 1.86
+FreezeDuration = 0.3
+FreezeScale = 0.1
+MaxHealth = 5
+
+[sub_resource type="Resource" id="Resource_1718s"]
+resource_local_to_scene = true
+script = ExtResource("4_yivs4")
+FallGravityMult = 1.1
+MaxFallSpeed = 10.0
+FastFallGravityMult = 1.3
+MaxFastFallSpeed = 30.0
+JumpHeight = 90.0
+JumpTimeToApex = 0.37
+JumpCutGravityMult = 1.1
+JumpHangGravityMult = 0.8
+JumpHangThreshold = 16.0
+JumpHangAccelerationMult = 1.0
+JumpHangMaxSpeedMult = 1.1
+_runMaxSpeed = 230.0
+Acceleration = 120.0
+Decceleration = 120.0
+AccelInAir = 0.8
+DeccelInAir = 0.8
+CoyoteTime = 0.2
+JumpInputBufferTime = 0.1
+dashAmount = 1
+dashSpeed = 645.0
+dashSleepTime = 0.025
+dashAttackTime = 0.175
+dashEndTime = 0.01
+dashEndSpeed = Vector2(385, 200)
+dashEndRunLerp = 0.5
+dashRefillTime = 0.1
+DashInputBufferTime = 0.1
+AttackInputBufferTime = 0.2
+Damage = 1
+BounceBackDuration = 0.2
+BounceBackForce = 1.86
+FreezeDuration = 0.3
+FreezeScale = 0.1
+MaxHealth = 5
+
+[sub_resource type="Resource" id="Resource_h2td7"]
+resource_local_to_scene = true
+script = ExtResource("4_yivs4")
+FallGravityMult = 1.1
+MaxFallSpeed = 10.0
+FastFallGravityMult = 1.3
+MaxFastFallSpeed = 30.0
+JumpHeight = 90.0
+JumpTimeToApex = 0.37
+JumpCutGravityMult = 1.1
+JumpHangGravityMult = 0.8
+JumpHangThreshold = 16.0
+JumpHangAccelerationMult = 1.0
+JumpHangMaxSpeedMult = 1.1
+_runMaxSpeed = 230.0
+Acceleration = 120.0
+Decceleration = 120.0
+AccelInAir = 0.8
+DeccelInAir = 0.8
+CoyoteTime = 0.2
+JumpInputBufferTime = 0.1
+dashAmount = 1
+dashSpeed = 645.0
+dashSleepTime = 0.025
+dashAttackTime = 0.175
+dashEndTime = 0.01
+dashEndSpeed = Vector2(385, 200)
+dashEndRunLerp = 0.5
+dashRefillTime = 0.1
+DashInputBufferTime = 0.1
+AttackInputBufferTime = 0.2
+Damage = 1
+BounceBackDuration = 0.2
+BounceBackForce = 1.86
+FreezeDuration = 0.3
+FreezeScale = 0.1
+MaxHealth = 5
+
+[sub_resource type="Resource" id="Resource_ickcn"]
+resource_local_to_scene = true
+script = ExtResource("4_yivs4")
+FallGravityMult = 1.1
+MaxFallSpeed = 10.0
+FastFallGravityMult = 1.3
+MaxFastFallSpeed = 30.0
+JumpHeight = 90.0
+JumpTimeToApex = 0.37
+JumpCutGravityMult = 1.1
+JumpHangGravityMult = 0.8
+JumpHangThreshold = 16.0
+JumpHangAccelerationMult = 1.0
+JumpHangMaxSpeedMult = 1.1
+_runMaxSpeed = 230.0
+Acceleration = 120.0
+Decceleration = 120.0
+AccelInAir = 0.8
+DeccelInAir = 0.8
+CoyoteTime = 0.2
+JumpInputBufferTime = 0.1
+dashAmount = 1
+dashSpeed = 645.0
+dashSleepTime = 0.025
+dashAttackTime = 0.175
+dashEndTime = 0.01
+dashEndSpeed = Vector2(385, 200)
+dashEndRunLerp = 0.5
+dashRefillTime = 0.1
+DashInputBufferTime = 0.1
+AttackInputBufferTime = 0.2
+Damage = 1
+BounceBackDuration = 0.2
+BounceBackForce = 1.86
+FreezeDuration = 0.3
+FreezeScale = 0.1
+MaxHealth = 5
+
+[sub_resource type="Resource" id="Resource_wljuf"]
+resource_local_to_scene = true
+script = ExtResource("4_yivs4")
+FallGravityMult = 1.1
+MaxFallSpeed = 10.0
+FastFallGravityMult = 1.3
+MaxFastFallSpeed = 30.0
+JumpHeight = 90.0
+JumpTimeToApex = 0.37
+JumpCutGravityMult = 1.1
+JumpHangGravityMult = 0.8
+JumpHangThreshold = 16.0
+JumpHangAccelerationMult = 1.0
+JumpHangMaxSpeedMult = 1.1
+_runMaxSpeed = 230.0
+Acceleration = 120.0
+Decceleration = 120.0
+AccelInAir = 0.8
+DeccelInAir = 0.8
+CoyoteTime = 0.2
+JumpInputBufferTime = 0.1
+dashAmount = 1
+dashSpeed = 645.0
+dashSleepTime = 0.025
+dashAttackTime = 0.175
+dashEndTime = 0.01
+dashEndSpeed = Vector2(385, 200)
+dashEndRunLerp = 0.5
+dashRefillTime = 0.1
+DashInputBufferTime = 0.1
+AttackInputBufferTime = 0.2
+Damage = 1
+BounceBackDuration = 0.2
+BounceBackForce = 1.86
+FreezeDuration = 0.3
+FreezeScale = 0.1
+MaxHealth = 5
+
+[sub_resource type="Resource" id="Resource_4as0m"]
+resource_local_to_scene = true
+script = ExtResource("4_yivs4")
+FallGravityMult = 1.1
+MaxFallSpeed = 10.0
+FastFallGravityMult = 1.3
+MaxFastFallSpeed = 30.0
+JumpHeight = 90.0
+JumpTimeToApex = 0.37
+JumpCutGravityMult = 1.1
+JumpHangGravityMult = 0.8
+JumpHangThreshold = 16.0
+JumpHangAccelerationMult = 1.0
+JumpHangMaxSpeedMult = 1.1
+_runMaxSpeed = 230.0
+Acceleration = 120.0
+Decceleration = 120.0
+AccelInAir = 0.8
+DeccelInAir = 0.8
+CoyoteTime = 0.2
+JumpInputBufferTime = 0.1
+dashAmount = 1
+dashSpeed = 645.0
+dashSleepTime = 0.025
+dashAttackTime = 0.175
+dashEndTime = 0.01
+dashEndSpeed = Vector2(385, 200)
+dashEndRunLerp = 0.5
+dashRefillTime = 0.1
+DashInputBufferTime = 0.1
+AttackInputBufferTime = 0.2
+Damage = 1
+BounceBackDuration = 0.2
+BounceBackForce = 1.86
+FreezeDuration = 0.3
+FreezeScale = 0.1
+MaxHealth = 5
+
+[sub_resource type="Resource" id="Resource_6hg4i"]
+resource_local_to_scene = true
+script = ExtResource("4_yivs4")
+FallGravityMult = 1.1
+MaxFallSpeed = 10.0
+FastFallGravityMult = 1.3
+MaxFastFallSpeed = 30.0
+JumpHeight = 90.0
+JumpTimeToApex = 0.37
+JumpCutGravityMult = 1.1
+JumpHangGravityMult = 0.8
+JumpHangThreshold = 16.0
+JumpHangAccelerationMult = 1.0
+JumpHangMaxSpeedMult = 1.1
+_runMaxSpeed = 230.0
+Acceleration = 120.0
+Decceleration = 120.0
+AccelInAir = 0.8
+DeccelInAir = 0.8
+CoyoteTime = 0.2
+JumpInputBufferTime = 0.1
+dashAmount = 1
+dashSpeed = 645.0
+dashSleepTime = 0.025
+dashAttackTime = 0.175
+dashEndTime = 0.01
+dashEndSpeed = Vector2(385, 200)
+dashEndRunLerp = 0.5
+dashRefillTime = 0.1
+DashInputBufferTime = 0.1
+AttackInputBufferTime = 0.2
+Damage = 1
+BounceBackDuration = 0.2
+BounceBackForce = 1.86
+FreezeDuration = 0.3
+FreezeScale = 0.1
+MaxHealth = 5
+
+[sub_resource type="Resource" id="Resource_0khjh"]
+resource_local_to_scene = true
+script = ExtResource("4_yivs4")
+FallGravityMult = 1.1
+MaxFallSpeed = 10.0
+FastFallGravityMult = 1.3
+MaxFastFallSpeed = 30.0
+JumpHeight = 90.0
+JumpTimeToApex = 0.37
+JumpCutGravityMult = 1.1
+JumpHangGravityMult = 0.8
+JumpHangThreshold = 16.0
+JumpHangAccelerationMult = 1.0
+JumpHangMaxSpeedMult = 1.1
+_runMaxSpeed = 230.0
+Acceleration = 120.0
+Decceleration = 120.0
+AccelInAir = 0.8
+DeccelInAir = 0.8
+CoyoteTime = 0.2
+JumpInputBufferTime = 0.1
+dashAmount = 1
+dashSpeed = 645.0
+dashSleepTime = 0.025
+dashAttackTime = 0.175
+dashEndTime = 0.01
+dashEndSpeed = Vector2(385, 200)
+dashEndRunLerp = 0.5
+dashRefillTime = 0.1
+DashInputBufferTime = 0.1
+AttackInputBufferTime = 0.2
+Damage = 1
+BounceBackDuration = 0.2
+BounceBackForce = 1.86
+FreezeDuration = 0.3
+FreezeScale = 0.1
+MaxHealth = 5
+
+[sub_resource type="Resource" id="Resource_nwp0o"]
+resource_local_to_scene = true
+script = ExtResource("4_yivs4")
+FallGravityMult = 1.1
+MaxFallSpeed = 10.0
+FastFallGravityMult = 1.3
+MaxFastFallSpeed = 30.0
+JumpHeight = 90.0
+JumpTimeToApex = 0.37
+JumpCutGravityMult = 1.1
+JumpHangGravityMult = 0.8
+JumpHangThreshold = 16.0
+JumpHangAccelerationMult = 1.0
+JumpHangMaxSpeedMult = 1.1
+_runMaxSpeed = 230.0
+Acceleration = 120.0
+Decceleration = 120.0
+AccelInAir = 0.8
+DeccelInAir = 0.8
+CoyoteTime = 0.2
+JumpInputBufferTime = 0.1
+dashAmount = 1
+dashSpeed = 645.0
+dashSleepTime = 0.025
+dashAttackTime = 0.175
+dashEndTime = 0.01
+dashEndSpeed = Vector2(385, 200)
+dashEndRunLerp = 0.5
+dashRefillTime = 0.1
+DashInputBufferTime = 0.1
+AttackInputBufferTime = 0.2
+Damage = 1
+BounceBackDuration = 0.2
+BounceBackForce = 1.86
+FreezeDuration = 0.3
+FreezeScale = 0.1
+MaxHealth = 5
 
 [sub_resource type="Resource" id="Resource_5psxu"]
 script = ExtResource("7_t0r1w")
@@ -25,52 +482,76 @@ _heartContainer = NodePath("CanvasLayer/HeartsContainer")
 _player = NodePath("Player")
 
 [node name="TileMap" parent="." instance=ExtResource("2_pk6ig")]
+position = Vector2(0, 0)
 
 [node name="Player" parent="." instance=ExtResource("6_3b7ge")]
-position = Vector2(6486, 1635)
+position = Vector2(2954, 330)
+Data = SubResource("Resource_hggcj")
 
 [node name="Ghoul" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-position = Vector2(5357, 1620)
+position = Vector2(2787, 411)
+Data = SubResource("Resource_tulyu")
+_targetXThreshold = 30
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul2" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-position = Vector2(4238, 1523)
+process_mode = 4
+position = Vector2(4074, 1321)
+Data = SubResource("Resource_u1dj0")
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul3" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-position = Vector2(3949, 1156)
+process_mode = 4
+position = Vector2(3355, 1274)
+Data = SubResource("Resource_t6e1i")
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul4" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-position = Vector2(4147, 296)
+process_mode = 4
+position = Vector2(4264, 425)
+Data = SubResource("Resource_1718s")
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul5" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-position = Vector2(5151, 273)
+process_mode = 4
+position = Vector2(4851, 71)
+Data = SubResource("Resource_h2td7")
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul6" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-position = Vector2(3697, 330)
+process_mode = 4
+position = Vector2(3799, 365)
+Data = SubResource("Resource_ickcn")
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul7" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-position = Vector2(2139, 976)
+process_mode = 4
+position = Vector2(2144, 1157)
+Data = SubResource("Resource_wljuf")
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul8" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-position = Vector2(2638, 972)
+process_mode = 4
+position = Vector2(2795, 1027)
+Data = SubResource("Resource_4as0m")
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul9" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-position = Vector2(2122, 1355)
+process_mode = 4
+position = Vector2(1872, 1144)
+Data = SubResource("Resource_6hg4i")
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul10" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-position = Vector2(1848, 1363)
+process_mode = 4
+position = Vector2(1576, 1164)
+Data = SubResource("Resource_0khjh")
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul11" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-position = Vector2(2439, 1368)
+process_mode = 4
+position = Vector2(2406, 1092)
+Data = SubResource("Resource_nwp0o")
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Camera2D" type="Camera2D" parent="."]
@@ -82,7 +563,7 @@ process_callback = 0
 script = ExtResource("7_eu7qd")
 
 [node name="PhantomCamera2D" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
-position = Vector2(6486, 1635)
+position = Vector2(2954, 330)
 script = ExtResource("8_so2n6")
 priority = 10
 follow_mode = 1
@@ -92,14 +573,14 @@ snap_to_pixel = true
 tween_resource = SubResource("Resource_5psxu")
 follow_offset = Vector2(30, -30)
 follow_damping = true
-follow_damping_value = Vector2(0.2, 0.5)
+follow_damping_value = Vector2(0.2, 0.2)
 dead_zone_width = 1.0
 dead_zone_height = 0.624
 show_viewfinder_in_play = true
 draw_limits = true
 
 [node name="PhantomCamera2DZoom" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
-position = Vector2(6486, 1635)
+position = Vector2(2954, 330)
 script = ExtResource("8_so2n6")
 priority = 1
 follow_mode = 1
@@ -107,7 +588,7 @@ follow_target = NodePath("../Player")
 zoom = Vector2(1.86, 1.86)
 tween_resource = SubResource("Resource_5psxu")
 follow_damping = true
-follow_damping_value = Vector2(0.2, 0.5)
+follow_damping_value = Vector2(0.2, 0.2)
 dead_zone_width = 0.2
 dead_zone_height = 0.2
 draw_limits = true

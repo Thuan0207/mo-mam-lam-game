@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using Godot.Collections;
@@ -20,7 +21,7 @@ public partial class TileMapPathFind : TileMap
     public AStar2D AStarGrapth = new();
     Array<Vector2I> _usedTiles;
 
-    readonly System.Collections.Generic.List<PointInfo> _pointInfoList = new();
+    readonly List<PointInfo> _pointInfoList = new();
 
     [Export]
     PackedScene _grapthPoint;
@@ -68,7 +69,7 @@ public partial class TileMapPathFind : TileMap
     }
 
     // return a fake point that cotain actual information about the actual point there if there was any. This point never get added to the grapth
-    PointInfo GetPointInfoAtPosition(Vector2 pos)
+    PointInfo CreatePointInfoAtPosition(Vector2 pos)
     {
         PointInfo newPointInfo = new(-10000, pos) { IsPositionPoint = true };
         var tile = LocalToMap(pos);
@@ -90,22 +91,21 @@ public partial class TileMapPathFind : TileMap
         return newPointInfo;
     }
 
-    public System.Collections.Generic.Queue<PointInfo> GetPlatform2DPath(
-        Vector2 startPos,
-        Vector2 endPos
-    )
+    public Queue<PointInfo> GetPlatform2DPath(Vector2 fromPos, Vector2 toPos)
     {
-        System.Collections.Generic.Queue<PointInfo> pathQueue = new();
+        Queue<PointInfo> pathQueue = new();
         long[]? idPath = AStarGrapth.GetIdPath(
-            AStarGrapth.GetClosestPoint(startPos),
-            AStarGrapth.GetClosestPoint(endPos)
+            AStarGrapth.GetClosestPoint(fromPos),
+            AStarGrapth.GetClosestPoint(toPos)
         );
-        var startPoint = GetPointInfoAtPosition(startPos);
-        var endPoint = GetPointInfoAtPosition(endPos);
+        var fromPoint = CreatePointInfoAtPosition(fromPos);
+        var toPoint = CreatePointInfoAtPosition(toPos);
+
+        GD.Print("idPath.Length: ", idPath.Length);
 
         if (idPath.Length <= 0)
         {
-            pathQueue.Enqueue(endPoint);
+            pathQueue.Enqueue(toPoint);
             return pathQueue;
         }
 
@@ -114,36 +114,40 @@ public partial class TileMapPathFind : TileMap
         {
             PointInfo currPoint = GetPointInfoById(idPath[i]);
 
-            // if the path have more than 1 point. And the our starting point is closer to the second point than the the first point in the path then we replace that first point with our own.
+            // if the path have more than 1 point. And the our starting point is closer to the second point than the the first point in the path then we replace that first point with the starting point.
             if (idPath.Length >= 2 && i == 0)
             {
                 var secondPoint = GetPointInfoById(idPath[1]);
                 if (
-                    startPoint.Position.DistanceTo(secondPoint.Position)
+                    fromPoint.Position.DistanceTo(secondPoint.Position)
                     < currPoint.Position.DistanceTo(secondPoint.Position)
                 )
                 {
-                    pathQueue.Enqueue(startPoint);
+                    pathQueue.Enqueue(fromPoint);
                     continue;
                 }
             }
 
-            // if our end point is closer to the second last point than the last point does. We skip adding the last point in to the queue. The end point will be added when we exit the loop.
+            // if our first point is the same as our `from_point` we skip it
+            if (currPoint.Position == fromPos)
+                continue;
+
+            // if our destination point is closer to the second last point than the last point. We replace it with our destination.
             if (idPath.Length >= 2 && i == idPath.Length - 1)
             {
                 var secondLastPoint = GetPointInfoById(idPath[i - 1]);
                 if (
-                    endPoint.Position.DistanceTo(secondLastPoint.Position)
+                    toPoint.Position.DistanceTo(secondLastPoint.Position)
                     < currPoint.Position.DistanceTo(secondLastPoint.Position)
                 )
                     break;
             }
 
-            if (idPath.Length != 1) // if the path only have on point skip it. The end point will be the only point in the path
+            if (idPath.Length != 1) // if the path only have one point skip it. The end point will be the only point in the path
                 pathQueue.Enqueue(currPoint);
         }
 
-        pathQueue.Enqueue(endPoint);
+        pathQueue.Enqueue(toPoint);
 
         return pathQueue;
     }
