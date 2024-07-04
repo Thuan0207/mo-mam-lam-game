@@ -1,8 +1,8 @@
-[gd_scene load_steps=17 format=3 uid="uid://bqkl7fxgroqgn"]
+[gd_scene load_steps=17 format=3 uid="uid://dtai2rsce2shf"]
 
 [ext_resource type="Script" path="res://scripts/World.cs" id="1_cr1qx"]
 [ext_resource type="PackedScene" uid="uid://buhdto57m5ljm" path="res://scenes/Level1Map.tscn" id="2_pk6ig"]
-[ext_resource type="PackedScene" path="res://scenes/Ghoul.tscn" id="4_n46as"]
+[ext_resource type="PackedScene" uid="uid://by4lqpdcq4a3k" path="res://scenes/Ghoul.tscn" id="4_n46as"]
 [ext_resource type="PackedScene" uid="uid://bcb66ab5wjgvt" path="res://scenes/Player.tscn" id="6_3b7ge"]
 [ext_resource type="Script" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="7_eu7qd"]
 [ext_resource type="Script" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="7_t0r1w"]
@@ -31,7 +31,7 @@ _player = NodePath("Player")
 position = Vector2(287, 219)
 
 [node name="Player" parent="." instance=ExtResource("6_3b7ge")]
-position = Vector2(360, 180)
+position = Vector2(4432, 1540)
 
 [node name="Ghoul" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
 position = Vector2(5357, 1620)
@@ -86,7 +86,7 @@ process_callback = 0
 script = ExtResource("7_eu7qd")
 
 [node name="PhantomCamera2D" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
-position = Vector2(360, 180)
+position = Vector2(4462, 1510)
 script = ExtResource("8_so2n6")
 priority = 10
 follow_mode = 2
@@ -94,23 +94,25 @@ follow_target = NodePath("../Player")
 zoom = Vector2(1.8, 1.8)
 snap_to_pixel = true
 tween_resource = SubResource("Resource_5psxu")
+follow_offset = Vector2(30, -30)
 follow_damping = true
-follow_damping_value = Vector2(0.1, 0.2)
-dead_zone_width = 0.2
-dead_zone_height = 0.01
+follow_damping_value = Vector2(0.2, 0)
+dead_zone_width = 1.0
+dead_zone_height = 0.624
 show_viewfinder_in_play = true
 draw_limits = true
 
 [node name="PhantomCamera2DZoom" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
-position = Vector2(360, 180)
+position = Vector2(4462, 1510)
 script = ExtResource("8_so2n6")
 priority = 1
-follow_mode = 1
+follow_mode = 2
 follow_target = NodePath("../Player")
 zoom = Vector2(1.86, 1.86)
 tween_resource = SubResource("Resource_5psxu")
+follow_offset = Vector2(30, -30)
 follow_damping = true
-follow_damping_value = Vector2(0.1, 0.2)
+follow_damping_value = Vector2(0.2, 0)
 dead_zone_width = 0.2
 dead_zone_height = 0.2
 draw_limits = true
