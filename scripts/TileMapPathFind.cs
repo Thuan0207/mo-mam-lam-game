@@ -101,8 +101,6 @@ public partial class TileMapPathFind : TileMap
         var fromPoint = CreatePointInfoAtPosition(fromPos);
         var toPoint = CreatePointInfoAtPosition(toPos);
 
-        GD.Print("idPath.Length: ", idPath.Length);
-
         if (idPath.Length <= 0)
         {
             pathQueue.Enqueue(toPoint);

@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://bp75cfrf80yvk"]
+
+[ext_resource type="Shader" path="res://shader/HitBlinkEffect.gdshader" id="1_a1jrf"]
+
+[resource]
+resource_local_to_scene = true
+shader = ExtResource("1_a1jrf")
+shader_parameter/flash_opacity = 0.0
+shader_parameter/flash_color = Color(1, 1, 1, 1)
+shader_parameter/opacity = 1.0

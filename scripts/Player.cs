@@ -38,6 +38,8 @@ public partial class Player : CharacterBody2D, IHurtableBody
     public float LastPressedJumpTime { get; private set; }
     public float LastPressedDashTime { get; private set; }
     public float LastPressedDashAttackTime { get; private set; }
+    bool _isAllInputDisabled;
+    bool _isActionInputDisabled;
     #endregion
 
     #region Jump
@@ -158,22 +160,29 @@ public partial class Player : CharacterBody2D, IHurtableBody
         #endregion
 
         #region INPUT HANDLER
-        if (!_isInputDisabled)
+
+        if (!_isAllInputDisabled)
         {
             _moveInput = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
 
-            if (Input.IsActionJustPressed("jump"))
-                OnJumpInput();
+            if (!_isActionInputDisabled)
+            {
+                if (Input.IsActionJustPressed("jump"))
+                    OnJumpInput();
 
-            if (Input.IsActionJustReleased("jump"))
-                OnJumpUpInput();
+                if (Input.IsActionJustReleased("jump"))
+                    OnJumpUpInput();
 
-            if (Input.IsActionJustPressed("dash"))
-                OnDashInput();
+                if (Input.IsActionJustPressed("dash"))
+                    OnDashInput();
 
-            if (Input.IsActionJustPressed("attack"))
-                OnAttackInput();
+                if (Input.IsActionJustPressed("attack"))
+                    OnAttackInput();
+            }
         }
+        else
+            _moveInput = Vector2.Zero;
+
         #endregion
 
         // Ground Check
@@ -316,6 +325,9 @@ public partial class Player : CharacterBody2D, IHurtableBody
             runLerp = 1;
         else if (isDashAttacking)
             runLerp = Data.dashEndRunLerp;
+
+        if (LastOnGroundTime > 0 && IsAttacking) // stop the player momentum when attaking on ground
+            v.X += CalculateRunForce(runLerp, 0) * delta;
 
         v.X += CalculateRunForce(runLerp, _moveInput.X) * delta;
 
@@ -568,7 +580,13 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
     private bool CanDash()
     {
-        if (!IsDashing && dashesLeft < Data.dashAmount && LastOnGroundTime > 0 && !dashRefilling) // refil dash
+        if (
+            !IsDashing
+            && dashesLeft < Data.dashAmount
+            && LastOnGroundTime > 0
+            && !dashRefilling
+            && !IsAttacking
+        ) // refil dash
         {
             Timing.RunCoroutine(RefillDash(1), "RefillDash");
         }
@@ -766,8 +784,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
     #endregion
 
     #region  COMBAT
-    bool _isInputDisabled;
-    bool _isInInvincibleFrame;
+    bool _isInvincible;
 
     void OnAttackInput()
     {
@@ -789,11 +806,15 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
     void AttackCheck()
     {
-        // _hitboxLeft.Monitoring = false;
-        // _hitboxRight.Monitoring = false;
+        if (IsDashing)
+            return;
+
         IsStriking = false; // this is the state where attack frames are allow to connect with the enemy body
 
-        // && IsCurrentFrame(3, 4, 5)
+        if (isAttackAnimationPlaying)
+            _isActionInputDisabled = true;
+        else
+            _isActionInputDisabled = false;
 
         if (isAttackAnimationPlaying && !IsAtkConnected) // check for enabling the "dealing-damage" frame
         {
@@ -807,7 +828,6 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
         if (IsStriking)
         {
-            // every attack would push the player slightly back. check in physics process
             if (AnimatedSprite.FlipH)
                 AtkLeft();
             else
@@ -828,18 +848,18 @@ public partial class Player : CharacterBody2D, IHurtableBody
             for (int i = 0; i < count; i++)
             {
                 var curr = (CollisionObject2D)_hitboxRight.GetCollider(i);
-                IsAtkConnected = DealDmgToEnemy(curr);
+                _hitboxRight.AddException(curr);
+                IsAtkConnected = OnAtkConnected(curr);
 
-                if (IsAtkConnected)
-                {
-                    _hitboxRight.AddException(curr);
-                    ImpactHitAnimation(
-                        globalPos: (GlobalPosition + _hitboxRight.TargetPosition).Lerp(
-                            curr.GlobalPosition,
-                            0.5f
-                        )
-                    );
-                }
+                // if (IsAtkConnected)
+                // {
+                // 	ImpactHitAnimation(
+                // 		globalPos: (GlobalPosition + _hitboxRight.TargetPosition).Lerp(
+                // 			curr.GlobalPosition,
+                // 			0.5f
+                // 		)
+                // 	);
+                // }
             }
         }
     }
@@ -853,23 +873,23 @@ public partial class Player : CharacterBody2D, IHurtableBody
             for (int i = 0; i < count; i++)
             {
                 var curr = (CollisionObject2D)_hitboxLeft.GetCollider(i);
-                IsAtkConnected = DealDmgToEnemy(curr);
+                _hitboxLeft.AddException(curr);
+                IsAtkConnected = OnAtkConnected(curr);
 
-                if (IsAtkConnected)
-                {
-                    _hitboxLeft.AddException(curr);
-                    ImpactHitAnimation(
-                        globalPos: (GlobalPosition + _hitboxLeft.TargetPosition).Lerp(
-                            curr.GlobalPosition,
-                            0.5f
-                        )
-                    );
-                }
+                // if (IsAtkConnected)
+                // {
+                // 	ImpactHitAnimation(
+                // 		globalPos: (GlobalPosition + _hitboxLeft.TargetPosition).Lerp(
+                // 			curr.GlobalPosition,
+                // 			0.5f
+                // 		)
+                // 	);
+                // }
             }
         }
     }
 
-    void ImpactHitAnimation(Vector2 globalPos)
+    void ImpactHitFx(Vector2 globalPos)
     {
         var impactHit = _impactHitTscn.Instantiate<ImpactHit>();
         GetTree().Root.AddChild(impactHit);
@@ -879,28 +899,25 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
     IEnumerator<double> _RunTaskOnCriticalAttackFrame()
     {
-        _isInputDisabled = true;
-        _isInInvincibleFrame = true;
+        _isInvincible = true;
         Timing.RunCoroutine(_BounceBack(Data.BounceBackForce, Data.BounceBackDuration));
         yield return Timing.WaitUntilDone(
             Timing.RunCoroutine(_FrameFreezeNZoom(Data.FreezeScale, Data.FreezeDuration))
         );
-        _isInputDisabled = false;
         Timing.CallDelayed(
-            0.3f,
+            Data.InvinciblePeriod,
             () =>
             {
-                _isInInvincibleFrame = false;
+                _isInvincible = false;
             }
         );
     }
 
-    bool DealDmgToEnemy(Node2D body)
+    bool OnAtkConnected(Node2D body)
     {
         if (body is IHurtableBody enemy)
         {
-            enemy.GetHit(Data.Damage);
-            return true;
+            return enemy.Hurt(Data.Damage);
         }
         return false;
     }
@@ -919,31 +936,47 @@ public partial class Player : CharacterBody2D, IHurtableBody
         }
     }
 
-    public void GetHit(int _dmg)
+    public bool Hurt(int _dmg)
     {
-        if (_health == 0)
-            return;
+        if (_isInvincible)
+            return false;
 
-        if (!_isInInvincibleFrame)
+        if (_health <= 0)
+            return false;
+
+        _health -= _dmg;
+
+        KillDash();
+
+        ResetAllPlayingAnimationCheck();
+        AnimatedSprite.Play("hurt");
+
+        EmitSignal(SignalName.HealthChanged, _health);
+        ImpactHitFx(globalPos: GlobalPosition);
+
+        if (_health <= 0)
+            Timing.RunCoroutine(_Die().CancelWith(this));
+
+        return true;
+    }
+
+    IEnumerator<double> _Die()
+    {
+        // I need to wait till the body is on the floor and velocity is equal to zero and wait for attack animation to finish
+        _isAllInputDisabled = true;
+        while (!IsOnFloor() || Velocity != Vector2.Zero || IsAttacking)
         {
-            _health -= _dmg;
-
-            KillDash();
-
-            ResetAllPlayingAnimationCheck();
-            AnimatedSprite.Play("hurt");
-
-            EmitSignal(SignalName.HealthChanged, _health);
-            ImpactHitAnimation(globalPos: GlobalPosition);
+            yield return Timing.WaitForOneFrame;
         }
 
-        if (_health == 0)
-        {
-            ResetAllPlayingAnimationCheck();
-            AnimatedSprite.Play("die");
-            SetProcess(false);
-            SetPhysicsProcess(false);
-        }
+        ResetAllPlayingAnimationCheck();
+        // I stop all the process
+        SetPhysicsProcess(false);
+        SetProcess(false);
+
+        // Then I play the die animation
+        AnimatedSprite.Play("die");
+        _isAllInputDisabled = false;
     }
 
     #endregion

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://dye5q4x8kd6y"]
+
+[ext_resource type="Script" path="res://resources/GhoulData.cs" id="1_mkw58"]
+
+[resource]
+script = ExtResource("1_mkw58")
+MaxHealth = 1000.0
+Damage = 1
+MaxSpeed = 100.0
+AccelerationLerp = 0.75
+DeccelerationLerp = 0.9
+JumpVelocity = -450.0
+TinyJumpVelocity = -300.0
+SmallJumpVelocity = -350.0
+RecoilOffsetX = 100.0
+RecoilOffsetY = 50.0
+RecoilDurationX = 0.2
+RecoilDurationY = 0.1
+StunDurationAfterRecoil = 1.0
+AtkCooldown = 0.5
+HitBlinkEffectDuration = 0.05

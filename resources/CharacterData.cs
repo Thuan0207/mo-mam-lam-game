@@ -199,6 +199,9 @@ public partial class CharacterData : Resource
 
     [Export]
     public int MaxHealth;
+
+    [Export]
+    public float InvinciblePeriod; // * The invicible period when player just receive damage
     #endregion
     public CharacterData()
         : this(
@@ -226,7 +229,8 @@ public partial class CharacterData : Resource
             100,
             0.2f,
             0.05f,
-            5
+            5,
+            0.5f
         ) { }
 
     public CharacterData(
@@ -254,7 +258,8 @@ public partial class CharacterData : Resource
         float bounceBackForce = 100,
         float freezeDuration = 0.2f,
         float freezeScale = 0.05f,
-        int maxHealth = 5
+        int maxHealth = 5,
+        float invinciblePeriod = 0.5f
     )
     {
         RunMaxSpeed = runMaxSpeed;
@@ -282,6 +287,7 @@ public partial class CharacterData : Resource
         FreezeDuration = freezeDuration;
         FreezeScale = freezeScale;
         MaxHealth = maxHealth;
+        InvinciblePeriod = invinciblePeriod;
     }
 
     #region assist
