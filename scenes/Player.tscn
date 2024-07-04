@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/Player.cs" id="1_htxw0"]
 [ext_resource type="Resource" uid="uid://c8xan60m6mq83" path="res://resources/animation_data.tres" id="2_c0f6y"]
-[ext_resource type="Resource" uid="uid://dee2bfqrs0s0d" path="res://resources/player_data.tres" id="3_xysni"]
+[ext_resource type="Resource" uid="uid://dee2bfqrs0s0d" path="res://resources/CharacterData.tres" id="3_xysni"]
 [ext_resource type="PackedScene" uid="uid://cusmre3lypee6" path="res://scenes/VFX/walking_dust.tscn" id="5_be0hw"]
 [ext_resource type="PackedScene" uid="uid://7l3h12fyh70a" path="res://scenes/VFX/jumping_dust.tscn" id="6_u8xcp"]
 [ext_resource type="SpriteFrames" uid="uid://b3j1manoorfjf" path="res://resources/PlayerAnimation.tres" id="7_8nd4t"]
@@ -23,6 +23,7 @@ size = Vector2(20, 39)
 
 [node name="Player" type="CharacterBody2D"]
 collision_mask = 2
+safe_margin = 2.0
 script = ExtResource("1_htxw0")
 AnimationData = ExtResource("2_c0f6y")
 Data = ExtResource("3_xysni")
@@ -49,7 +50,9 @@ position = Vector2(0, 20)
 position = Vector2(-1, -13)
 scale = Vector2(1.375, 1.35417)
 sprite_frames = ExtResource("7_8nd4t")
-animation = &"crouch_attack"
+animation = &"hurt"
+frame = 1
+frame_progress = 1.0
 metadata/_edit_lock_ = true
 
 [node name="JumpingParticlesMarker" type="Marker2D" parent="."]
@@ -66,6 +69,7 @@ position = Vector2(20, 0)
 enabled = false
 shape = SubResource("RectangleShape2D_4xjv3")
 target_position = Vector2(6, 0)
+margin = 4.0
 collision_mask = 4
 
 [node name="HitBoxLeft" type="ShapeCast2D" parent="."]
@@ -73,6 +77,7 @@ position = Vector2(-20, 0)
 enabled = false
 shape = SubResource("RectangleShape2D_4xjv3")
 target_position = Vector2(-6, 0)
+margin = 4.0
 collision_mask = 4
 
 [node name="AudioStreamPlayerJump" parent="." instance=ExtResource("9_hwarw")]

@@ -1,39 +1,42 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using MEC;
 
 public partial class Ghoul : CharacterBody2D, IHurtableBody
 {
     #region GENERAL
-    private float JumpDistanceHeightThreshold = 60.0f;
+    const float JUMP_HEIGHT_THRESHOLD = 60.0f;
 
     [Export]
-    public double Health = 3;
+    GhoulData _data;
 
-    [Export]
-    public int Damage = 1;
-
-    [Export]
-    public float Speed = 200.0f;
-
-    [Export]
-    public float JumpVelocity = -450.0f;
-
-    [Export]
-    public float TinyJumpVelocity = -300.0f;
-
-    [Export]
-    public float SmallJumpVelocity = -350f;
-
-    [Export]
-    public bool IsMovementAllowed = true;
+    bool _isVelocityOverrided;
 
     public Vector2 Direction;
 
     public float Gravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
     AnimatedSprite2D _animatedSprite;
 
-    Area2D _hitBox;
+    Area2D _bodyHitBox;
+
+    [Export]
+    Area2D _hitBoxRight;
+
+    [Export]
+    Area2D _hitBoxLeft;
+
+    bool _isTargetWithinAtkRange;
+    #endregion
+
+    #region COMBAT
+    bool _isAtkRefilling;
+    bool _isRecoiling;
+    const string STOP_X_MOVEMENT_TAG = "STOP_X_MOVEMENT_TAG";
+    const string ATTACK_TAG = "ATTACK_TAG";
+    double _health;
+
     #endregion
 
     #region PATH FIND
@@ -44,20 +47,28 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
     int _targetYThreshold = 30;
 
     [Export]
-    float _directionChangedDelay = 1f; // in seconds
-
-    [Export]
     TileMapPathFind _tileMapPathFind;
     Queue<PointInfo> _pathQueue = new();
-    PointInfo _target = null;
-    PointInfo _prevTarget = null;
-    bool _isDirectionChangable = true;
-
-    Player _player;
+#nullable enable
+    PointInfo? _target = null;
+    PointInfo? _prevTarget = null;
+    Player? _player;
+#nullable disable
     Area2D _detectionArea;
     Area2D _targetDetectionArea;
-    Vector2 _prevPlayerPosition;
-    bool _isTargetReached = false;
+
+    private void AddTargetDetectionArea(Vector2 pos)
+    {
+        _targetDetectionArea.Position = pos;
+    }
+
+    private void OnBodyEnteredTargetDetectionArea(Node2D body)
+    {
+        if (body == this)
+        {
+            // GoToNextPointInPath();
+        }
+    }
 
     void GoToNextPointInPath()
     {
@@ -73,30 +84,31 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         _prevTarget = _target;
         _target = _pathQueue.Dequeue();
 
+        var distance = _target.Position - GlobalPosition;
+
+        // if the we are within the threshold of current target we skip to the next one when possible
+        if (
+            _pathQueue.Count > 0
+            && Mathf.Abs(distance.X) <= _targetXThreshold
+            && Mathf.Abs(distance.Y) <= _targetYThreshold
+        ) // Enter target threshold
+            _target = _pathQueue.Dequeue();
+
         AddTargetDetectionArea(_target.Position);
-    }
-
-    private void AddTargetDetectionArea(Vector2 pos)
-    {
-        _targetDetectionArea.GlobalPosition = pos;
-    }
-
-    private void OnBodyEnteredTargetDetectionArea(Node2D body)
-    {
-        if (body == this)
-        {
-            _isTargetReached = true;
-            // GoToNextPointInPath();
-        }
     }
 
     void PathFinding()
     {
-        if (_player != null && IsOnFloor() && _player.IsOnFloor())
+        if (_player != null && IsOnFloor() && _health > 0)
         {
             _pathQueue = _tileMapPathFind.GetPlatform2DPath(GlobalPosition, _player.GlobalPosition);
             GoToNextPointInPath();
         }
+    }
+
+    void StopPathFinding()
+    {
+        _pathQueue.Clear();
     }
     #endregion
 
@@ -108,13 +120,14 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
             CollisionMask = 4, // can only collide with enemy
             CollisionLayer = 128 // area layer
         };
+
         CollisionShape2D collisionShape =
             new()
             {
                 Shape = new RectangleShape2D() { Size = new(_targetXThreshold, _targetYThreshold) },
             };
+
         _targetDetectionArea.BodyEntered += OnBodyEnteredTargetDetectionArea;
-        _targetDetectionArea.GlobalPosition = GlobalPosition;
         _targetDetectionArea.AddChild(collisionShape);
 
         GetParent().CallDeferred("add_child", _targetDetectionArea);
@@ -127,40 +140,65 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
 
     public override void _Ready()
     {
+        #region NODES ASSIGNMENTS
+        _bodyHitBox = GetNode<Area2D>("HitBox");
         _animatedSprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-        _animatedSprite.Play("idle");
         _detectionArea = GetNode<Area2D>("DetectionArea");
+        _hitBoxLeft = GetNode<Area2D>("HitBoxLeft");
+        _hitBoxRight = GetNode<Area2D>("HitBoxRight");
+        #endregion
+
+        #region VAR INIT
+        _health = _data.MaxHealth;
+        #endregion
+
+        #region EVENTS ASSIGNMENTS
         _detectionArea.BodyEntered += OnBodyEnteredDetectionArea;
         _detectionArea.BodyExited += OnBodyExitedDetectionArea;
-        _hitBox = GetNode<Area2D>("HitBox");
-        _hitBox.BodyEntered += OnBodyEnteredHitBox;
+        _bodyHitBox.BodyEntered += OnBodyEnteredHitBox;
+        _animatedSprite.AnimationFinished += OnAnimationFinished;
+        #endregion
 
-        _animatedSprite.AnimationFinished += () =>
-        {
-            if (_animatedSprite.Animation == "die")
-            {
-                var tween = GetTree().CreateTween();
-                tween
-                    .TweenProperty(_animatedSprite, "modulate:a", 0, 1)
-                    .SetTrans(Tween.TransitionType.Linear)
-                    .SetEase(Tween.EaseType.Out);
-                tween.TweenCallback(Callable.From(this.QueueFree)).SetDelay(1);
-            }
-        };
+        _animatedSprite.Play("idle");
     }
 
     public override void _Process(double delta)
     {
         PathFinding();
+
         if (Direction.X < 0)
             _animatedSprite.FlipH = true;
         else
             _animatedSprite.FlipH = false;
 
-        if (Mathf.Round(Velocity.X) == 0)
-            _animatedSprite.Play("idle");
+        if (_animatedSprite.Animation != "attack")
+            if (Mathf.Round(Velocity.X) == 0)
+                _animatedSprite.Play("idle");
+            else if (_health > 0)
+                _animatedSprite.Play("running");
+
+        if (_animatedSprite.FlipH)
+            AttackCheck(_hitBoxLeft);
         else
-            _animatedSprite.Play("running");
+            AttackCheck(_hitBoxRight);
+
+        if (_isTargetWithinAtkRange && CanAtk())
+            Attack();
+    }
+
+    private void AttackCheck(Area2D hitbox)
+    {
+        var bodies = hitbox.GetOverlappingBodies();
+        foreach (var body in bodies)
+        {
+            if (body is Player)
+            {
+                _isTargetWithinAtkRange = true;
+                return;
+            }
+        }
+        _isTargetWithinAtkRange = false;
+        CancelAtk();
     }
 
     public override void _PhysicsProcess(double delta)
@@ -170,10 +208,7 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         if (!IsOnFloor())
             velocity.Y += Gravity * (float)delta;
 
-        if (_player != null)
-            _prevPlayerPosition = _player.GlobalPosition;
-
-        if (IsMovementAllowed)
+        if (!_isVelocityOverrided && _health > 0)
             MoveToTargetLocation(ref velocity);
 
         Velocity = velocity;
@@ -183,13 +218,8 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
 
 
     #region MOVEMENT
-    IEnumerator<double> _KeepDirection(float duration)
-    {
-        _isDirectionChangable = false;
-        yield return Timing.WaitForSeconds(duration);
-        _isDirectionChangable = true;
-    }
 
+    #region jump
     bool CanJumpDownFromRightToLeftEdge()
     {
         return _prevTarget.IsRightEdge
@@ -212,40 +242,45 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
             return;
 
         // if the target can be drop to reach then we don't need to jump
-        if (_prevTarget.Position.Y < _target.Position.Y && _target.IsFallTile)
+        if (GlobalPosition.Y < _target.Position.Y && _target.IsFallTile)
             return;
 
         if (
-            _prevTarget.Position.Y < _target.Position.Y
-            && _prevTarget.Position.DistanceTo(_target.Position) < JumpDistanceHeightThreshold
+            (
+                GlobalPosition.Y < _target.Position.Y
+                && GlobalPosition.DistanceTo(_target.Position) < JUMP_HEIGHT_THRESHOLD
+            )
         )
-            velocity.Y = SmallJumpVelocity;
+            velocity.Y = -Mathf.Sqrt(2 * 4 * _tileMapPathFind.TileSet.TileSize.Y * Gravity);
 
         if (
-            _prevTarget.Position.Y > _target.Position.Y // can jump up
+            GlobalPosition.Y > _target.Position.Y // can jump up
             || CanJumpDownFromLeftToRightEdge()
             || CanJumpDownFromRightToLeftEdge()
         )
         {
             int heightDistance = Mathf.Abs(
                 _tileMapPathFind.LocalToMap(_target.Position).Y
-                    - _tileMapPathFind.LocalToMap(_prevTarget.Position).Y
+                    - _tileMapPathFind.LocalToMap(GlobalPosition).Y
             );
+
             if (heightDistance <= 2)
-                velocity.Y = TinyJumpVelocity;
+                velocity.Y = Mathf.Sqrt(2 * 4 * _tileMapPathFind.TileSet.TileSize.Y * Gravity);
             else if (heightDistance == 3)
-                velocity.Y = SmallJumpVelocity;
+                velocity.Y = Mathf.Sqrt(2 * 6 * _tileMapPathFind.TileSet.TileSize.Y * Gravity);
             else
-                velocity.Y = JumpVelocity;
+                velocity.Y = Mathf.Sqrt(2 * 8 * _tileMapPathFind.TileSet.TileSize.Y * Gravity);
+
+            velocity.Y = -1 * velocity.Y;
         }
     }
+    #endregion
 
     void MoveToTargetLocation(ref Vector2 velocity)
     {
         if (_target != null)
         {
-            var distance = _target.Position - Position;
-            var currDirection = distance.Normalized();
+            var distance = _target.Position - GlobalPosition;
 
             // the player have reach the target threshold
             if (
@@ -255,128 +290,222 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
             )
             {
                 // we call jump here because every jumpable point must also be a target point
+
                 Jump(ref velocity);
-                _isTargetReached = false;
-                _isDirectionChangable = true;
                 GoToNextPointInPath();
-                Timing.KillCoroutines("DogCoroutines");
+
+                if (_target != null)
+                    distance = _target.Position - Position;
             }
 
             if (
-                Mathf.Abs(distance.X) <= _targetXThreshold // meet x threshold
-                && Mathf.Abs(distance.Y) > _targetYThreshold // doesn't meet y threshold
-                && Direction != Vector2.Zero
-                && _isDirectionChangable
+                Mathf.Abs(distance.X) > _targetXThreshold //doesn't meet target x threshold
             )
-            {
-                if (GlobalPosition.Y != _target.Position.Y)
-                // this help to fix with edge case where the character is a the edge and about to fall down. But its  horizontal position have to go past the target position in order for its collision shape to not in contact with the ground so it can fall down. When this happen, direction is recalculate every physic frame so it will apply a opposite force in order for the character to return to the horizontal threshold. Effectively put the chracter in a stand still loop. This is a fix for that. We delay direction change when we standing above our target
-                {
-                    Timing.RunCoroutine(
-                        _KeepDirection(_directionChangedDelay).CancelWith(this),
-                        segment: Segment.PhysicsProcess,
-                        tag: "DogCoroutines"
-                    );
-                }
-            }
-
-            if (
-                _isDirectionChangable
-                && Mathf.Abs(distance.X) > _targetXThreshold //doesn't meet target x threshold
-            )
-                Direction = currDirection;
+                Direction = distance.Normalized();
         }
         else
-        {
             Direction = Vector2.Zero;
-        }
 
-        if (Direction != Vector2.Zero)
-            velocity.X = Mathf.Sign(Direction.X) * Speed;
-        else
-            velocity.X = Mathf.MoveToward(Velocity.X, 0, Speed);
+        velocity.X = Mathf.Lerp(
+            Velocity.X,
+            Mathf.Sign(Direction.X) * _data.MaxSpeed,
+            _data.AccelerationLerp
+        );
     }
-
     #endregion
 
-    #region COMBAT
-    [Export(PropertyHint.Range, "0,100,0.1,,or_greater")]
-    int _bounceBackOffsetX = 1;
+    #region COMBAT METHODS
 
-    [Export(PropertyHint.Range, "0,100,0.1,,or_greater")]
-    float _bounceBackOffsetY = 10;
-
-    [Export]
-    float _bounceBackDuration = 1;
-
-    [Export]
-    float _stunDurationAfterBounceBack = 1;
-
-    private void OnBodyEnteredHitBox(Node2D body)
+    void Recoil(
+        bool isRecoilRight,
+        float offsetX = 1,
+        float offsetY = 0,
+        float durationX = 1,
+        float durationY = 0.5f
+    )
     {
-        if (body is Player player && Health > 0)
-        {
-            player.GetHit(Damage);
-        }
-    }
+        // set check
+        _isVelocityOverrided = true;
+        _isRecoiling = true;
 
-    void BounceBack(bool isBounceRight, float offsetX = 1, float offsetY = 0, float duration = 1)
-    {
-        IsMovementAllowed = false;
-        var tween = GetTree().CreateTween();
-        var directionX = isBounceRight ? 1 : -1;
-        float directionY = 0;
-
+        var directionX = isRecoilRight ? 1 : -1;
+        float directionY = -1;
         var targetPosition =
             GlobalPosition + new Vector2(directionX * offsetX, directionY * offsetY);
-        var distance = GlobalPosition.DistanceTo(targetPosition);
-        var accel = distance / duration;
-        var targetVelocity = new Vector2(accel * directionX, accel * directionY);
+        var distanceX = targetPosition.X - GlobalPosition.X;
+        var distanceY = targetPosition.Y - GlobalPosition.Y;
+        var targetVelocity = new Vector2(distanceX / durationX, distanceY / durationX);
 
+        var tween = GetTree().CreateTween();
+
+        tween.SetParallel(true);
         tween
-            .TweenProperty(this, "velocity", targetVelocity, duration)
-            .SetTrans(Tween.TransitionType.Quart)
-            .SetEase(Tween.EaseType.InOut);
+            .TweenProperty(this, "velocity:x", targetVelocity.X, durationX)
+            .SetTrans(Tween.TransitionType.Sine)
+            .SetEase(Tween.EaseType.Out);
+        tween
+            .TweenProperty(this, "velocity:y", targetVelocity.Y, durationY)
+            .SetTrans(Tween.TransitionType.Sine)
+            .SetEase(Tween.EaseType.Out);
+        tween
+            .Chain()
+            .TweenProperty(this, "velocity:x", 0, durationX)
+            .SetTrans(Tween.TransitionType.Sine)
+            .SetEase(Tween.EaseType.In);
+        tween
+            .TweenProperty(this, "velocity:y", 0, durationY)
+            .SetTrans(Tween.TransitionType.Sine)
+            .SetEase(Tween.EaseType.In);
+        tween.SetParallel(false);
+
+        // reset check
         tween
             .TweenCallback(
                 Callable.From(() =>
                 {
-                    Velocity = Vector2.Zero;
+                    _isRecoiling = false;
+                    _isVelocityOverrided = false;
                 })
             )
-            .SetDelay(duration);
-        tween
-            .TweenCallback(
-                Callable.From(() =>
-                {
-                    IsMovementAllowed = true;
-                })
-            )
-            .SetDelay(_stunDurationAfterBounceBack);
+            .SetDelay(_data.StunDurationAfterRecoil);
     }
 
+    private IEnumerator<double> _RefillAtk()
+    {
+        _isAtkRefilling = true;
+        yield return Timing.WaitForSeconds(_data.AtkCooldown);
+        _isAtkRefilling = false;
+    }
+
+    private bool CanAtk()
+    {
+        return _animatedSprite.Animation != "attack" && _health > 0 && !_isAtkRefilling;
+    }
+
+    private void Attack()
+    {
+        Timing.RunCoroutine(_Attack(), ATTACK_TAG);
+    }
+
+    private IEnumerator<double> _Attack()
+    {
+        bool isStrikeConnected = false;
+        // we stop the character only when it isn't recoiling.
+        _isVelocityOverrided = true;
+        while (Velocity.X != 0 && !_isRecoiling)
+        {
+            Velocity = new Vector2(Mathf.Lerp(Velocity.X, 0, _data.DeccelerationLerp), Velocity.Y);
+            yield return Timing.WaitForOneFrame;
+        }
+        _animatedSprite.Play("attack");
+        //then attack
+        while (_animatedSprite.Animation == "attack")
+        {
+            if (IsCurrentFrame(4, 5) && _isTargetWithinAtkRange && !isStrikeConnected)
+            {
+                _player.Hurt(_data.Damage);
+                isStrikeConnected = true;
+            }
+
+            yield return Timing.WaitForOneFrame;
+        }
+        _isVelocityOverrided = false;
+        Timing.RunCoroutine(_RefillAtk());
+    }
+
+    /// <summary>
+    ///  <see langword="this doesn't stop the animation"/>
+    /// </summary>
+    private void CancelAtk()
+    {
+        _isVelocityOverrided = false;
+        Timing.KillCoroutines(ATTACK_TAG);
+        Timing.RunCoroutine(_RefillAtk());
+    }
     #endregion
 
     #region CONTACT
-    public void GetHit(int _dmg)
+    public bool Hurt(int _dmg)
     {
-        if (Health == 0)
-            return;
+        if (_health <= 0)
+            return false;
 
-        Health -= _dmg;
+        _health -= _dmg;
 
-        if (Health == 0)
+        Recoil(
+            _player.IsFacingRight,
+            _data.RecoilOffsetX / 2,
+            _data.RecoilOffsetY / 2,
+            _data.RecoilDurationX,
+            _data.RecoilDurationY
+        );
+
+        // hurt flash
+        var tween = GetTree().CreateTween();
+        tween
+            .TweenProperty(
+                _animatedSprite.Material,
+                "shader_parameter/flash_opacity",
+                1,
+                _data.HitBlinkEffectDuration
+            )
+            .SetTrans(Tween.TransitionType.Linear)
+            .SetEase(Tween.EaseType.Out);
+        tween
+            .TweenProperty(
+                _animatedSprite.Material,
+                "shader_parameter/flash_opacity",
+                0,
+                _data.HitBlinkEffectDuration
+            )
+            .SetTrans(Tween.TransitionType.Linear)
+            .SetEase(Tween.EaseType.Out);
+        tween.TweenCallback(
+            Callable.From(() =>
+            {
+                if (_health <= 0)
+                    Timing.RunCoroutine(_Die());
+            })
+        );
+
+        return true;
+    }
+
+    IEnumerator<double> _Die()
+    {
+        // First I turn off all of it hitbox and hurtbox
+        HitBoxDisabled();
+
+        // Stop the movememnt
+        _isVelocityOverrided = true;
+
+        // I need to wait till the body is on the floor and velocity is equal to zero and wait for attack animation to finish
+        yield return Timing.WaitUntilDone(
+            Timing.RunCoroutine(
+                _StopAllHorizontalMovement(),
+                Segment.PhysicsProcess,
+                STOP_X_MOVEMENT_TAG
+            )
+        );
+
+        while (!IsOnFloor() || _animatedSprite.Animation == "attack")
         {
-            _animatedSprite.Play("die");
-            SetProcess(false);
+            yield return Timing.WaitForOneFrame;
         }
 
-        BounceBack(
-            _player.IsFacingRight,
-            _bounceBackOffsetX,
-            _bounceBackOffsetY,
-            _bounceBackDuration
-        );
+        // I stop all the process
+        SetPhysicsProcess(false);
+        SetProcess(false);
+
+        // Then I play the die animation
+        _animatedSprite.Play("die");
+    }
+
+    private void HitBoxDisabled()
+    {
+        _bodyHitBox.SetDeferred("disable", true);
+        _hitBoxLeft.SetDeferred("disable", true);
+        _hitBoxRight.SetDeferred("disable", true);
     }
 
     #endregion
@@ -385,15 +514,83 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
     private void OnBodyExitedDetectionArea(Node2D body)
     {
         // we don't want to delete player while the character still chasing it.
-        _player = null;
+        // _player = null;
     }
 
     private void OnBodyEnteredDetectionArea(Node2D body)
     {
         if (body is Player player)
             _player = player;
-        GD.Print("Player entered detection area, playerType: ", body.GetType(), body.Name);
     }
 
+    private void OnBodyEnteredHitBox(Node2D body)
+    {
+        if (body is Player player && _health > 0)
+        {
+            player.Hurt(_data.Damage);
+
+            // HurtRecoil(
+            //     _player.IsFacingRight,
+            //     _data.RecoilOffsetX,
+            //     _data.RecoilOffsetY,
+            //     _data.RecoilDuration
+            // );
+        }
+    }
+
+    void OnAnimationFinished()
+    {
+        if (_animatedSprite.Animation == "die")
+        {
+            var tween = GetTree().CreateTween();
+            tween
+                .TweenProperty(_animatedSprite.Material, "shader_parameter/opacity", 0, 0.5f)
+                .SetTrans(Tween.TransitionType.Sine)
+                .SetEase(Tween.EaseType.In);
+            tween.TweenCallback(Callable.From(this.QueueFree));
+        }
+        _animatedSprite.Play("idle");
+    }
+
+    #endregion
+
+    #region GENERAL METHODS
+    bool IsCurrentFrame(params int[] frames)
+    {
+        return frames.Contains(_animatedSprite.Frame);
+    }
+
+    IEnumerator<double> _StopAllHorizontalMovement()
+    {
+        while (Mathf.Abs(Velocity.X) != 0)
+        {
+            Velocity = new(Mathf.Lerp(Velocity.X, 0, _data.DeccelerationLerp), Velocity.Y);
+            yield return Timing.WaitForOneFrame;
+        }
+    }
+
+    IEnumerator<double> _StopMovementInOneDirection(bool isRight)
+    {
+        if (isRight && Velocity.X > 0)
+        {
+            yield return Timing.WaitUntilDone(
+                Timing.RunCoroutine(
+                    _StopAllHorizontalMovement(),
+                    Segment.PhysicsProcess,
+                    STOP_X_MOVEMENT_TAG
+                )
+            );
+        }
+        else if (Velocity.X < 0)
+        {
+            yield return Timing.WaitUntilDone(
+                Timing.RunCoroutine(
+                    _StopAllHorizontalMovement(),
+                    Segment.PhysicsProcess,
+                    STOP_X_MOVEMENT_TAG
+                )
+            );
+        }
+    }
     #endregion
 }

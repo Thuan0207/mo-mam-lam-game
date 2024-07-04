@@ -1,7 +1,22 @@
-[gd_scene load_steps=39 format=3 uid="uid://by4lqpdcq4a3k"]
+[gd_scene load_steps=45 format=3 uid="uid://by4lqpdcq4a3k"]
 
 [ext_resource type="Script" path="res://scripts/Ghoul.cs" id="1_fdukx"]
 [ext_resource type="Texture2D" uid="uid://d3nk2wqi1s6lg" path="res://asset/23.7.14 dark fantasy monster pack 2 - free/pack 2 m1.png" id="2_g133s"]
+[ext_resource type="Material" uid="uid://bp75cfrf80yvk" path="res://resources/HitBlinkEffectShaderMaterial.tres" id="2_lsk4e"]
+[ext_resource type="Resource" uid="uid://dye5q4x8kd6y" path="res://resources/GhoulData.tres" id="2_pyp50"]
+
+[sub_resource type="Animation" id="Animation_ww41a"]
+resource_name = "HitBlinkEffect"
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_5l7eu"]
+length = 0.001
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_m0anf"]
+_data = {
+"HitBlinkEffect": SubResource("Animation_ww41a"),
+"RESET": SubResource("Animation_5l7eu")
+}
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s2hjp"]
 size = Vector2(16, 34)
@@ -146,7 +161,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_sydrr")
 }, {
-"duration": 1.0,
+"duration": 2.0,
 "texture": SubResource("AtlasTexture_o1a0l")
 }, {
 "duration": 1.0,
@@ -259,17 +274,22 @@ size = Vector2(513.21, 138.063)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_112g0"]
 size = Vector2(16, 34.0625)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_l21qh"]
+size = Vector2(12, 34)
+
 [node name="Ghoul" type="CharacterBody2D"]
+scale = Vector2(1.5, 1.5)
 collision_layer = 4
 collision_mask = 6
 script = ExtResource("1_fdukx")
-SmallJumpVelocity = -380.0
+_data = ExtResource("2_pyp50")
 _targetXThreshold = 50
 _targetYThreshold = 50
-_bounceBackOffsetX = 20
-_bounceBackOffsetY = 0.0
-_bounceBackDuration = 0.2
-_stunDurationAfterBounceBack = 0.2
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_m0anf")
+}
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -1)
@@ -277,22 +297,37 @@ shape = SubResource("RectangleShape2D_s2hjp")
 debug_color = Color(0, 0.6, 0.701961, 0.419608)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+material = ExtResource("2_lsk4e")
 scale = Vector2(2, 2)
 sprite_frames = SubResource("SpriteFrames_x1b5l")
-animation = &"die"
-frame = 7
-frame_progress = 1.0
+animation = &"idle"
 
 [node name="DetectionArea" type="Area2D" parent="."]
-collision_layer = 128
+collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionArea"]
 scale = Vector2(1.4, -1.818)
 shape = SubResource("RectangleShape2D_eygw4")
 
 [node name="HitBox" type="Area2D" parent="."]
-collision_layer = 64
+collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox"]
 position = Vector2(0, -0.96875)
 shape = SubResource("RectangleShape2D_112g0")
+
+[node name="HitBoxRight" type="Area2D" parent="."]
+position = Vector2(14, -1)
+collision_layer = 0
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBoxRight"]
+shape = SubResource("RectangleShape2D_l21qh")
+
+[node name="HitBoxLeft" type="Area2D" parent="."]
+position = Vector2(-14, -1)
+collision_layer = 0
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBoxLeft"]
+shape = SubResource("RectangleShape2D_l21qh")
