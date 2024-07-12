@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://d0whhxsidgu15"]
+
+[ext_resource type="Script" path="res://scripts/Checkmap.cs" id="1_qud3y"]
+
+[node name="Checkmap" type="Camera2D"]
+script = ExtResource("1_qud3y")

@@ -62,10 +62,13 @@ public partial class Player : CharacterBody2D, IHurtableBody
     CpuParticles2D walkingDust;
     CpuParticles2D jumpingDust;
     CpuParticles2D explosionDust;
+
     public AnimatedSprite2D AnimatedSprite;
 
     ShapeCast2D _hitboxLeft;
     ShapeCast2D _hitboxRight;
+    Joystick _joyStick;
+
     #endregion
 
     #region SCENE
@@ -127,6 +130,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         explosionDust = GetNode<CpuParticles2D>("Explosion");
         _hitboxLeft = GetNode<ShapeCast2D>("HitBoxLeft");
         _hitboxRight = GetNode<ShapeCast2D>("HitBoxRight");
+        _joyStick = GetParent().GetNode<Joystick>("Control/Joystick");
 
         localTimeScale = 1;
         defaultScale = AnimatedSprite.Scale;
@@ -164,6 +168,8 @@ public partial class Player : CharacterBody2D, IHurtableBody
         if (!_isAllInputDisabled)
         {
             _moveInput = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
+
+            if (_moveInput == Vector2.Zero) _moveInput = _joyStick.GetDirection();
 
             if (!_isActionInputDisabled)
             {
@@ -919,6 +925,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         {
             return enemy.Hurt(Data.Damage);
         }
+
         return false;
     }
 

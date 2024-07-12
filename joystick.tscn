@@ -1,0 +1,28 @@
+[gd_scene load_steps=6 format=3 uid="uid://crkr7vki2hf44"]
+
+[ext_resource type="Script" path="res://Joystick.cs" id="1_57l46"]
+[ext_resource type="Texture2D" uid="uid://cqh6dgw2tuokv" path="res://scenes/Handle.png" id="1_t8ud8"]
+[ext_resource type="Texture2D" uid="uid://chjv3tcdurag5" path="res://scenes/Background.png" id="2_nks30"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1e7u4"]
+radius = 268.39
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_shjbk"]
+radius = 288.998
+
+[node name="Joystick" type="Area2D" node_paths=PackedStringArray("_button")]
+script = ExtResource("1_57l46")
+_button = NodePath("TouchScreenButton")
+
+[node name="TouchScreenButton" type="TouchScreenButton" parent="."]
+shape = SubResource("CircleShape2D_1e7u4")
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("2_nks30")
+
+[node name="Handle" type="Sprite2D" parent="."]
+position = Vector2(0, 1)
+texture = ExtResource("1_t8ud8")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_shjbk")

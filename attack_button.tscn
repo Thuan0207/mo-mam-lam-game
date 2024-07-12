@@ -1,0 +1,37 @@
+[gd_scene load_steps=4 format=3 uid="uid://cdhwgc70xy5gk"]
+
+[ext_resource type="Texture2D" uid="uid://dydl5n2s1rdya" path="res://asset/button/tile_0720.png" id="1_cb4wn"]
+[ext_resource type="Texture2D" uid="uid://dkhf3xumplhu1" path="res://asset/button/tile_0723.png" id="2_3rbhl"]
+[ext_resource type="Texture2D" uid="uid://bepjpwr42i7f4" path="res://asset/button/tile_0724.png" id="3_1noni"]
+
+[node name="attack button" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = -11.0
+offset_top = 4.0
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(0.530724, 0.532347)
+
+[node name="attack" type="TouchScreenButton" parent="."]
+position = Vector2(2214.64, 888.518)
+scale = Vector2(-19.9629, 20.388)
+texture_normal = ExtResource("1_cb4wn")
+texture_pressed = ExtResource("1_cb4wn")
+passby_press = true
+action = "attack"
+
+[node name="jump" type="TouchScreenButton" parent="."]
+position = Vector2(1953.93, 717.577)
+scale = Vector2(14.4849, 12.6797)
+texture_normal = ExtResource("2_3rbhl")
+passby_press = true
+action = "jump"
+
+[node name="dash" type="TouchScreenButton" parent="."]
+position = Vector2(1712.75, 986.198)
+scale = Vector2(13.4251, 11.623)
+texture_normal = ExtResource("3_1noni")
+texture_pressed = ExtResource("3_1noni")
+passby_press = true
+action = "dash"

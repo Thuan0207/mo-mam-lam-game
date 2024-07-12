@@ -4,11 +4,9 @@ using System.Linq;
 using Godot;
 using MEC;
 
-public partial class Ghoul : CharacterBody2D, IHurtableBody
+public partial class Eye : CharacterBody2D, IHurtableBody
 {
     #region GENERAL
-    const float JUMP_HEIGHT_THRESHOLD = 60.0f;
-
     [Export]
     GhoulData _data;
 
@@ -96,7 +94,7 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
 
         AddTargetDetectionArea(_target.Position);
     }
-
+    
     void PathFinding()
     {
         if (_player != null && IsOnFloor() && _health > 0)
@@ -201,120 +199,7 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         if (_animatedSprite.Animation == "attack")
             CancelAtk();
     }
-
-    public override void _PhysicsProcess(double delta)
-    {
-        Vector2 velocity = Velocity;
-
-        if (!IsOnFloor())
-            velocity.Y += Gravity * (float)delta;
-
-        if (!_isVelocityOverrided && _health > 0)
-            MoveToTargetLocation(ref velocity);
-
-        Velocity = velocity;
-        MoveAndSlide();
-    }
     #endregion
-
-
-    #region MOVEMENT
-
-    #region jump
-    bool CanJumpDownFromRightToLeftEdge()
-    {
-        return _prevTarget.IsRightEdge
-            && _target.IsLeftEdge
-            && _prevTarget.Position.Y <= _target.Position.Y // previous target is above the current target
-            && _prevTarget.Position.X < _target.Position.X; // previous is to the left of target
-    }
-
-    bool CanJumpDownFromLeftToRightEdge()
-    {
-        return _prevTarget.IsLeftEdge
-            && _target.IsRightEdge
-            && _prevTarget.Position.Y <= _target.Position.Y // previous target is above the current target
-            && _prevTarget.Position.X > _target.Position.X; // previous is to the right of target
-    }
-
-    private void Jump(ref Vector2 velocity)
-    {
-        if (_prevTarget == null || _target == null || _target.IsPositionPoint)
-            return;
-
-        // if the target can be drop to reach then we don't need to jump
-        if (GlobalPosition.Y < _target.Position.Y && _target.IsFallTile)
-            return;
-
-        if (
-            (
-                GlobalPosition.Y < _target.Position.Y
-                && GlobalPosition.DistanceTo(_target.Position) < JUMP_HEIGHT_THRESHOLD
-            )
-        )
-            velocity.Y = -Mathf.Sqrt(2 * 4 * _tileMapPathFind.TileSet.TileSize.Y * Gravity);
-
-        if (
-            GlobalPosition.Y > _target.Position.Y // can jump up
-            || CanJumpDownFromLeftToRightEdge()
-            || CanJumpDownFromRightToLeftEdge()
-        )
-        {
-            int heightDistance = Mathf.Abs(
-                _tileMapPathFind.LocalToMap(_target.Position).Y
-                    - _tileMapPathFind.LocalToMap(GlobalPosition).Y
-            );
-
-            if (heightDistance <= 2)
-                velocity.Y = Mathf.Sqrt(2 * 4 * _tileMapPathFind.TileSet.TileSize.Y * Gravity);
-            else if (heightDistance == 3)
-                velocity.Y = Mathf.Sqrt(2 * 6 * _tileMapPathFind.TileSet.TileSize.Y * Gravity);
-            else
-                velocity.Y = Mathf.Sqrt(2 * 8 * _tileMapPathFind.TileSet.TileSize.Y * Gravity);
-
-            velocity.Y = -1 * velocity.Y;
-        }
-    }
-    #endregion
-
-    void MoveToTargetLocation(ref Vector2 velocity)
-    {
-        if (_target != null)
-        {
-            var distance = _target.Position - GlobalPosition;
-
-            // the player have reach the target threshold
-            if (
-                Mathf.Abs(distance.X) <= _targetXThreshold // meet x threshold
-                && Mathf.Abs(distance.Y) <= _targetYThreshold //  meet y threshold
-                && IsOnFloor()
-            )
-            {
-                // we call jump here because every jumpable point must also be a target point
-
-                Jump(ref velocity);
-                GoToNextPointInPath();
-
-                if (_target != null)
-                    distance = _target.Position - Position;
-            }
-
-            if (
-                Mathf.Abs(distance.X) > _targetXThreshold //doesn't meet target x threshold
-            )
-                Direction = distance.Normalized();
-        }
-        else
-            Direction = Vector2.Zero;
-
-        velocity.X = Mathf.Lerp(
-            Velocity.X,
-            Mathf.Sign(Direction.X) * _data.MaxSpeed,
-            _data.AccelerationLerp
-        );
-    }
-    #endregion
-
     #region COMBAT METHODS
 
     void Recoil(

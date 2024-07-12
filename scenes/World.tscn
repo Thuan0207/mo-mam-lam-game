@@ -1,20 +1,25 @@
-[gd_scene load_steps=17 format=3 uid="uid://dtai2rsce2shf"]
+[gd_scene load_steps=22 format=3 uid="uid://dtai2rsce2shf"]
 
 [ext_resource type="Script" path="res://scripts/World.cs" id="1_cr1qx"]
+[ext_resource type="PackedScene" uid="uid://crkr7vki2hf44" path="res://joystick.tscn" id="2_0xoep"]
 [ext_resource type="PackedScene" uid="uid://buhdto57m5ljm" path="res://scenes/Level1Map.tscn" id="2_pk6ig"]
 [ext_resource type="PackedScene" uid="uid://by4lqpdcq4a3k" path="res://scenes/Ghoul.tscn" id="4_n46as"]
+[ext_resource type="Script" path="res://scripts/Checkmap.cs" id="5_lp1hs"]
 [ext_resource type="PackedScene" uid="uid://bcb66ab5wjgvt" path="res://scenes/Player.tscn" id="6_3b7ge"]
 [ext_resource type="Script" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="7_eu7qd"]
 [ext_resource type="Script" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="7_t0r1w"]
 [ext_resource type="Script" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_2d.gd" id="8_so2n6"]
 [ext_resource type="Texture2D" uid="uid://bckmvhhyf586n" path="res://Sprites/Bg/1.png" id="9_uvubp"]
 [ext_resource type="Texture2D" uid="uid://cyfvkmwcwy30g" path="res://Sprites/Bg/2.png" id="10_ftk6w"]
+[ext_resource type="PackedScene" uid="uid://cdhwgc70xy5gk" path="res://attack_button.tscn" id="11_rje8o"]
 [ext_resource type="Texture2D" uid="uid://c1ydy3iduj2mh" path="res://Sprites/Bg/3.png" id="11_wu2na"]
 [ext_resource type="Texture2D" uid="uid://de26p88qxklnw" path="res://Sprites/Bg/4.png" id="12_j3v01"]
 [ext_resource type="Texture2D" uid="uid://chk75t580vgrg" path="res://Sprites/Bg/5.png" id="13_7w36g"]
 [ext_resource type="PackedScene" uid="uid://cdjjtjgx04og7" path="res://scenes/GUI/HeartsContainer.tscn" id="14_hqyya"]
 [ext_resource type="Texture2D" uid="uid://dr2tr3om2x0e5" path="res://Sprites/Bg/6.png" id="14_soovy"]
 [ext_resource type="Texture2D" uid="uid://crbp2plns878m" path="res://Sprites/Bg/7.png" id="15_2knxl"]
+[ext_resource type="PackedScene" uid="uid://bk3g4fdney0fu" path="res://scenes/Wiza.tscn" id="18_dgdtf"]
+[ext_resource type="PackedScene" uid="uid://nf5uhwp73e47" path="res://scenes/Eye.tscn" id="19_l7dn6"]
 
 [sub_resource type="Resource" id="Resource_5psxu"]
 script = ExtResource("7_t0r1w")
@@ -28,17 +33,17 @@ _heartContainer = NodePath("CanvasLayer/HeartsContainer")
 _player = NodePath("Player")
 
 [node name="TileMap" parent="." instance=ExtResource("2_pk6ig")]
-position = Vector2(287, 219)
+position = Vector2(0, 0)
 
 [node name="Player" parent="." instance=ExtResource("6_3b7ge")]
-position = Vector2(4432, 1540)
+position = Vector2(5267, 1423)
 
 [node name="Ghoul" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-position = Vector2(5357, 1620)
+position = Vector2(6398, 1467)
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul2" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-position = Vector2(4238, 1523)
+position = Vector2(4104, 1375)
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul3" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
@@ -77,16 +82,18 @@ _tileMapPathFind = NodePath("../TileMap")
 position = Vector2(2439, 1368)
 _tileMapPathFind = NodePath("../TileMap")
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." node_paths=PackedStringArray("_joystick")]
 offset = Vector2(0, -50)
 zoom = Vector2(1.8, 1.8)
 process_callback = 0
+script = ExtResource("5_lp1hs")
+_joystick = NodePath("../Control/Joystick")
 
 [node name="PhantomCameraHost" type="Node" parent="Camera2D"]
 script = ExtResource("7_eu7qd")
 
 [node name="PhantomCamera2D" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
-position = Vector2(4462, 1510)
+position = Vector2(5297, 1393)
 script = ExtResource("8_so2n6")
 priority = 10
 follow_mode = 2
@@ -103,7 +110,7 @@ show_viewfinder_in_play = true
 draw_limits = true
 
 [node name="PhantomCamera2DZoom" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
-position = Vector2(4462, 1510)
+position = Vector2(5297, 1393)
 script = ExtResource("8_so2n6")
 priority = 1
 follow_mode = 2
@@ -125,6 +132,14 @@ offset_top = 20.0
 offset_right = 214.0
 offset_bottom = 50.0
 
+[node name="Control" type="CanvasLayer" parent="."]
+
+[node name="Joystick" parent="Control" instance=ExtResource("2_0xoep")]
+position = Vector2(133, 508)
+scale = Vector2(0.280001, 0.280001)
+
+[node name="attack button" parent="Control" instance=ExtResource("11_rje8o")]
+
 [node name="ParallaxBackground" type="ParallaxBackground" parent="."]
 
 [node name="ParallaxLayer" type="ParallaxLayer" parent="ParallaxBackground"]
@@ -142,7 +157,7 @@ motion_scale = Vector2(0.2, 0.2)
 motion_mirroring = Vector2(960, 0)
 
 [node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/ParallaxLayer2"]
-position = Vector2(0, -9)
+position = Vector2(0, 21)
 scale = Vector2(2.5026, 2.77315)
 texture = ExtResource("14_soovy")
 centered = false
@@ -172,7 +187,7 @@ motion_scale = Vector2(0.14, 0.14)
 motion_mirroring = Vector2(960, 0)
 
 [node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/ParallaxLayer5"]
-position = Vector2(0, -9)
+position = Vector2(1625, 1486)
 scale = Vector2(2.4974, 2.75)
 texture = ExtResource("11_wu2na")
 centered = false
@@ -196,3 +211,10 @@ position = Vector2(0, -6)
 scale = Vector2(2.49219, 2.75463)
 texture = ExtResource("9_uvubp")
 centered = false
+
+[node name="Wiza" parent="." instance=ExtResource("18_dgdtf")]
+position = Vector2(4414, 1300)
+
+[node name="Eye" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("19_l7dn6")]
+position = Vector2(5675, 1270)
+_tileMapPathFind = NodePath("../TileMap")
