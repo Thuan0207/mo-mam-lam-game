@@ -178,18 +178,32 @@ public partial class CharacterData : Resource
     public float DashInputBufferTime;
 
     #region COMBAT
-    [ExportGroup("Combat")]
+    [ExportCategory("COMBAT")]
+    [ExportGroup("Stats")]
     [Export]
-    public float AttackInputBufferTime;
+    public float AttackCd; // cool down
 
     [Export]
     public int Damage;
 
     [Export]
-    public float BounceBackDuration;
+    public int MaxHealth;
 
     [Export]
-    public float BounceBackForce;
+    public float InvinciblePeriod; // * The invicible period when player just receive damage
+
+    [ExportGroup("Recoil")]
+    [Export]
+    public float RecoilDurationXSecond;
+
+    [Export]
+    public float RecoilDurationYSecond;
+
+    [Export]
+    public float RecoilOffsetX;
+
+    [Export]
+    public float RecoilOffsetY;
 
     [Export]
     public float FreezeDuration;
@@ -198,10 +212,7 @@ public partial class CharacterData : Resource
     public float FreezeScale;
 
     [Export]
-    public int MaxHealth;
-
-    [Export]
-    public float InvinciblePeriod; // * The invicible period when player just receive damage
+    public float HitBlinkDuration;
     #endregion
     public CharacterData()
         : this(
@@ -223,14 +234,17 @@ public partial class CharacterData : Resource
             1.0f,
             0.2f,
             0.088f,
-            0.05f,
+            0.2f,
             1,
+            5,
+            0.5f,
             0.2f,
-            100,
+            0.1f,
+            50f,
+            25f,
             0.2f,
             0.05f,
-            5,
-            0.5f
+            0.01f
         ) { }
 
     public CharacterData(
@@ -252,14 +266,17 @@ public partial class CharacterData : Resource
         float deccelInair = 1.0f,
         float coyoteTime = 0.2f,
         float jumpInputBufferTime = 0.088f,
-        float attackInputBufferTime = 0.05f,
+        float attackCd = 0.2f,
         int dmg = 1,
-        float bounceBackDuration = 0.2f,
-        float bounceBackForce = 100,
+        int maxHealth = 5,
+        float invinciblePeriod = 0.5f,
+        float recoilDurationXSecond = 0.2f,
+        float recoilDurationYSecond = 0.1f,
+        float recoilOffsetX = 50,
+        float recoilOffsetY = 25,
         float freezeDuration = 0.2f,
         float freezeScale = 0.05f,
-        int maxHealth = 5,
-        float invinciblePeriod = 0.5f
+        float hitBlinkDuration = 0.01f
     )
     {
         RunMaxSpeed = runMaxSpeed;
@@ -280,14 +297,17 @@ public partial class CharacterData : Resource
         JumpHangMaxSpeedMult = jumpHangMaxSpeedMult;
         CoyoteTime = coyoteTime;
         JumpInputBufferTime = jumpInputBufferTime;
-        AttackInputBufferTime = attackInputBufferTime;
+        AttackCd = attackCd;
         Damage = dmg;
-        BounceBackDuration = bounceBackDuration;
-        BounceBackForce = bounceBackForce;
+        RecoilDurationXSecond = recoilDurationXSecond;
+        RecoilDurationYSecond = recoilDurationYSecond;
+        RecoilOffsetX = recoilOffsetX;
+        RecoilOffsetY = recoilOffsetY;
         FreezeDuration = freezeDuration;
         FreezeScale = freezeScale;
         MaxHealth = maxHealth;
         InvinciblePeriod = invinciblePeriod;
+        HitBlinkDuration = hitBlinkDuration;
     }
 
     #region assist

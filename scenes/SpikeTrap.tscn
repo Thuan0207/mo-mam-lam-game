@@ -1,0 +1,26 @@
+[gd_scene load_steps=4 format=3 uid="uid://4qo3ovs05ds5"]
+
+[ext_resource type="Script" path="res://scripts/Trap.cs" id="1_rlgjt"]
+[ext_resource type="Texture2D" uid="uid://bcbscogjcc2kr" path="res://Sprites/Foozle_2DS0007_Pixel_Trap_Pack/Foozle_2DTR0001_Pixel_Trap_Pack/Ceiling Trap/PNGs/Ceiling Trap - Level 1.png" id="2_tnbba"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2g4fb"]
+size = Vector2(64, 9)
+
+[node name="SpikeTrap" type="Node2D"]
+script = ExtResource("1_rlgjt")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(2, 2)
+texture = ExtResource("2_tnbba")
+flip_v = true
+hframes = 14
+
+[node name="Hitbox" type="Area2D" parent="."]
+position = Vector2(0, 46)
+collision_layer = 8
+collision_mask = 5
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(0, -2)
+shape = SubResource("RectangleShape2D_2g4fb")

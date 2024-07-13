@@ -31,13 +31,14 @@ public partial class Player : CharacterBody2D, IHurtableBody
     public bool IsAttacking { get; private set; }
     public bool IsAtkConnected { get; private set; }
     public bool IsStriking { get; private set; }
+    public bool _isRecoiling;
     #endregion
 
     #region INPUT PARAMETERS
     Vector2 _moveInput;
     public float LastPressedJumpTime { get; private set; }
     public float LastPressedDashTime { get; private set; }
-    public float LastPressedDashAttackTime { get; private set; }
+    public float AttackCd { get; private set; }
     bool _isAllInputDisabled;
     bool _isActionInputDisabled;
     #endregion
@@ -57,18 +58,18 @@ public partial class Player : CharacterBody2D, IHurtableBody
     #endregion
 
     #region NODE
+    Joystick _joyStick;
+    GameManager _gameManager;
     CpuParticles2D runningDustLeft;
     CpuParticles2D runningDustRight;
     CpuParticles2D walkingDust;
     CpuParticles2D jumpingDust;
     CpuParticles2D explosionDust;
-
-    public AnimatedSprite2D AnimatedSprite;
-
-    ShapeCast2D _hitboxLeft;
-    ShapeCast2D _hitboxRight;
-    Joystick _joyStick;
-
+    public AnimatedSprite2D CharacterSprite;
+    AnimatedSprite2D attackFxRight;
+    AnimatedSprite2D attackFxLeft;
+    Area2D hitboxLeft;
+    Area2D hitboxRight;
     #endregion
 
     #region SCENE
@@ -87,8 +88,8 @@ public partial class Player : CharacterBody2D, IHurtableBody
     Vector2 defaultScale;
     double localTimeScale;
     readonly Regex attackRegex = new(@"^attack\d+$");
-    readonly Regex jumpDownRegex = new(@"\bjump\b.*\bdown\b");
-    readonly Regex jumpGroundedRegex = new(@"\bjump\b.*\bgrounded\b");
+    readonly Regex jumpUpRegex = new(@"(?=.*jump)(?=.*up)");
+    readonly Regex jumpDownRegex = new(@"(?=.*jump)(?=.*down)");
     readonly Regex jumpNeutralRegex = new(@"\bjump\b.*\bneutral\b");
     readonly Regex jumpForwardRegex = new(@"\bjump\b.*\bforward\b");
     float runLerp;
@@ -120,31 +121,33 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
         IsFacingRight = true;
         IsFalling = false;
+        _gameManager = GetNode<GameManager>("/root/GameManager");
         AudioStreamPlayerJump = GetNode<AudioStreamPlayer2D>("AudioStreamPlayerJump");
         AudioStreamPlayerRunning = GetNode<AudioStreamPlayer2D>("AudioStreamPlayerRunning");
-        AnimatedSprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+        CharacterSprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
         runningDustLeft = GetNode<CpuParticles2D>("RunningDustLeft");
         runningDustRight = GetNode<CpuParticles2D>("RunningDustRight");
         walkingDust = GetNode<CpuParticles2D>("WalkingDust");
         jumpingDust = GetNode<CpuParticles2D>("JumpingDust");
         explosionDust = GetNode<CpuParticles2D>("Explosion");
-        _hitboxLeft = GetNode<ShapeCast2D>("HitBoxLeft");
-        _hitboxRight = GetNode<ShapeCast2D>("HitBoxRight");
-        _joyStick = GetParent().GetNode<Joystick>("Control/Joystick");
+        hitboxLeft = GetNode<Area2D>("HitBoxLeft");
+        hitboxRight = GetNode<Area2D>("HitBoxRight");
+        attackFxRight = GetNode<AnimatedSprite2D>("AnimatedSprite2D/AttackFxRight");
+        attackFxLeft = GetNode<AnimatedSprite2D>("AnimatedSprite2D/AttackFxLeft");
 
         localTimeScale = 1;
-        defaultScale = AnimatedSprite.Scale;
+        defaultScale = CharacterSprite.Scale;
 
         _dashGhostTscn = ResourceLoader.Load<PackedScene>("res://scenes/VFX/DashGhost.tscn");
         _impactHitTscn = ResourceLoader.Load<PackedScene>("uid://chxjths3qoinh");
-        ;
-        AnimatedSprite.AnimationFinished += () =>
+        CharacterSprite.AnimationFinished += () =>
         {
             // if currently attack animation
-            if (attackRegex.IsMatch(AnimatedSprite.Animation))
+            if (attackRegex.IsMatch(CharacterSprite.Animation))
             {
                 IsAttacking = false;
                 IsAtkConnected = false;
+                AttackCd = Data.AttackCd;
             }
             ResetAllPlayingAnimationCheck();
         };
@@ -160,16 +163,16 @@ public partial class Player : CharacterBody2D, IHurtableBody
         LastOnGroundTime -= delta;
         LastPressedJumpTime -= delta;
         LastPressedDashTime -= delta;
-        LastPressedDashAttackTime -= delta;
+        AttackCd -= delta;
         #endregion
 
         #region INPUT HANDLER
-
         if (!_isAllInputDisabled)
         {
             _moveInput = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
 
-            if (_moveInput == Vector2.Zero) _moveInput = _joyStick.GetDirection();
+            if (_moveInput == Vector2.Zero)
+                _moveInput = _joyStick.GetDirection();
 
             if (!_isActionInputDisabled)
             {
@@ -188,7 +191,6 @@ public partial class Player : CharacterBody2D, IHurtableBody
         }
         else
             _moveInput = Vector2.Zero;
-
         #endregion
 
         // Ground Check
@@ -198,18 +200,18 @@ public partial class Player : CharacterBody2D, IHurtableBody
         #region DIRECTION
         if (_moveInput.X != 0)
         {
-            HandleRunJumpAnimation("forward");
+            HandleAnimation("forward");
             CheckDirectionToFace(isMovingRight: _moveInput.X > 0);
         }
         else
         {
-            HandleRunJumpAnimation("neutral");
+            HandleAnimation("neutral");
         }
         #endregion
 
         #region JUMP CHECKS
         // jump falling
-        if (IsJumping && Velocity.Y > 0)
+        if (IsJumping && Velocity.Y >= 0)
         {
             IsJumping = false;
             _isJumpFalling = true;
@@ -272,9 +274,12 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
         DashCheck();
         AttackCheck();
+        AudioCheck();
+    }
 
-        #region AUDIO HANDLER
-        // audio jump
+    #region AUDIO
+    void AudioCheck()
+    { // audio jump
         if (IsOnFloor() && Input.IsActionJustPressed("jump"))
         {
             AudioStreamPlayerJump.Play();
@@ -295,8 +300,8 @@ public partial class Player : CharacterBody2D, IHurtableBody
         {
             AudioStreamPlayerRunning.Stop();
         }
-        #endregion
     }
+    #endregion
 
     #region INPUT CALLBACK
     private void OnJumpUpInput()
@@ -324,18 +329,17 @@ public partial class Player : CharacterBody2D, IHurtableBody
         // apply gravity
         if (!IsOnFloor())
             v.Y += playerGravity * delta;
-        else
-            v.Y = 0;
 
         if (!IsDashing) // if not dashing then player can run, the horizontal velocity of player at the end of the dash when player can regain some control is reduce by half
             runLerp = 1;
         else if (isDashAttacking)
             runLerp = Data.dashEndRunLerp;
 
+        v.X += CalculateRunForce(runLerp, _moveInput.X) * delta;
         if (LastOnGroundTime > 0 && IsAttacking) // stop the player momentum when attaking on ground
             v.X += CalculateRunForce(runLerp, 0) * delta;
-
-        v.X += CalculateRunForce(runLerp, _moveInput.X) * delta;
+        if (_isRecoiling)
+            v.X = Velocity.X;
 
         // jump
         if (!IsDashing && CanJump() && LastPressedJumpTime > 0)
@@ -345,6 +349,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
             _isJumpFalling = false;
             v.Y -= CalculateJumpForce();
         }
+
         Velocity = v;
         MoveAndSlide();
 
@@ -410,7 +415,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
     void Turn()
     {
-        AnimatedSprite.FlipH = !AnimatedSprite.FlipH;
+        CharacterSprite.FlipH = !CharacterSprite.FlipH;
         IsFacingRight = !IsFacingRight;
     }
     #endregion
@@ -432,7 +437,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         Tween tween = GetTree().CreateTween();
         Vector2 stretchScale = defaultScale + scaleAddend;
         tween
-            .TweenProperty(AnimatedSprite, "scale", stretchScale, 0.1)
+            .TweenProperty(CharacterSprite, "scale", stretchScale, 0.1)
             .SetTrans(Tween.TransitionType.Quad)
             .SetEase(Tween.EaseType.Out);
     }
@@ -442,7 +447,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         Tween tween = GetTree().CreateTween();
         Vector2 squashScale = defaultScale + scaleAddend;
         tween
-            .TweenProperty(AnimatedSprite, "scale", squashScale, 0.1)
+            .TweenProperty(CharacterSprite, "scale", squashScale, 0.1)
             .SetTrans(Tween.TransitionType.Quad)
             .SetEase(Tween.EaseType.In);
     }
@@ -451,78 +456,83 @@ public partial class Player : CharacterBody2D, IHurtableBody
     {
         Tween tween = GetTree().CreateTween();
         tween
-            .TweenProperty(AnimatedSprite, "scale", defaultScale, 0.01)
+            .TweenProperty(CharacterSprite, "scale", defaultScale, 0.01)
             .SetTrans(Tween.TransitionType.Quad)
             .SetEase(Tween.EaseType.InOut);
     }
 
-    private void HandleRunJumpAnimation(string category)
+    // ! this is a mess
+    private void HandleAnimation(string category)
     {
-        string prevAnimationName = AnimatedSprite.Animation;
-        bool isPrevAnimationIsJumpDown = jumpDownRegex.IsMatch(prevAnimationName);
-        bool isPrevAnimationIsJumpNeutral = jumpNeutralRegex.IsMatch(prevAnimationName);
-        bool isPrevAnimationIsJumpForward = jumpForwardRegex.IsMatch(prevAnimationName);
+        const string NEUTRAL = "neutral";
+        string animName = CharacterSprite.Animation;
+        bool isJumpNeutralAnimation = jumpNeutralRegex.IsMatch(animName);
+        bool isJumpForwardAnimation = jumpForwardRegex.IsMatch(animName);
 
         // jump related aninamtion need to use the same type of animation through out its life cycle. If it start with jump_forward_up it need to end in jump_forward_down
-        string jumpCategory = isPrevAnimationIsJumpNeutral
-            ? "neutral"
-            : isPrevAnimationIsJumpForward
+        string jumpCategory = isJumpNeutralAnimation
+            ? NEUTRAL
+            : isJumpForwardAnimation
                 ? "forward"
                 : category;
 
         isAttackAnimationPlaying =
-            AnimatedSprite.IsPlaying() && attackRegex.IsMatch(AnimatedSprite.Animation);
-        isHurtAnimationPlaying = AnimatedSprite.IsPlaying() && AnimatedSprite.Animation == "hurt";
-        isDieAnimationPlaying = AnimatedSprite.IsPlaying() && AnimatedSprite.Animation == "die";
+            CharacterSprite.IsPlaying() && attackRegex.IsMatch(CharacterSprite.Animation);
+        isHurtAnimationPlaying = CharacterSprite.IsPlaying() && CharacterSprite.Animation == "hurt";
+        isDieAnimationPlaying = CharacterSprite.IsPlaying() && CharacterSprite.Animation == "die";
 
+        string jumpUp = $"jump_{jumpCategory}_up";
+        string jumpDown = $"jump_{jumpCategory}_down";
         if (
             isAttackAnimationPlaying
             || isHurtAnimationPlaying
             || isDieAnimationPlaying
             || isDashAnimationPlaying
+            || isGroundedAnimationPlaying
         ) // dont interupt these animation
             return;
 
         // if attacking and the current animation is not of type attack then play the animation
         if (IsAttacking)
         {
-            if (AnimatedSprite.Scale != defaultScale)
+            if (CharacterSprite.Scale != defaultScale)
                 ScaleSpriteBackToDefault();
-            AnimatedSprite.Play("attack2");
+            CharacterSprite.Play("attack2");
+            if (CharacterSprite.FlipH)
+                attackFxLeft.Play("AttackFx");
+            else
+                attackFxRight.Play("AttackFx");
         }
         else if (IsJumping)
         {
-            AnimatedSprite.Play($"jump_{jumpCategory}_up");
-            if (jumpCategory == "neutral")
+            if (jumpUpRegex.IsMatch(animName))
+                return;
+            CharacterSprite.Play(jumpUp);
+            if (jumpCategory == NEUTRAL)
                 SquatchSprite(AnimationData.NeutralSquashScaleAddend);
             else
                 SquatchSprite(AnimationData.ForwardSquashScaleAddend);
         }
         else if (IsFalling)
         {
-            AnimatedSprite.Play($"jump_{jumpCategory}_down");
-            if (jumpCategory == "neutral")
+            if (jumpDownRegex.IsMatch(animName))
+                return;
+            CharacterSprite.Play(jumpDown);
+            if (jumpCategory == NEUTRAL)
                 StretchSprite(AnimationData.NeutralStretchScaleAddend);
             else
                 StretchSprite(AnimationData.ForwardStretchScaleAddend);
         }
         // play grounded animation
-        else if (isPrevAnimationIsJumpDown && LastOnGroundTime > 0)
+        else if ((jumpDownRegex.IsMatch(animName) || jumpUpRegex.IsMatch(animName)) && IsOnFloor())
         {
-            AnimatedSprite.Play($"jump_{jumpCategory}_grounded");
+            CharacterSprite.Play($"jump_{jumpCategory}_grounded");
             isGroundedAnimationPlaying = true;
         }
-        // wait for grounded animation to finish
-        else if (isGroundedAnimationPlaying)
+        else if (!isGroundedAnimationPlaying)
         {
-            // 3 is the last frame
-            isGroundedAnimationPlaying = AnimatedSprite.Frame != 3;
-            AnimatedSprite.Play($"jump_{jumpCategory}_grounded");
-        }
-        else
-        {
-            AnimatedSprite.Play($"{category}");
-            if (AnimatedSprite.Scale != defaultScale)
+            CharacterSprite.Play($"{category}");
+            if (CharacterSprite.Scale != defaultScale)
                 ScaleSpriteBackToDefault();
         }
     }
@@ -569,6 +579,9 @@ public partial class Player : CharacterBody2D, IHurtableBody
         // increase force when the player falling, help with coyote time
         if (Velocity.Y > 0)
             force += Velocity.Y;
+        // decrease force when the player is already moving upward, help with recoil
+        else if (Velocity.Y < 0)
+            force -= Velocity.Y;
         return force;
     }
     #endregion
@@ -640,7 +653,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
         SetGravityScale(0);
 
-        AnimatedSprite.Play("start_dash");
+        CharacterSprite.Play("start_dash");
         isDashAnimationPlaying = true;
         //We keep the player's velocity at the dash speed during the "attack" phase (in celeste the first 0.15s)
         while (Time.GetTicksMsec() - startTime <= Data.dashAttackTime * 1000)
@@ -650,7 +663,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
             //This is a cleaner implementation opposed to multiple timers and this coroutine approach is actually what is used in Celeste :D
             yield return Timing.WaitForOneFrame;
         }
-        AnimatedSprite.Play("end_dash");
+        CharacterSprite.Play("end_dash");
 
         startTime = Time.GetTicksMsec();
 
@@ -690,14 +703,14 @@ public partial class Player : CharacterBody2D, IHurtableBody
         while (IsDashing)
         {
             var _ghost = _dashGhostTscn.Instantiate<Sprite2D>();
-            _ghost.Scale = AnimatedSprite.Scale;
-            _ghost.Texture = AnimatedSprite.SpriteFrames.GetFrameTexture(
-                AnimatedSprite.Animation,
-                AnimatedSprite.Frame
+            _ghost.Scale = CharacterSprite.Scale;
+            _ghost.Texture = CharacterSprite.SpriteFrames.GetFrameTexture(
+                CharacterSprite.Animation,
+                CharacterSprite.Frame
             );
 
-            _ghost.FlipH = AnimatedSprite.FlipH;
-            _ghost.GlobalPosition = AnimatedSprite.GlobalPosition;
+            _ghost.FlipH = CharacterSprite.FlipH;
+            _ghost.GlobalPosition = CharacterSprite.GlobalPosition;
             _ghost.Material = !isFirstFrame ? null : _ghost.Material;
 
             if (_ghost.Material != null && _ghost.Material is ShaderMaterial shaderMaterial)
@@ -760,7 +773,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
     bool IsCurrentFrame(params int[] frames)
     {
-        return frames.Contains(AnimatedSprite.Frame);
+        return frames.Contains(CharacterSprite.Frame);
     }
 
     void SharpStopAnyMovement()
@@ -792,10 +805,46 @@ public partial class Player : CharacterBody2D, IHurtableBody
     #region  COMBAT
     bool _isInvincible;
 
+    [Export]
+    private float trauma;
+
     void OnAttackInput()
     {
-        LastPressedDashAttackTime = Data.AttackInputBufferTime;
+        if (AttackCd <= 0)
+            IsAttacking = true;
         _moveInput = Vector2.Zero;
+    }
+
+    void StartInvinciblePeriod(int hurtFlashLoop = 6)
+    {
+        _isInvincible = true;
+        var tween = GetTree().CreateTween().SetLoops(hurtFlashLoop);
+        tween
+            .TweenProperty(
+                CharacterSprite.Material,
+                "shader_parameter/flash_opacity",
+                1,
+                Data.InvinciblePeriod / (hurtFlashLoop * 2)
+            )
+            .SetTrans(Tween.TransitionType.Linear)
+            .SetEase(Tween.EaseType.Out);
+        tween
+            .TweenProperty(
+                CharacterSprite.Material,
+                "shader_parameter/flash_opacity",
+                0,
+                Data.InvinciblePeriod / (hurtFlashLoop * 2)
+            )
+            .SetTrans(Tween.TransitionType.Linear)
+            .SetEase(Tween.EaseType.Out);
+
+        Timing.CallDelayed(
+            Data.InvinciblePeriod,
+            () =>
+            {
+                _isInvincible = false;
+            }
+        );
     }
 
     private IEnumerator<double> _FrameFreezeNZoom(float timeScale, float duration)
@@ -826,97 +875,52 @@ public partial class Player : CharacterBody2D, IHurtableBody
         {
             IsStriking = true;
         }
-
-        if (LastPressedDashAttackTime > 0 && !IsAttacking)
+        else
         {
-            IsAttacking = true;
+            IsStriking = false;
         }
 
         if (IsStriking)
         {
-            if (AnimatedSprite.FlipH)
-                AtkLeft();
+            if (CharacterSprite.FlipH)
+                Attack(hitboxLeft);
             else
-                AtkRight();
+                Attack(hitboxRight);
         }
-        else if (AnimatedSprite.FlipH)
-            _hitboxLeft.ClearExceptions();
-        else
-            _hitboxRight.ClearExceptions();
     }
 
-    void AtkRight()
+    void Attack(Area2D hitbox)
     {
-        _hitboxRight.ForceShapecastUpdate();
-        if (_hitboxRight.IsColliding())
+        var bodies = hitbox.GetOverlappingBodies();
+        foreach (var body in bodies)
         {
-            var count = _hitboxRight.GetCollisionCount();
-            for (int i = 0; i < count; i++)
+            if (body is IHurtableBody)
             {
-                var curr = (CollisionObject2D)_hitboxRight.GetCollider(i);
-                _hitboxRight.AddException(curr);
-                IsAtkConnected = OnAtkConnected(curr);
-
-                // if (IsAtkConnected)
-                // {
-                // 	ImpactHitAnimation(
-                // 		globalPos: (GlobalPosition + _hitboxRight.TargetPosition).Lerp(
-                // 			curr.GlobalPosition,
-                // 			0.5f
-                // 		)
-                // 	);
-                // }
+                IsAtkConnected = OnAtkConnected(body);
+                if (IsAtkConnected)
+                {
+                    Recoil(
+                        isRecoilRight: CharacterSprite.FlipH,
+                        offsetX: Data.RecoilOffsetX,
+                        offsetY: 0,
+                        durationX: Data.RecoilDurationXSecond,
+                        durationY: 0
+                    );
+                    ImpactHitFx(globalPos: body.GlobalPosition);
+                }
             }
         }
     }
 
-    void AtkLeft()
-    {
-        _hitboxLeft.ForceShapecastUpdate();
-        if (_hitboxLeft.IsColliding())
-        {
-            var count = _hitboxLeft.GetCollisionCount();
-            for (int i = 0; i < count; i++)
-            {
-                var curr = (CollisionObject2D)_hitboxLeft.GetCollider(i);
-                _hitboxLeft.AddException(curr);
-                IsAtkConnected = OnAtkConnected(curr);
-
-                // if (IsAtkConnected)
-                // {
-                // 	ImpactHitAnimation(
-                // 		globalPos: (GlobalPosition + _hitboxLeft.TargetPosition).Lerp(
-                // 			curr.GlobalPosition,
-                // 			0.5f
-                // 		)
-                // 	);
-                // }
-            }
-        }
-    }
-
-    void ImpactHitFx(Vector2 globalPos)
+    void ImpactHitFx(Vector2 globalPos, float? duration = null)
     {
         var impactHit = _impactHitTscn.Instantiate<ImpactHit>();
         GetTree().Root.AddChild(impactHit);
         impactHit.GlobalPosition = globalPos;
-        impactHit.OnCriticalFrame += () => Timing.RunCoroutine(_RunTaskOnCriticalAttackFrame());
-    }
-
-    IEnumerator<double> _RunTaskOnCriticalAttackFrame()
-    {
-        _isInvincible = true;
-        Timing.RunCoroutine(_BounceBack(Data.BounceBackForce, Data.BounceBackDuration));
-        yield return Timing.WaitUntilDone(
-            Timing.RunCoroutine(_FrameFreezeNZoom(Data.FreezeScale, Data.FreezeDuration))
-        );
-        Timing.CallDelayed(
-            Data.InvinciblePeriod,
-            () =>
-            {
-                _isInvincible = false;
-            }
-        );
+        impactHit.OnCriticalFrame += () =>
+            Timing.RunCoroutine(
+                _FrameFreezeNZoom(Data.FreezeScale, duration ?? Data.FreezeDuration)
+            );
     }
 
     bool OnAtkConnected(Node2D body)
@@ -929,18 +933,69 @@ public partial class Player : CharacterBody2D, IHurtableBody
         return false;
     }
 
-    IEnumerator<double> _BounceBack(float lerp, float duration)
+    void Recoil(
+        bool isRecoilRight,
+        float offsetX = 1,
+        float offsetY = 0,
+        float durationX = 1,
+        float durationY = 0.5f
+    )
     {
-        var time = Time.GetTicksMsec();
-        while (Time.GetTicksMsec() - time < duration * 1000)
+        _isRecoiling = true;
+        _isAllInputDisabled = true;
+
+        var directionX = isRecoilRight ? 1 : -1;
+        float directionY = -1;
+        var targetPosition =
+            GlobalPosition + new Vector2(directionX * offsetX, directionY * offsetY);
+        var distanceX = targetPosition.X - GlobalPosition.X;
+        var distanceY = targetPosition.Y - GlobalPosition.Y;
+        var targetVelocity = new Vector2(
+            durationX == 0 ? 0 : distanceX / durationX,
+            durationY == 0 ? 0 : distanceY / durationY
+        );
+
+        var tween = GetTree().CreateTween();
+
+        IEnumerator<double> _CancelTween()
         {
-            var velocity = Velocity;
-            var direction = IsFacingRight ? -1 : 1; // opposite of the facing direction
-            velocity.X += CalculateRunForce(lerp, direction) / Engine.PhysicsTicksPerSecond;
-            Velocity = velocity;
-            MoveAndSlide();
-            yield return Timing.WaitForOneFrame;
+            while (tween.IsValid())
+            {
+                if (LastPressedJumpTime > 0 || _moveInput != Vector2.Zero)
+                {
+                    tween.Kill();
+                    Velocity = Vector2.Zero;
+                    LastOnGroundTime = Data.CoyoteTime;
+                }
+                yield return Timing.WaitForOneFrame;
+            }
         }
+
+        tween.SetParallel(true).SetProcessMode(Tween.TweenProcessMode.Physics);
+        tween
+            .TweenProperty(this, "velocity:x", targetVelocity.X, durationX)
+            .SetTrans(Tween.TransitionType.Sine)
+            .SetEase(Tween.EaseType.Out);
+        tween
+            .TweenProperty(this, "velocity:y", targetVelocity.Y, durationY)
+            .SetTrans(Tween.TransitionType.Sine)
+            .SetEase(Tween.EaseType.Out);
+        tween
+            .Chain()
+            .TweenCallback(
+                Callable.From(() =>
+                {
+                    _isRecoiling = false;
+                    _isAllInputDisabled = false;
+                    Timing.RunCoroutine(_CancelTween());
+                })
+            );
+        tween
+            .TweenProperty(this, "velocity:x", 0, durationX)
+            .SetTrans(Tween.TransitionType.Sine)
+            .SetEase(Tween.EaseType.In);
+        tween.Chain().TweenCallback(Callable.From(() => { }));
+        tween.SetParallel(false);
     }
 
     public bool Hurt(int _dmg)
@@ -952,17 +1007,28 @@ public partial class Player : CharacterBody2D, IHurtableBody
             return false;
 
         _health -= _dmg;
+        StartInvinciblePeriod();
 
         KillDash();
 
         ResetAllPlayingAnimationCheck();
-        AnimatedSprite.Play("hurt");
+        CharacterSprite.Play("hurt");
 
         EmitSignal(SignalName.HealthChanged, _health);
+
+        Recoil(
+            isRecoilRight: CharacterSprite.FlipH,
+            offsetX: Data.RecoilOffsetX,
+            offsetY: Data.RecoilOffsetY,
+            durationX: Data.RecoilDurationXSecond,
+            durationY: Data.RecoilDurationYSecond
+        );
         ImpactHitFx(globalPos: GlobalPosition);
 
         if (_health <= 0)
+        {
             Timing.RunCoroutine(_Die().CancelWith(this));
+        }
 
         return true;
     }
@@ -982,7 +1048,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         SetProcess(false);
 
         // Then I play the die animation
-        AnimatedSprite.Play("die");
+        CharacterSprite.Play("die");
         _isAllInputDisabled = false;
     }
 
