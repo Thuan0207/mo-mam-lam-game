@@ -122,6 +122,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         IsFacingRight = true;
         IsFalling = false;
         _gameManager = GetNode<GameManager>("/root/GameManager");
+        _joyStick = GetParent().GetNode<Joystick>("CanvasLayer/Joystick");
         AudioStreamPlayerJump = GetNode<AudioStreamPlayer2D>("AudioStreamPlayerJump");
         AudioStreamPlayerRunning = GetNode<AudioStreamPlayer2D>("AudioStreamPlayerRunning");
         CharacterSprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
