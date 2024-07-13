@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_mkw58")
-MaxHealth = 1000.0
+MaxHealth = 5.0
 Damage = 1
 MaxSpeed = 100.0
 AccelerationLerp = 0.75
@@ -12,10 +12,10 @@ DeccelerationLerp = 0.9
 JumpVelocity = -450.0
 TinyJumpVelocity = -300.0
 SmallJumpVelocity = -350.0
-RecoilOffsetX = 100.0
-RecoilOffsetY = 50.0
+RecoilOffsetX = 50.0
+RecoilOffsetY = 20.0
 RecoilDurationX = 0.2
 RecoilDurationY = 0.1
-StunDurationAfterRecoil = 1.0
+StunDurationAfterRecoil = 0.3
 AtkCooldown = 0.5
 HitBlinkEffectDuration = 0.05

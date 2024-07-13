@@ -280,7 +280,7 @@ size = Vector2(12, 34)
 [node name="Ghoul" type="CharacterBody2D"]
 scale = Vector2(1.5, 1.5)
 collision_layer = 4
-collision_mask = 6
+collision_mask = 14
 script = ExtResource("1_fdukx")
 _data = ExtResource("2_pyp50")
 _targetXThreshold = 50

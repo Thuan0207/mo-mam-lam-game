@@ -21,11 +21,10 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
 
     Area2D _bodyHitBox;
 
-    [Export]
     Area2D _hitBoxRight;
 
-    [Export]
     Area2D _hitBoxLeft;
+    GameManager _gameManager;
 
     bool _isTargetWithinAtkRange;
     #endregion
@@ -105,11 +104,6 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
             GoToNextPointInPath();
         }
     }
-
-    void StopPathFinding()
-    {
-        _pathQueue.Clear();
-    }
     #endregion
 
     #region GAME PROCESS
@@ -141,6 +135,8 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
     public override void _Ready()
     {
         #region NODES ASSIGNMENTS
+        _gameManager = GetNode<GameManager>("/root/GameManager");
+        _gameManager.EnemiesCount += 1;
         _bodyHitBox = GetNode<Area2D>("HitBox");
         _animatedSprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
         _detectionArea = GetNode<Area2D>("DetectionArea");
@@ -155,7 +151,6 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         #region EVENTS ASSIGNMENTS
         _detectionArea.BodyEntered += OnBodyEnteredDetectionArea;
         _detectionArea.BodyExited += OnBodyExitedDetectionArea;
-        _bodyHitBox.BodyEntered += OnBodyEnteredHitBox;
         _animatedSprite.AnimationFinished += OnAnimationFinished;
         #endregion
 
@@ -166,12 +161,13 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
     {
         PathFinding();
 
-        if (Direction.X < 0)
-            _animatedSprite.FlipH = true;
-        else
-            _animatedSprite.FlipH = false;
-
         if (_animatedSprite.Animation != "attack")
+            if (Direction.X < 0)
+                _animatedSprite.FlipH = true;
+            else
+                _animatedSprite.FlipH = false;
+
+        if (_animatedSprite.Animation != "attack" && _health > 0)
             if (Mathf.Round(Velocity.X) == 0)
                 _animatedSprite.Play("idle");
             else if (_health > 0)
@@ -184,21 +180,8 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
 
         if (_isTargetWithinAtkRange && CanAtk())
             Attack();
-    }
 
-    private void AttackCheck(Area2D hitbox)
-    {
-        var bodies = hitbox.GetOverlappingBodies();
-        foreach (var body in bodies)
-        {
-            if (body is Player)
-            {
-                _isTargetWithinAtkRange = true;
-                return;
-            }
-        }
-        _isTargetWithinAtkRange = false;
-        CancelAtk();
+        BodyHitBoxCheck();
     }
 
     public override void _PhysicsProcess(double delta)
@@ -307,7 +290,7 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
             Direction = Vector2.Zero;
 
         velocity.X = Mathf.Lerp(
-            Velocity.X,
+            velocity.X,
             Mathf.Sign(Direction.X) * _data.MaxSpeed,
             _data.AccelerationLerp
         );
@@ -315,7 +298,6 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
     #endregion
 
     #region COMBAT METHODS
-
     void Recoil(
         bool isRecoilRight,
         float offsetX = 1,
@@ -334,11 +316,11 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
             GlobalPosition + new Vector2(directionX * offsetX, directionY * offsetY);
         var distanceX = targetPosition.X - GlobalPosition.X;
         var distanceY = targetPosition.Y - GlobalPosition.Y;
-        var targetVelocity = new Vector2(distanceX / durationX, distanceY / durationX);
+        var targetVelocity = new Vector2(distanceX / durationX, distanceY / durationY);
 
         var tween = GetTree().CreateTween();
 
-        tween.SetParallel(true);
+        tween.SetParallel(true).SetProcessMode(Tween.TweenProcessMode.Physics);
         tween
             .TweenProperty(this, "velocity:x", targetVelocity.X, durationX)
             .SetTrans(Tween.TransitionType.Sine)
@@ -387,32 +369,6 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         Timing.RunCoroutine(_Attack(), ATTACK_TAG);
     }
 
-    private IEnumerator<double> _Attack()
-    {
-        bool isStrikeConnected = false;
-        // we stop the character only when it isn't recoiling.
-        _isVelocityOverrided = true;
-        while (Velocity.X != 0 && !_isRecoiling)
-        {
-            Velocity = new Vector2(Mathf.Lerp(Velocity.X, 0, _data.DeccelerationLerp), Velocity.Y);
-            yield return Timing.WaitForOneFrame;
-        }
-        _animatedSprite.Play("attack");
-        //then attack
-        while (_animatedSprite.Animation == "attack")
-        {
-            if (IsCurrentFrame(4, 5) && _isTargetWithinAtkRange && !isStrikeConnected)
-            {
-                _player.Hurt(_data.Damage);
-                isStrikeConnected = true;
-            }
-
-            yield return Timing.WaitForOneFrame;
-        }
-        _isVelocityOverrided = false;
-        Timing.RunCoroutine(_RefillAtk());
-    }
-
     /// <summary>
     ///  <see langword="this doesn't stop the animation"/>
     /// </summary>
@@ -422,6 +378,48 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         Timing.KillCoroutines(ATTACK_TAG);
         Timing.RunCoroutine(_RefillAtk());
     }
+
+    private IEnumerator<double> _Attack()
+    {
+        bool isStrikeConnected = false;
+        // we stop the character only when it isn't recoiling.
+        _isVelocityOverrided = true;
+        while (Velocity.X != 0 && !_isRecoiling)
+        {
+            Velocity = Velocity.Lerp(new(0, Velocity.Y), _data.DeccelerationLerp);
+            yield return Timing.WaitForOneFrame;
+        }
+        _animatedSprite.Play("attack");
+        //then attack
+        while (_animatedSprite.Animation == "attack")
+        {
+            if (IsCurrentFrame(4, 5) && _isTargetWithinAtkRange && !isStrikeConnected)
+            {
+                isStrikeConnected = _player.Hurt(_data.Damage);
+            }
+
+            yield return Timing.WaitForOneFrame;
+        }
+
+        if (!_isRecoiling)
+            _isVelocityOverrided = false;
+        Timing.RunCoroutine(_RefillAtk());
+    }
+
+    private void AttackCheck(Area2D hitbox)
+    {
+        var bodies = hitbox.GetOverlappingBodies();
+        foreach (var body in bodies)
+        {
+            if (body is Player)
+            {
+                _isTargetWithinAtkRange = true;
+                return;
+            }
+        }
+        _isTargetWithinAtkRange = false;
+    }
+
     #endregion
 
     #region CONTACT
@@ -475,6 +473,7 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
     {
         // First I turn off all of it hitbox and hurtbox
         HitBoxDisabled();
+        _gameManager.EnemiesCount -= 1;
 
         // Stop the movememnt
         _isVelocityOverrided = true;
@@ -508,6 +507,19 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         _hitBoxRight.SetDeferred("disable", true);
     }
 
+    private void BodyHitBoxCheck()
+    {
+        var bodies = _bodyHitBox.GetOverlappingBodies();
+        foreach (var body in bodies)
+        {
+            if (body is Player && _health > 0)
+            {
+                _player.Hurt(_data.Damage);
+                return;
+            }
+        }
+    }
+
     #endregion
 
     #region EVENT HANDLER
@@ -523,21 +535,6 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
             _player = player;
     }
 
-    private void OnBodyEnteredHitBox(Node2D body)
-    {
-        if (body is Player player && _health > 0)
-        {
-            player.Hurt(_data.Damage);
-
-            // HurtRecoil(
-            //     _player.IsFacingRight,
-            //     _data.RecoilOffsetX,
-            //     _data.RecoilOffsetY,
-            //     _data.RecoilDuration
-            // );
-        }
-    }
-
     void OnAnimationFinished()
     {
         if (_animatedSprite.Animation == "die")
@@ -549,7 +546,8 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
                 .SetEase(Tween.EaseType.In);
             tween.TweenCallback(Callable.From(this.QueueFree));
         }
-        _animatedSprite.Play("idle");
+        if (_health > 0)
+            _animatedSprite.Play("idle");
     }
 
     #endregion
@@ -566,30 +564,6 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         {
             Velocity = new(Mathf.Lerp(Velocity.X, 0, _data.DeccelerationLerp), Velocity.Y);
             yield return Timing.WaitForOneFrame;
-        }
-    }
-
-    IEnumerator<double> _StopMovementInOneDirection(bool isRight)
-    {
-        if (isRight && Velocity.X > 0)
-        {
-            yield return Timing.WaitUntilDone(
-                Timing.RunCoroutine(
-                    _StopAllHorizontalMovement(),
-                    Segment.PhysicsProcess,
-                    STOP_X_MOVEMENT_TAG
-                )
-            );
-        }
-        else if (Velocity.X < 0)
-        {
-            yield return Timing.WaitUntilDone(
-                Timing.RunCoroutine(
-                    _StopAllHorizontalMovement(),
-                    Segment.PhysicsProcess,
-                    STOP_X_MOVEMENT_TAG
-                )
-            );
         }
     }
     #endregion

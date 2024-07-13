@@ -1,0 +1,75 @@
+[gd_scene load_steps=10 format=3 uid="uid://brgrfnx7mi2b6"]
+
+[ext_resource type="Script" path="res://scripts/Main.cs" id="1_830bm"]
+[ext_resource type="PackedScene" uid="uid://dtai2rsce2shf" path="res://scenes/World.tscn" id="1_qi82n"]
+[ext_resource type="PackedScene" uid="uid://cdjjtjgx04og7" path="res://scenes/GUI/HeartsContainer.tscn" id="2_606l1"]
+[ext_resource type="PackedScene" uid="uid://bcb66ab5wjgvt" path="res://scenes/Player.tscn" id="3_5gdp5"]
+[ext_resource type="Script" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="4_l0tek"]
+[ext_resource type="Script" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_2d.gd" id="5_3febf"]
+[ext_resource type="Script" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="6_co3i1"]
+
+[sub_resource type="Resource" id="Resource_f6x5w"]
+script = ExtResource("6_co3i1")
+duration = 0.1
+transition = 3
+ease = 1
+
+[sub_resource type="LabelSettings" id="LabelSettings_ldtko"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1_830bm")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+offset = Vector2(0, -50)
+zoom = Vector2(2, 2)
+
+[node name="PhantomCameraHost" type="Node" parent="Camera2D"]
+script = ExtResource("4_l0tek")
+
+[node name="PhantomCamera2D" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
+position = Vector2(5370.84, 1003.44)
+script = ExtResource("5_3febf")
+priority = 10
+follow_mode = 1
+follow_target = NodePath("../Player")
+zoom = Vector2(2, 2)
+tween_resource = SubResource("Resource_f6x5w")
+follow_damping = true
+draw_limits = true
+
+[node name="PhantomCamera2D2" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
+position = Vector2(5370.84, 1003.44)
+script = ExtResource("5_3febf")
+priority = 1
+follow_mode = 1
+follow_target = NodePath("../Player")
+zoom = Vector2(2.1, 2.1)
+tween_resource = SubResource("Resource_f6x5w")
+follow_damping = true
+draw_limits = true
+
+[node name="Player" parent="." instance=ExtResource("3_5gdp5")]
+z_index = 10
+position = Vector2(5370.84, 1003.44)
+trauma = 1.1
+
+[node name="World" parent="." instance=ExtResource("1_qi82n")]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="EnemiesLeft" type="Label" parent="CanvasLayer"]
+offset_left = 991.0
+offset_top = 21.0
+offset_right = 1099.0
+offset_bottom = 44.0
+text = "Enemies left: "
+label_settings = SubResource("LabelSettings_ldtko")
+
+[node name="HeartsContainer" parent="CanvasLayer" instance=ExtResource("2_606l1")]
+
+[node name="TimesLeft" type="Label" parent="CanvasLayer"]
+offset_left = 993.0
+offset_top = 53.0
+offset_right = 1070.0
+offset_bottom = 76.0
+text = "Time left: "

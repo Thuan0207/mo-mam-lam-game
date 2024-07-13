@@ -1,0 +1,91 @@
+[gd_scene load_steps=7 format=3 uid="uid://cjftiuupknjli"]
+
+[ext_resource type="Script" path="res://scripts/AnimatedTrap.cs" id="1_eaakj"]
+[ext_resource type="Texture2D" uid="uid://bcbscogjcc2kr" path="res://Sprites/Foozle_2DS0007_Pixel_Trap_Pack/Foozle_2DTR0001_Pixel_Trap_Pack/Ceiling Trap/PNGs/Ceiling Trap - Level 1.png" id="2_78bju"]
+
+[sub_resource type="Animation" id="Animation_4svvy"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [1]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Hitbox:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 25.5)]
+}
+
+[sub_resource type="Animation" id="Animation_ud3dp"]
+resource_name = "attack"
+length = 1.5
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 13, 13]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Hitbox:position")
+tracks/1/interp = 0
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2(0, 25.5), Vector2(0, 15.5), Vector2(0, 4.5), Vector2(0, -3.5), Vector2(0, -10.5), Vector2(0, -17.5), Vector2(0, -25.5)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_co5db"]
+_data = {
+"RESET": SubResource("Animation_4svvy"),
+"attack": SubResource("Animation_ud3dp")
+}
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xmcgs"]
+size = Vector2(32, 13)
+
+[node name="CeilingTrap" type="Node2D"]
+script = ExtResource("1_eaakj")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_78bju")
+hframes = 14
+frame = 1
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_co5db")
+}
+
+[node name="Hitbox" type="Area2D" parent="."]
+position = Vector2(0, 25.5)
+collision_layer = 8
+collision_mask = 5
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("RectangleShape2D_xmcgs")
