@@ -1,11 +1,16 @@
-[gd_scene load_steps=12 format=3 uid="uid://bcb66ab5wjgvt"]
+[gd_scene load_steps=17 format=3 uid="uid://bcb66ab5wjgvt"]
 
 [ext_resource type="Script" path="res://scripts/Player.cs" id="1_htxw0"]
 [ext_resource type="Resource" uid="uid://c8xan60m6mq83" path="res://resources/animation_data.tres" id="2_c0f6y"]
 [ext_resource type="Resource" uid="uid://dee2bfqrs0s0d" path="res://resources/player_data.tres" id="3_xysni"]
+[ext_resource type="PackedScene" uid="uid://ca8ku2ad16u2k" path="res://audio_stream_player_jump.tscn" id="4_h4l5w"]
 [ext_resource type="PackedScene" uid="uid://cusmre3lypee6" path="res://scenes/VFX/walking_dust.tscn" id="5_be0hw"]
 [ext_resource type="PackedScene" uid="uid://7l3h12fyh70a" path="res://scenes/VFX/jumping_dust.tscn" id="6_u8xcp"]
-[ext_resource type="SpriteFrames" path="res://resources/PlayerAnimation.tres" id="7_8nd4t"]
+[ext_resource type="SpriteFrames" uid="uid://b3j1manoorfjf" path="res://resources/PlayerAnimation.tres" id="7_8nd4t"]
+[ext_resource type="PackedScene" uid="uid://bbq6m3hhg45hi" path="res://audio_stream_player_falling.tscn" id="10_nly3w"]
+[ext_resource type="PackedScene" uid="uid://dwyab41tb2hxy" path="res://audio_stream_running.tscn" id="11_6vj5g"]
+[ext_resource type="PackedScene" uid="uid://3agblwb4rjk3" path="res://audio_stream_player_dash.tscn" id="12_kspl4"]
+[ext_resource type="PackedScene" uid="uid://fvb4t4m183cm" path="res://audiostreamplayerhit.tscn" id="13_3bmxx"]
 [ext_resource type="PackedScene" uid="uid://beou8sseh75u2" path="res://scenes/VFX/explosion.tscn" id="46_4u88p"]
 [ext_resource type="PackedScene" uid="uid://0p1tdfkjw176" path="res://scenes/VFX/running_dust.tscn" id="47_khkxb"]
 
@@ -16,14 +21,16 @@ size = Vector2(20, 39)
 offsets = PackedFloat32Array(0, 0.335714, 0.789286, 1)
 colors = PackedColorArray(1, 1, 1, 1, 0.553506, 0.553506, 0.553506, 1, 0.85098, 0.85098, 0.85098, 0.705882, 1, 1, 1, 0.0784314)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_8pvkp"]
-size = Vector2(20, 38)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4xjv3"]
+size = Vector2(20, 39)
 
 [node name="Player" type="CharacterBody2D"]
-collision_mask = 6
+collision_mask = 2
 script = ExtResource("1_htxw0")
 AnimationData = ExtResource("2_c0f6y")
 Data = ExtResource("3_xysni")
+
+[node name="AudioStreamPlayerJump" parent="." instance=ExtResource("4_h4l5w")]
 
 [node name="HurtBox" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_5tgh7")
@@ -47,8 +54,7 @@ position = Vector2(0, 20)
 position = Vector2(-1, -13)
 scale = Vector2(1.375, 1.35417)
 sprite_frames = ExtResource("7_8nd4t")
-animation = &"neutral"
-frame_progress = 0.0122785
+animation = &"crouch_attack"
 metadata/_edit_lock_ = true
 
 [node name="JumpingParticlesMarker" type="Marker2D" parent="."]
@@ -60,22 +66,26 @@ lifetime = 0.4
 speed_scale = 2.2
 color_ramp = SubResource("Gradient_1l536")
 
-[node name="HitBoxRight" type="Area2D" parent="."]
-collision_layer = 64
-collision_mask = 4
-monitoring = false
-monitorable = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBoxRight"]
+[node name="HitBoxRight" type="ShapeCast2D" parent="."]
 position = Vector2(20, 0)
-shape = SubResource("RectangleShape2D_8pvkp")
-
-[node name="HitBoxLeft" type="Area2D" parent="."]
-collision_layer = 64
+enabled = false
+shape = SubResource("RectangleShape2D_4xjv3")
+target_position = Vector2(6, 0)
 collision_mask = 4
-monitoring = false
-monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBoxLeft"]
+[node name="HitBoxLeft" type="ShapeCast2D" parent="."]
 position = Vector2(-20, 0)
-shape = SubResource("RectangleShape2D_8pvkp")
+enabled = false
+shape = SubResource("RectangleShape2D_4xjv3")
+target_position = Vector2(-6, 0)
+collision_mask = 4
+
+[node name="AudioStreamPlayerFalling" parent="." instance=ExtResource("10_nly3w")]
+volume_db = -0.787
+
+[node name="AudioStreamPlayerRunning" parent="." instance=ExtResource("11_6vj5g")]
+volume_db = 3.961
+
+[node name="AudioStreamPlayerDash" parent="." instance=ExtResource("12_kspl4")]
+
+[node name="AudioStreamPlayerHit" parent="." instance=ExtResource("13_3bmxx")]

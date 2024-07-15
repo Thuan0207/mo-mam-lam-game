@@ -1,0 +1,164 @@
+[gd_scene load_steps=15 format=3 uid="uid://bampri5g7doax"]
+
+[ext_resource type="Script" path="res://scenes/World.gd" id="1_mc3ys"]
+[ext_resource type="PackedScene" uid="uid://vl8pdo5ch2b0" path="res://scenes/Level1Map.tscn" id="2_pk6ig"]
+[ext_resource type="PackedScene" path="res://scenes/Ghoul.tscn" id="4_n46as"]
+[ext_resource type="PackedScene" uid="uid://bcb66ab5wjgvt" path="res://scenes/Player.tscn" id="6_3b7ge"]
+[ext_resource type="Script" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="7_eu7qd"]
+[ext_resource type="Script" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="7_t0r1w"]
+[ext_resource type="PackedScene" uid="uid://7vfd7jj4nxi1" path="res://ui_pause.tscn" id="8_qhklc"]
+[ext_resource type="Script" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_2d.gd" id="8_so2n6"]
+[ext_resource type="Texture2D" uid="uid://brnqlsqnoxe74" path="res://Sprites/PixelFantasy_Caves_1.0/PSD/ParallaxBackground/Sky.png" id="10_86rbb"]
+[ext_resource type="Texture2D" uid="uid://c6a1uewfabkvb" path="res://Sprites/PixelFantasy_Caves_1.0/PSD/ParallaxBackground/DownLayer.png" id="11_i34jh"]
+[ext_resource type="Texture2D" uid="uid://dupl4qckdgjdo" path="res://Sprites/PixelFantasy_Caves_1.0/PSD/ParallaxBackground/MiddleLayer.png" id="12_jyslh"]
+[ext_resource type="Texture2D" uid="uid://b7qeajfmcyo3e" path="res://Sprites/PixelFantasy_Caves_1.0/PSD/ParallaxBackground/TopLayer.png" id="13_t2r5g"]
+[ext_resource type="PackedScene" path="res://scenes/GUI/HeartsContainer.tscn" id="14_hqyya"]
+
+[sub_resource type="Resource" id="Resource_5psxu"]
+script = ExtResource("7_t0r1w")
+duration = 0.1
+transition = 3
+ease = 1
+
+[node name="World" type="Node2D"]
+script = ExtResource("1_mc3ys")
+
+[node name="TileMap" parent="." instance=ExtResource("2_pk6ig")]
+
+[node name="Player" parent="." instance=ExtResource("6_3b7ge")]
+position = Vector2(6486, 1635)
+
+[node name="Ghoul" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
+position = Vector2(5357, 1620)
+_tileMapPathFind = NodePath("../TileMap")
+
+[node name="Ghoul2" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
+position = Vector2(4238, 1523)
+_tileMapPathFind = NodePath("../TileMap")
+
+[node name="Ghoul3" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
+position = Vector2(3949, 1156)
+_tileMapPathFind = NodePath("../TileMap")
+
+[node name="Ghoul4" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
+position = Vector2(4147, 296)
+_tileMapPathFind = NodePath("../TileMap")
+
+[node name="Ghoul5" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
+position = Vector2(5151, 273)
+_tileMapPathFind = NodePath("../TileMap")
+
+[node name="Ghoul6" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
+position = Vector2(3697, 330)
+_tileMapPathFind = NodePath("../TileMap")
+
+[node name="Ghoul7" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
+position = Vector2(2139, 976)
+_tileMapPathFind = NodePath("../TileMap")
+
+[node name="Ghoul8" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
+position = Vector2(2638, 972)
+_tileMapPathFind = NodePath("../TileMap")
+
+[node name="Ghoul9" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
+position = Vector2(2122, 1355)
+_tileMapPathFind = NodePath("../TileMap")
+
+[node name="Ghoul10" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
+position = Vector2(1848, 1363)
+_tileMapPathFind = NodePath("../TileMap")
+
+[node name="Ghoul11" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
+position = Vector2(2439, 1368)
+_tileMapPathFind = NodePath("../TileMap")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+offset = Vector2(0, -50)
+zoom = Vector2(1.8, 1.8)
+process_callback = 0
+
+[node name="PhantomCameraHost" type="Node" parent="Camera2D"]
+script = ExtResource("7_eu7qd")
+
+[node name="PhantomCamera2D" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
+position = Vector2(6486, 1635)
+script = ExtResource("8_so2n6")
+priority = 10
+follow_mode = 1
+follow_target = NodePath("../Player")
+zoom = Vector2(1.8, 1.8)
+snap_to_pixel = true
+tween_resource = SubResource("Resource_5psxu")
+follow_offset = Vector2(30, -30)
+follow_damping = true
+follow_damping_value = Vector2(0.2, 0.5)
+dead_zone_width = 1.0
+dead_zone_height = 0.624
+show_viewfinder_in_play = true
+draw_limits = true
+
+[node name="PauseMenu" parent="PhantomCamera2D" instance=ExtResource("8_qhklc")]
+offset_left = -28.0
+offset_top = -59.0
+offset_right = -28.0
+offset_bottom = -59.0
+
+[node name="PhantomCamera2DZoom" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
+position = Vector2(6486, 1635)
+script = ExtResource("8_so2n6")
+priority = 1
+follow_mode = 1
+follow_target = NodePath("../Player")
+zoom = Vector2(1.86, 1.86)
+tween_resource = SubResource("Resource_5psxu")
+follow_damping = true
+follow_damping_value = Vector2(0.2, 0.5)
+dead_zone_width = 0.2
+dead_zone_height = 0.2
+draw_limits = true
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+
+[node name="ParallaxLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0.2, 0.2)
+motion_mirroring = Vector2(960, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/ParallaxLayer"]
+scale = Vector2(2.66667, 3.73457)
+texture = ExtResource("10_86rbb")
+centered = false
+
+[node name="ParallaxLayer2" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0.18, 0.18)
+motion_mirroring = Vector2(960, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/ParallaxLayer2"]
+scale = Vector2(2.66667, 3.73457)
+texture = ExtResource("11_i34jh")
+centered = false
+
+[node name="ParallaxLayer3" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0.15, 0.15)
+motion_mirroring = Vector2(960, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/ParallaxLayer3"]
+scale = Vector2(2.66667, 3.73457)
+texture = ExtResource("12_jyslh")
+centered = false
+
+[node name="ParallaxLayer4" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0.12, 0.12)
+motion_mirroring = Vector2(960, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/ParallaxLayer4"]
+scale = Vector2(2.66667, 3.73457)
+texture = ExtResource("13_t2r5g")
+centered = false
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="HeartsContainer" parent="CanvasLayer" instance=ExtResource("14_hqyya")]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 214.0
+offset_bottom = 50.0
