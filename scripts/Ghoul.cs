@@ -130,8 +130,7 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
     public override void _ExitTree()
     {
         GetParent().CallDeferred("remove_child", _targetDetectionArea);
-        if (_health > 0)
-            _gameManager.EnemiesCount -= 1;
+        _gameManager.EnemiesCount -= 1;
     }
 
     public override void _Ready()
@@ -161,6 +160,9 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
 
     public override void _Process(double delta)
     {
+        if (_health <= 0)
+            return;
+
         PathFinding();
 
         if (_animatedSprite.Animation != "attack")
@@ -475,31 +477,23 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
     {
         // First I turn off all of it hitbox and hurtbox
         HitBoxDisabled();
-        _gameManager.EnemiesCount -= 1;
 
         // Stop the movememnt
         _isVelocityOverrided = true;
 
-        // I need to wait till the body is on the floor and velocity is equal to zero and wait for attack animation to finish
-        yield return Timing.WaitUntilDone(
-            Timing.RunCoroutine(
-                _StopAllHorizontalMovement(),
-                Segment.PhysicsProcess,
-                STOP_X_MOVEMENT_TAG
-            )
-        );
-
-        while (!IsOnFloor() || _animatedSprite.Animation == "attack")
+        while (!IsOnFloor())
         {
             yield return Timing.WaitForOneFrame;
         }
 
-        // I stop all the process
-        SetPhysicsProcess(false);
-        SetProcess(false);
-
         // Then I play the die animation
         _animatedSprite.Play("die");
+        var tween = GetTree().CreateTween();
+        tween
+            .TweenProperty(_animatedSprite.Material, "shader_parameter/opacity", 0, 0.5f)
+            .SetTrans(Tween.TransitionType.Sine)
+            .SetEase(Tween.EaseType.In);
+        tween.TweenCallback(Callable.From(this.QueueFree));
     }
 
     private void HitBoxDisabled()
@@ -539,15 +533,15 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
 
     void OnAnimationFinished()
     {
-        if (_animatedSprite.Animation == "die")
-        {
-            var tween = GetTree().CreateTween();
-            tween
-                .TweenProperty(_animatedSprite.Material, "shader_parameter/opacity", 0, 0.5f)
-                .SetTrans(Tween.TransitionType.Sine)
-                .SetEase(Tween.EaseType.In);
-            tween.TweenCallback(Callable.From(this.QueueFree));
-        }
+        // if (_animatedSprite.Animation == "die")
+        // {
+        //     var tween = GetTree().CreateTween();
+        //     tween
+        //         .TweenProperty(_animatedSprite.Material, "shader_parameter/opacity", 0, 0.5f)
+        //         .SetTrans(Tween.TransitionType.Sine)
+        //         .SetEase(Tween.EaseType.In);
+        //     tween.TweenCallback(Callable.From(this.QueueFree));
+        // }
         if (_health > 0)
             _animatedSprite.Play("idle");
     }

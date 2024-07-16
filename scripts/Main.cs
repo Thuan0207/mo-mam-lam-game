@@ -28,7 +28,7 @@ public partial class Main : Node
         {
             OneShot = true,
             Autostart = true,
-            WaitTime = 60
+            WaitTime = 120
         };
         timer.Timeout += OnTimeout;
 

@@ -15,6 +15,7 @@ grow_vertical = 2
 script = ExtResource("1_5n8wt")
 
 [node name="Label" type="Label" parent="."]
+layout_mode = 0
 offset_left = 518.0
 offset_top = 219.0
 offset_right = 632.0
@@ -23,6 +24,7 @@ text = "You die"
 label_settings = SubResource("LabelSettings_p28me")
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 0
 offset_right = 1152.0
 offset_bottom = 648.0
 

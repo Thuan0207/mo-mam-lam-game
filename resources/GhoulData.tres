@@ -16,6 +16,6 @@ RecoilOffsetX = 50.0
 RecoilOffsetY = 20.0
 RecoilDurationX = 0.2
 RecoilDurationY = 0.1
-StunDurationAfterRecoil = 0.1
+StunDurationAfterRecoil = 0.0
 AtkCooldown = 0.0
 HitBlinkEffectDuration = 0.05

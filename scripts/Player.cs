@@ -159,11 +159,17 @@ public partial class Player : CharacterBody2D, IHurtableBody
             ResetAllPlayingAnimationCheck();
             if (CharacterSprite.Animation == "die")
             {
-                GetTree().ChangeSceneToFile("res://scenes/DieMenu.tscn");
+                this.QueueFree();
+                GetTree().CallDeferred("change_scene_to_file", "res://scenes/DieMenu.tscn");
             }
         };
 
         SetGravityScale(Data.GravityScale);
+    }
+
+    public override void _ExitTree()
+    {
+        // GetTree().ChangeSceneToFile("res://scenes/DieMenu.tscn");
     }
 
     public override void _Process(double _d)
