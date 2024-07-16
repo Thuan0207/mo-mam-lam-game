@@ -335,6 +335,8 @@ public partial class Player : CharacterBody2D, IHurtableBody
             runLerp = 1;
         else if (isDashAttacking)
             runLerp = Data.dashEndRunLerp;
+        else
+            runLerp = 0;
 
         v.X += CalculateRunForce(runLerp, _moveInput.X) * delta;
         if (LastOnGroundTime > 0 && IsAttacking) // stop the player momentum when attaking on ground
@@ -958,7 +960,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
         var tween = GetTree().CreateTween();
 
-        IEnumerator<double> _CancelTween()
+        IEnumerator<double> _CheckToCancelTween()
         {
             while (tween.IsValid())
             {
@@ -988,14 +990,13 @@ public partial class Player : CharacterBody2D, IHurtableBody
                 {
                     _isRecoiling = false;
                     _isAllInputDisabled = false;
-                    Timing.RunCoroutine(_CancelTween());
+                    Timing.RunCoroutine(_CheckToCancelTween());
                 })
             );
         tween
             .TweenProperty(this, "velocity:x", 0, durationX)
             .SetTrans(Tween.TransitionType.Sine)
             .SetEase(Tween.EaseType.In);
-        tween.Chain().TweenCallback(Callable.From(() => { }));
         tween.SetParallel(false);
     }
 

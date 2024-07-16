@@ -29,7 +29,7 @@ zoom = Vector2(2, 2)
 script = ExtResource("4_l0tek")
 
 [node name="PhantomCamera2D" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
-position = Vector2(5370.84, 1003.44)
+position = Vector2(2521.78, 317.913)
 script = ExtResource("5_3febf")
 priority = 10
 follow_mode = 1
@@ -40,7 +40,7 @@ follow_damping = true
 draw_limits = true
 
 [node name="PhantomCamera2D2" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
-position = Vector2(5370.84, 1003.44)
+position = Vector2(2521.78, 317.913)
 script = ExtResource("5_3febf")
 priority = 1
 follow_mode = 1
@@ -52,7 +52,7 @@ draw_limits = true
 
 [node name="Player" parent="." instance=ExtResource("3_5gdp5")]
 z_index = 10
-position = Vector2(5370.84, 1003.44)
+position = Vector2(2521.78, 317.913)
 trauma = 1.1
 
 [node name="World" parent="." instance=ExtResource("1_qi82n")]

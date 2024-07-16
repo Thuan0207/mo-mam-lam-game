@@ -6,57 +6,48 @@
 [node name="World" type="Node2D"]
 
 [node name="TileMap" parent="." instance=ExtResource("2_pk6ig")]
+JumpHeight = 3
 
 [node name="Ghoul" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-position = Vector2(5785.58, 1072.22)
+position = Vector2(2489.86, 369.015)
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul2" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-process_mode = 4
 position = Vector2(4273, 1253)
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul3" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-process_mode = 4
 position = Vector2(3949, 1156)
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul4" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-process_mode = 4
 position = Vector2(4147, 296)
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul5" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-process_mode = 4
 position = Vector2(5151, 273)
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul6" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-process_mode = 4
 position = Vector2(3697, 330)
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul7" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-process_mode = 4
-position = Vector2(2139, 976)
+position = Vector2(4014, 643)
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul8" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-process_mode = 4
 position = Vector2(2638, 972)
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul9" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-process_mode = 4
-position = Vector2(2122, 1355)
+position = Vector2(2223, 787)
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul10" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-process_mode = 4
-position = Vector2(1848, 1363)
+position = Vector2(2443, 1066)
 _tileMapPathFind = NodePath("../TileMap")
 
 [node name="Ghoul11" parent="." node_paths=PackedStringArray("_tileMapPathFind") instance=ExtResource("4_n46as")]
-process_mode = 4
-position = Vector2(2439, 1368)
+position = Vector2(3275, 883)
 _tileMapPathFind = NodePath("../TileMap")
