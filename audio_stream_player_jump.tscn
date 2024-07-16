@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://ca8ku2ad16u2k"]
+
+[ext_resource type="AudioStream" uid="uid://dffqo4y24frd4" path="res://asset/Audio/jumpnew.wav" id="1_05cp4"]
+
+[node name="AudioStreamPlayerJump" type="AudioStreamPlayer2D"]
+stream = ExtResource("1_05cp4")
+volume_db = 1.981
+pitch_scale = 1.34

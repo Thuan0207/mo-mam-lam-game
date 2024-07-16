@@ -269,7 +269,7 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_eygw4"]
-size = Vector2(513.21, 138.063)
+size = Vector2(351.367, 107.535)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_112g0"]
 size = Vector2(16, 34.0625)
@@ -292,7 +292,6 @@ libraries = {
 }
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-visible = false
 position = Vector2(0, -1)
 shape = SubResource("RectangleShape2D_s2hjp")
 debug_color = Color(0, 0.6, 0.701961, 0.419608)
@@ -306,7 +305,6 @@ frame = 7
 frame_progress = 1.0
 
 [node name="DetectionArea" type="Area2D" parent="."]
-visible = false
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionArea"]

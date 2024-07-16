@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://bcb66ab5wjgvt"]
+[gd_scene load_steps=29 format=3 uid="uid://bcb66ab5wjgvt"]
 
 [ext_resource type="Script" path="res://scripts/Player.cs" id="1_htxw0"]
 [ext_resource type="Resource" uid="uid://c8xan60m6mq83" path="res://resources/animation_data.tres" id="2_c0f6y"]
@@ -10,6 +10,11 @@
 [ext_resource type="Texture2D" uid="uid://d0dd4dbbjpa15" path="res://asset/Battlemage Fantasy Character/Animations wo Effects (Sprite Sheet)/Crouch Attack/Crouch Attack effect.png" id="8_0kwgp"]
 [ext_resource type="PackedScene" path="res://AudioStreamPlayerJump.tscn" id="9_hwarw"]
 [ext_resource type="PackedScene" path="res://AudioStreamPlayerRunning.tscn" id="10_dw32d"]
+[ext_resource type="AudioStream" uid="uid://dffqo4y24frd4" path="res://asset/Audio/jumpnew.wav" id="12_q6188"]
+[ext_resource type="AudioStream" uid="uid://50cjf3mqciqa" path="res://hit.mp3" id="13_0wnk0"]
+[ext_resource type="AudioStream" uid="uid://cabypohvtrgnq" path="res://asset/Audio/mixkit-running-through-the-forest-1232.wav" id="14_efacy"]
+[ext_resource type="AudioStream" uid="uid://cbupyqigfjyh8" path="res://dash.wav" id="16_o44pi"]
+[ext_resource type="AudioStream" uid="uid://bn8jmd886sl7w" path="res://asset/Audio/jumps-65494 (mp3cut.net).mp3" id="17_od6hl"]
 [ext_resource type="PackedScene" uid="uid://beou8sseh75u2" path="res://scenes/VFX/explosion.tscn" id="46_4u88p"]
 [ext_resource type="PackedScene" uid="uid://0p1tdfkjw176" path="res://scenes/VFX/running_dust.tscn" id="47_khkxb"]
 
@@ -159,9 +164,24 @@ rotation = 1.5708
 shape = SubResource("CapsuleShape2D_0d3cq")
 
 [node name="AudioStreamPlayerJump" parent="." instance=ExtResource("9_hwarw")]
-volume_db = 0.0
-pitch_scale = 0.01
+stream = ExtResource("12_q6188")
+volume_db = 12.0
+pitch_scale = 1.0
 
 [node name="AudioStreamPlayerRunning" parent="." instance=ExtResource("10_dw32d")]
-volume_db = 0.0
-pitch_scale = 0.01
+stream = ExtResource("14_efacy")
+volume_db = 18.0
+pitch_scale = 1.0
+
+[node name="HitAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("13_0wnk0")
+volume_db = 1.0
+
+[node name="DashAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("16_o44pi")
+volume_db = 8.0
+
+[node name="HurtAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("17_od6hl")
+volume_db = 10.0
+pitch_scale = 2.0

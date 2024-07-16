@@ -3,62 +3,81 @@ using Godot;
 
 public partial class Main : Node
 {
-    HeartsContainer _heartContainer;
-    Player _player;
-    Label _enemmiesLeft;
-    Label _timesLeft;
-    GameManager _manager;
-
+    HeartsContainer heartContainer;
+    Player player;
+    Label enemmiesLeft;
+    Label timesLeft;
+    GameManager manager;
     Timer timer;
+    #region SCENES
+    PauseMenu pauseMenu;
+    #endregion
 
     public override void _Ready()
     {
-        _player = GetNode<Player>("Player");
-        _heartContainer = GetNode<HeartsContainer>("CanvasLayer/HeartsContainer");
-        _enemmiesLeft = GetNode<Label>("CanvasLayer/EnemiesLeft");
-        _timesLeft = GetNode<Label>("CanvasLayer/TimesLeft");
-        _player.HealthChanged += OnHealthChanged;
-        _heartContainer.MaxHealth = _player.Data.MaxHealth;
-        _manager = GetNode<GameManager>("/root/GameManager");
-        _manager.OnEnemiesCountChange += OnEnemiesCountChange;
+        player = GetNode<Player>("Player");
+        heartContainer = GetNode<HeartsContainer>("CanvasLayer/HeartsContainer");
+        enemmiesLeft = GetNode<Label>("CanvasLayer/EnemiesLeft");
+        timesLeft = GetNode<Label>("CanvasLayer/TimesLeft");
+        player.HealthChanged += OnHealthChanged;
+        heartContainer.MaxHealth = player.Data.MaxHealth;
+        manager = GetNode<GameManager>("/root/GameManager");
+        pauseMenu = GetNode<PauseMenu>("CanvasLayer/PauseMenu");
+        manager.OnEnemiesCountChange += OnEnemiesCountChange;
         timer = new()
         {
             OneShot = true,
             Autostart = true,
-            WaitTime = 30
+            WaitTime = 120
         };
-        timer.Timeout += () =>
-        {
-            GD.Print("You loose");
-        };
-        GetTree().Root.CallDeferred(MethodName.AddChild, timer);
+        timer.Timeout += OnTimeout;
 
-        SetLabelEnemiesCount(_manager.EnemiesCount);
+        GetTree().Root.CallDeferred(MethodName.AddChild, timer);
+        SetLabelEnemiesCount(manager.EnemiesCount);
         SetLabelTimeLeft();
+    }
+
+    private void OnTimeout()
+    {
+        GetTree().ChangeSceneToFile("res://scenes/TimeoutMenu.tscn");
+    }
+
+    private void Win()
+    {
+        GetTree().ChangeSceneToFile("res://scenes/WinMenu.tscn");
     }
 
     public override void _Process(double delta)
     {
         SetLabelTimeLeft();
+        if (Input.IsActionJustPressed("ui_cancel"))
+        {
+            pauseMenu.TogglePaused();
+        }
+        if (manager.EnemiesCount <= 0)
+            Win();
     }
 
     void OnHealthChanged(int currentHealth)
     {
-        _heartContainer.UpdateHearts(currentHealth);
+        heartContainer.UpdateHearts(currentHealth);
     }
 
     void SetLabelEnemiesCount(int count)
     {
-        _enemmiesLeft.Text = $"Enemies Left: {count}";
+        enemmiesLeft.Text = $"Enemies Left: {count}";
     }
 
     void SetLabelTimeLeft()
     {
-        _timesLeft.Text = $"Time left: {timer.TimeLeft:F2}";
+        timesLeft.Text = $"Time left: {timer.TimeLeft:F2}";
     }
 
     void OnEnemiesCountChange(int curr, int prev)
     {
+        if (!IsInstanceValid(this))
+            return;
+
         SetLabelEnemiesCount(curr);
         if (curr < prev) { }
         timer.Start(timer.TimeLeft + 5);

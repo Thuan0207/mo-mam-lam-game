@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bbq6m3hhg45hi"]
+
+[ext_resource type="AudioStream" uid="uid://difetousu8b3i" path="res://asset/Audio/701647__ienba__fabric-flapping.wav" id="1_mb1aq"]
+
+[node name="AudioStreamPlayerFalling" type="AudioStreamPlayer2D"]
+stream = ExtResource("1_mb1aq")
+volume_db = 11.123
+pitch_scale = 1.46

@@ -4,6 +4,6 @@
 
 [node name="Audio_Background" type="AudioStreamPlayer"]
 stream = ExtResource("1_6w1nk")
-volume_db = 8.072
+volume_db = -9.731
 pitch_scale = 1.38
 autoplay = true

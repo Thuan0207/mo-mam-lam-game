@@ -1,14 +1,16 @@
-[gd_scene load_steps=12 format=3 uid="uid://brgrfnx7mi2b6"]
+[gd_scene load_steps=14 format=3 uid="uid://brgrfnx7mi2b6"]
 
 [ext_resource type="Script" path="res://scripts/Main.cs" id="1_830bm"]
 [ext_resource type="PackedScene" uid="uid://dtai2rsce2shf" path="res://scenes/World.tscn" id="1_qi82n"]
 [ext_resource type="PackedScene" uid="uid://cdjjtjgx04og7" path="res://scenes/GUI/HeartsContainer.tscn" id="2_606l1"]
+[ext_resource type="Script" path="res://scripts/Checkmap.cs" id="2_g82y7"]
 [ext_resource type="PackedScene" uid="uid://bcb66ab5wjgvt" path="res://scenes/Player.tscn" id="3_5gdp5"]
 [ext_resource type="Script" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="4_l0tek"]
 [ext_resource type="Script" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_2d.gd" id="5_3febf"]
 [ext_resource type="Script" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="6_co3i1"]
 [ext_resource type="PackedScene" uid="uid://8iohrkn2x4mt" path="res://joystick.tscn" id="8_thu71"]
 [ext_resource type="PackedScene" uid="uid://by5yghc6e4sjp" path="res://attack_button.tscn" id="9_2xxj2"]
+[ext_resource type="PackedScene" uid="uid://7vfd7jj4nxi1" path="res://scenes/PauseMenu.tscn" id="10_0cyda"]
 
 [sub_resource type="Resource" id="Resource_f6x5w"]
 script = ExtResource("6_co3i1")
@@ -21,15 +23,18 @@ ease = 1
 [node name="Main" type="Node"]
 script = ExtResource("1_830bm")
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." node_paths=PackedStringArray("_joystick")]
+position = Vector2(0, -1)
 offset = Vector2(0, -50)
 zoom = Vector2(2, 2)
+script = ExtResource("2_g82y7")
+_joystick = NodePath("../CanvasLayer/Joystick")
 
 [node name="PhantomCameraHost" type="Node" parent="Camera2D"]
 script = ExtResource("4_l0tek")
 
 [node name="PhantomCamera2D" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
-position = Vector2(5370.84, 1003.44)
+position = Vector2(4106.73, 591.386)
 script = ExtResource("5_3febf")
 priority = 10
 follow_mode = 1
@@ -40,7 +45,7 @@ follow_damping = true
 draw_limits = true
 
 [node name="PhantomCamera2D2" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
-position = Vector2(5370.84, 1003.44)
+position = Vector2(4106.73, 591.386)
 script = ExtResource("5_3febf")
 priority = 1
 follow_mode = 1
@@ -52,7 +57,7 @@ draw_limits = true
 
 [node name="Player" parent="." instance=ExtResource("3_5gdp5")]
 z_index = 10
-position = Vector2(5370.84, 1003.44)
+position = Vector2(4106.73, 591.386)
 trauma = 1.1
 
 [node name="World" parent="." instance=ExtResource("1_qi82n")]
@@ -64,20 +69,26 @@ position = Vector2(164, 502)
 scale = Vector2(0.2, 0.2)
 
 [node name="EnemiesLeft" type="Label" parent="CanvasLayer"]
-offset_left = 991.0
-offset_top = 21.0
-offset_right = 1099.0
-offset_bottom = 44.0
+offset_left = 30.0
+offset_top = 54.0
+offset_right = 138.0
+offset_bottom = 77.0
 text = "Enemies left: "
 label_settings = SubResource("LabelSettings_ldtko")
 
 [node name="HeartsContainer" parent="CanvasLayer" instance=ExtResource("2_606l1")]
+offset_left = 14.0
+offset_top = 13.0
+offset_right = 208.0
+offset_bottom = 43.0
 
 [node name="TimesLeft" type="Label" parent="CanvasLayer"]
-offset_left = 993.0
-offset_top = 53.0
-offset_right = 1070.0
-offset_bottom = 76.0
+offset_left = 31.0
+offset_top = 86.0
+offset_right = 108.0
+offset_bottom = 109.0
 text = "Time left: "
 
 [node name="attack button" parent="CanvasLayer" instance=ExtResource("9_2xxj2")]
+
+[node name="PauseMenu" parent="CanvasLayer" instance=ExtResource("10_0cyda")]
