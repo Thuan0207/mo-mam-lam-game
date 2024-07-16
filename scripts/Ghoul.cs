@@ -386,11 +386,11 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         bool isStrikeConnected = false;
         // we stop the character only when it isn't recoiling.
         _isVelocityOverrided = true;
-        while (Velocity.X != 0 && !_isRecoiling)
-        {
-            Velocity = Velocity.Lerp(new(0, Velocity.Y), _data.DeccelerationLerp);
-            yield return Timing.WaitForOneFrame;
-        }
+        // while (Velocity.X != 0 && !_isRecoiling)
+        // {
+        //     Velocity = Velocity.Lerp(new(0, Velocity.Y), _data.DeccelerationLerp);
+        //     yield return Timing.WaitForOneFrame;
+        // }
         _animatedSprite.Play("attack");
         //then attack
         while (_animatedSprite.Animation == "attack")

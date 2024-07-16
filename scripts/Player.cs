@@ -1053,7 +1053,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
     {
         // I need to wait till the body is on the floor and velocity is equal to zero and wait for attack animation to finish
         _isAllInputDisabled = true;
-        while (!IsOnFloor() || Velocity != Vector2.Zero || IsAttacking)
+        while (!IsOnFloor())
         {
             yield return Timing.WaitForOneFrame;
         }
