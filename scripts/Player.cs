@@ -301,22 +301,22 @@ public partial class Player : CharacterBody2D, IHurtableBody
         {
             AudioStreamPlayerJump.Play();
         }
-        // audio run
-        if (
-            Input.IsActionJustPressed("ui_left")
-            || Input.IsActionJustPressed("ui_right") && IsOnFloor()
-        )
-        {
-            AudioStreamPlayerRunning.Play();
-        }
+        // // audio run
+        // if (
+        //     Input.IsActionJustPressed("ui_left")
+        //     || Input.IsActionJustPressed("ui_right") && IsOnFloor()
+        // )
+        // {
+        //     // AudioStreamPlayerRunning.Play();
+        // }
 
-        if (
-            Input.IsActionJustReleased("ui_left")
-            || Input.IsActionJustReleased("ui_right") && IsOnFloor()
-        )
-        {
-            AudioStreamPlayerRunning.Stop();
-        }
+        // if (
+        //     Input.IsActionJustReleased("ui_left")
+        //     || Input.IsActionJustReleased("ui_right") && IsOnFloor()
+        // )
+        // {
+        //     AudioStreamPlayerRunning.Stop();
+        // }
     }
     #endregion
 

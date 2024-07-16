@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://brgrfnx7mi2b6"]
+[gd_scene load_steps=16 format=3 uid="uid://brgrfnx7mi2b6"]
 
 [ext_resource type="Script" path="res://scripts/Main.cs" id="1_830bm"]
 [ext_resource type="PackedScene" uid="uid://dtai2rsce2shf" path="res://scenes/World.tscn" id="1_qi82n"]
@@ -11,6 +11,8 @@
 [ext_resource type="PackedScene" uid="uid://8iohrkn2x4mt" path="res://joystick.tscn" id="8_thu71"]
 [ext_resource type="PackedScene" uid="uid://by5yghc6e4sjp" path="res://attack_button.tscn" id="9_2xxj2"]
 [ext_resource type="PackedScene" uid="uid://7vfd7jj4nxi1" path="res://scenes/PauseMenu.tscn" id="10_0cyda"]
+[ext_resource type="Texture2D" uid="uid://p2gv1e2hsbsb" path="res://asset/GUI/pauseBtn.png" id="12_fkmy4"]
+[ext_resource type="Script" path="res://scripts/PauseButton.cs" id="13_6vpck"]
 
 [sub_resource type="Resource" id="Resource_f6x5w"]
 script = ExtResource("6_co3i1")
@@ -92,3 +94,13 @@ text = "Time left: "
 [node name="attack button" parent="CanvasLayer" instance=ExtResource("9_2xxj2")]
 
 [node name="PauseMenu" parent="CanvasLayer" instance=ExtResource("10_0cyda")]
+
+[node name="Button" type="Button" parent="CanvasLayer" node_paths=PackedStringArray("pauseMenu")]
+offset_left = 1092.0
+offset_top = 9.0
+offset_right = 1116.0
+offset_bottom = 33.0
+scale = Vector2(2, 2)
+icon = ExtResource("12_fkmy4")
+script = ExtResource("13_6vpck")
+pauseMenu = NodePath("../PauseMenu")
