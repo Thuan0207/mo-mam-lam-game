@@ -24,6 +24,7 @@ public partial class MainMenu : Control
     {
         // Transition to your game scene
         GetTree().ChangeSceneToFile("res://scenes/Main.tscn");
+        var hehe = "";
     }
 
     // Method to handle Quit button press
