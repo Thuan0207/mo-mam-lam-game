@@ -1,4 +1,4 @@
-using System;
+    using System;
 using Godot;
 
 public partial class MainMenu : Control
@@ -12,7 +12,7 @@ public partial class MainMenu : Control
         );
         Button quitButton = GetNode<Button>(
             "MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/QuitGameButton"
-        );
+        );  
 
         // Connect the buttons to methods using Callable
         startButton.Connect("pressed", new Callable(this, nameof(OnStartButtonPressed)));
@@ -24,7 +24,6 @@ public partial class MainMenu : Control
     {
         // Transition to your game scene
         GetTree().ChangeSceneToFile("res://scenes/Main.tscn");
-        var hehe = "";
     }
 
     // Method to handle Quit button press
