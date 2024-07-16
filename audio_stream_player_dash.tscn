@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://3agblwb4rjk3"]
+
+[ext_resource type="AudioStream" uid="uid://ba1drs7pd6eya" path="res://asset/Audio/dash.wav" id="1_5olw8"]
+
+[node name="AudioStreamPlayerDash" type="AudioStreamPlayer2D"]
+stream = ExtResource("1_5olw8")
+volume_db = -6.934

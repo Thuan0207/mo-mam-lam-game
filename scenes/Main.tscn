@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://brgrfnx7mi2b6"]
+[gd_scene load_steps=13 format=3 uid="uid://brgrfnx7mi2b6"]
 
 [ext_resource type="Script" path="res://scripts/Main.cs" id="1_830bm"]
 [ext_resource type="PackedScene" uid="uid://dtai2rsce2shf" path="res://scenes/World.tscn" id="1_qi82n"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="6_co3i1"]
 [ext_resource type="PackedScene" uid="uid://8iohrkn2x4mt" path="res://joystick.tscn" id="8_thu71"]
 [ext_resource type="PackedScene" uid="uid://by5yghc6e4sjp" path="res://attack_button.tscn" id="9_2xxj2"]
+[ext_resource type="PackedScene" uid="uid://7vfd7jj4nxi1" path="res://scenes/PauseMenu.tscn" id="10_0cyda"]
 
 [sub_resource type="Resource" id="Resource_f6x5w"]
 script = ExtResource("6_co3i1")
@@ -81,3 +82,5 @@ offset_bottom = 76.0
 text = "Time left: "
 
 [node name="attack button" parent="CanvasLayer" instance=ExtResource("9_2xxj2")]
+
+[node name="PauseMenu" parent="CanvasLayer" instance=ExtResource("10_0cyda")]

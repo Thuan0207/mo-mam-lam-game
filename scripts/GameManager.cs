@@ -2,45 +2,24 @@ using Godot;
 
 public partial class GameManager : Node
 {
-    Timer timer;
-    int enemiesCount;
-
-	
-
-    public override void _Ready()
-    {
-        timer = new()
-        {
-            OneShot = true,
-            Autostart = true,
-            WaitTime = 30
-        };
-        timer.Timeout += () =>
-        {
-            GD.Print("You loose");
-        };
-
-        GetTree().Root.CallDeferred(MethodName.AddChild, timer);
-    }
+    int _enemiesCount;
 
     public int EnemiesCount
     {
-        get => enemiesCount;
+        get => _enemiesCount;
         set
         {
-            EmitSignal(SignalName.OnEnemiesCountChange, value, enemiesCount);
-            // if (value < enemiesCount)
-            // {
-            //     Timer.Start(Timer.TimeLeft + 5);
-            // }
-            enemiesCount = value;
-            if (enemiesCount <= 0)
-            {
-                GD.Print("You win !!!");
-            }
+            EmitSignal(SignalName.OnEnemiesCountChange, value, _enemiesCount);
+            _enemiesCount = value;
+
+            if (_enemiesCount <= 0)
+                EmitSignal(SignalName.OnWin);
         }
     }
 
     [Signal]
     public delegate void OnEnemiesCountChangeEventHandler(int curr, int prev);
+
+    [Signal]
+    public delegate void OnWinEventHandler();
 }

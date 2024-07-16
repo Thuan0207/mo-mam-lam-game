@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://dwyab41tb2hxy"]
+
+[ext_resource type="AudioStream" uid="uid://cabypohvtrgnq" path="res://asset/Audio/mixkit-running-through-the-forest-1232.wav" id="1_ymjyg"]
+
+[node name="AudioStreamPlayerRunning" type="AudioStreamPlayer2D"]
+stream = ExtResource("1_ymjyg")
+volume_db = 1.98
+pitch_scale = 1.23

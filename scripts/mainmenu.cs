@@ -1,5 +1,5 @@
-using Godot;
 using System;
+using Godot;
 
 public partial class mainmenu : Control
 {
@@ -7,8 +7,12 @@ public partial class mainmenu : Control
     public override void _Ready()
     {
         // Find the buttons and connect their pressed signal to methods
-        Button startButton = GetNode<Button>("MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/StartGameButton");
-        Button quitButton = GetNode<Button>("MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/QuitGameButton");
+        Button startButton = GetNode<Button>(
+            "MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/StartGameButton"
+        );
+        Button quitButton = GetNode<Button>(
+            "MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/QuitGameButton"
+        );
 
         // Connect the buttons to methods using Callable
         startButton.Connect("pressed", new Callable(this, nameof(OnStartButtonPressed)));
@@ -19,7 +23,7 @@ public partial class mainmenu : Control
     private void OnStartButtonPressed()
     {
         // Transition to your game scene
-        GetTree().ChangeSceneToFile("res://scenes/World.tscn");
+        GetTree().ChangeSceneToFile("res://scenes/Main.tscn");
     }
 
     // Method to handle Quit button press

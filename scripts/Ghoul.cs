@@ -130,6 +130,8 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
     public override void _ExitTree()
     {
         GetParent().CallDeferred("remove_child", _targetDetectionArea);
+        if (_health > 0)
+            _gameManager.EnemiesCount -= 1;
     }
 
     public override void _Ready()
