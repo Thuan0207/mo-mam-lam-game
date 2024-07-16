@@ -22,23 +22,29 @@ public partial class Main : Node
         player.HealthChanged += OnHealthChanged;
         heartContainer.MaxHealth = player.Data.MaxHealth;
         manager = GetNode<GameManager>("/root/GameManager");
-        manager.OnEnemiesCountChange += OnEnemiesCountChange;
         pauseMenu = GetNode<PauseMenu>("CanvasLayer/PauseMenu");
+        manager.OnEnemiesCountChange += OnEnemiesCountChange;
         timer = new()
         {
             OneShot = true,
             Autostart = true,
-            WaitTime = 30
+            WaitTime = 60
         };
-        timer.Timeout += () =>
-        {
-            GD.Print("You loose");
-        };
-        GetTree().Root.CallDeferred(MethodName.AddChild, timer);
-        // pauseMenu.Size = new();
+        timer.Timeout += OnTimeout;
 
+        GetTree().Root.CallDeferred(MethodName.AddChild, timer);
         SetLabelEnemiesCount(manager.EnemiesCount);
         SetLabelTimeLeft();
+    }
+
+    private void OnTimeout()
+    {
+        GetTree().ChangeSceneToFile("res://scenes/TimeoutMenu.tscn");
+    }
+
+    private void Win()
+    {
+        GetTree().ChangeSceneToFile("res://scenes/WinMenu.tscn");
     }
 
     public override void _Process(double delta)
@@ -48,6 +54,8 @@ public partial class Main : Node
         {
             pauseMenu.TogglePaused();
         }
+        if (manager.EnemiesCount <= 0)
+            Win();
     }
 
     void OnHealthChanged(int currentHealth)

@@ -58,6 +58,9 @@ public partial class Player : CharacterBody2D, IHurtableBody
     #endregion
 
     #region NODE
+    AudioStreamPlayer2D hitAudio;
+    AudioStreamPlayer2D hurtAudio;
+    AudioStreamPlayer2D dashAudio;
     Joystick _joyStick;
     GameManager _gameManager;
     CpuParticles2D runningDustLeft;
@@ -135,6 +138,9 @@ public partial class Player : CharacterBody2D, IHurtableBody
         hitboxRight = GetNode<Area2D>("HitBoxRight");
         attackFxRight = GetNode<AnimatedSprite2D>("AnimatedSprite2D/AttackFxRight");
         attackFxLeft = GetNode<AnimatedSprite2D>("AnimatedSprite2D/AttackFxLeft");
+        hitAudio = GetNode<AudioStreamPlayer2D>("HitAudio");
+        hurtAudio = GetNode<AudioStreamPlayer2D>("HurtAudio");
+        dashAudio = GetNode<AudioStreamPlayer2D>("DashAudio");
 
         localTimeScale = 1;
         defaultScale = CharacterSprite.Scale;
@@ -151,6 +157,10 @@ public partial class Player : CharacterBody2D, IHurtableBody
                 AttackCd = Data.AttackCd;
             }
             ResetAllPlayingAnimationCheck();
+            if (CharacterSprite.Animation == "die")
+            {
+                GetTree().ChangeSceneToFile("res://scenes/DieMenu.tscn");
+            }
         };
 
         SetGravityScale(Data.GravityScale);
@@ -634,13 +644,13 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
             lastDashDir = IsFacingRight ? Vector2.Right : Vector2.Left;
 
-            Timing.RunCoroutine(StartDash(lastDashDir), Segment.PhysicsProcess, "StartDash");
+            Timing.RunCoroutine(Dash(lastDashDir), Segment.PhysicsProcess, "StartDash");
         }
     }
     #endregion
 
     #region DASH METHODS
-    private IEnumerator<double> StartDash(Vector2 dir)
+    private IEnumerator<double> Dash(Vector2 dir)
     {
         //Overall this method of dashing aims to mimic Celeste, if you're looking for
         // a more physics-based approach try a method similar to that used in the jump
@@ -657,6 +667,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         SetGravityScale(0);
 
         CharacterSprite.Play("start_dash");
+        dashAudio.Play();
         isDashAnimationPlaying = true;
         //We keep the player's velocity at the dash speed during the "attack" phase (in celeste the first 0.15s)
         while (Time.GetTicksMsec() - startTime <= Data.dashAttackTime * 1000)
@@ -885,6 +896,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
         if (IsStriking)
         {
+            hitAudio.Play();
             if (CharacterSprite.FlipH)
                 Attack(hitboxLeft);
             else
@@ -1008,6 +1020,8 @@ public partial class Player : CharacterBody2D, IHurtableBody
         if (_health <= 0)
             return false;
 
+        hurtAudio.Play();
+
         _health -= _dmg;
         StartInvinciblePeriod();
 
@@ -1053,6 +1067,5 @@ public partial class Player : CharacterBody2D, IHurtableBody
         CharacterSprite.Play("die");
         _isAllInputDisabled = false;
     }
-
     #endregion
 }

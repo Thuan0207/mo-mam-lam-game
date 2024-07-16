@@ -395,7 +395,6 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         //then attack
         while (_animatedSprite.Animation == "attack")
         {
-            GD.Print(_isTargetWithinAtkRange);
             if (IsCurrentFrame(4, 5) && _isTargetWithinAtkRange && !isStrikeConnected)
             {
                 isStrikeConnected = _player.Hurt(_data.Damage);
