@@ -35,7 +35,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
     #endregion
 
     #region INPUT PARAMETERS
-    Vector2 _moveInput;
+    public Vector2 MoveInput;
     public float LastPressedJumpTime { get; private set; }
     public float LastPressedDashTime { get; private set; }
     public float AttackCd { get; private set; }
@@ -58,10 +58,11 @@ public partial class Player : CharacterBody2D, IHurtableBody
     #endregion
 
     #region NODE
+    [Export]
+    Node joystick;
     AudioStreamPlayer2D hitAudio;
     AudioStreamPlayer2D hurtAudio;
     AudioStreamPlayer2D dashAudio;
-    Joystick _joyStick;
     GameManager _gameManager;
     CpuParticles2D runningDustLeft;
     CpuParticles2D runningDustRight;
@@ -125,7 +126,6 @@ public partial class Player : CharacterBody2D, IHurtableBody
         IsFacingRight = true;
         IsFalling = false;
         _gameManager = GetNode<GameManager>("/root/GameManager");
-        _joyStick = GetParent().GetNode<Joystick>("CanvasLayer/Joystick");
         AudioStreamPlayerJump = GetNode<AudioStreamPlayer2D>("AudioStreamPlayerJump");
         AudioStreamPlayerRunning = GetNode<AudioStreamPlayer2D>("AudioStreamPlayerRunning");
         CharacterSprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
@@ -165,6 +165,15 @@ public partial class Player : CharacterBody2D, IHurtableBody
         };
 
         SetGravityScale(Data.GravityScale);
+        joystick.Connect(
+            "joystick_change",
+            Callable.From(
+                (Vector2 dir) =>
+                {
+                    MoveInput = dir;
+                }
+            )
+        );
     }
 
     public override void _ExitTree()
@@ -186,10 +195,10 @@ public partial class Player : CharacterBody2D, IHurtableBody
         #region INPUT HANDLER
         if (!_isAllInputDisabled)
         {
-            _moveInput = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
+            // _moveInput = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
 
-            if (_moveInput == Vector2.Zero)
-                _moveInput = _joyStick.GetDirection();
+            // if (_moveInput == Vector2.Zero)
+            //     _moveInput = _joyStick.GetDirection();
 
             if (!_isActionInputDisabled)
             {
@@ -207,7 +216,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
             }
         }
         else
-            _moveInput = Vector2.Zero;
+            MoveInput = Vector2.Zero;
         #endregion
 
         // Ground Check
@@ -215,10 +224,10 @@ public partial class Player : CharacterBody2D, IHurtableBody
             LastOnGroundTime = Data.CoyoteTime;
 
         #region DIRECTION
-        if (_moveInput.X != 0)
+        if (MoveInput.X != 0)
         {
             HandleAnimation("forward");
-            CheckDirectionToFace(isMovingRight: _moveInput.X > 0);
+            CheckDirectionToFace(isMovingRight: MoveInput.X > 0);
         }
         else
         {
@@ -251,7 +260,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         #region GRAVITY PROCESS
         if (!isDashAttacking)
         { // fast fall by holding down move down button
-            if (Velocity.Y > 0 && _moveInput.Y > 0)
+            if (Velocity.Y > 0 && MoveInput.Y > 0)
             {
                 SetGravityScale(Data.GravityScale * Data.FastFallGravityMult);
                 // cap max fall speed
@@ -301,22 +310,22 @@ public partial class Player : CharacterBody2D, IHurtableBody
         {
             AudioStreamPlayerJump.Play();
         }
-        // audio run
-        if (
-            Input.IsActionJustPressed("ui_left")
-            || Input.IsActionJustPressed("ui_right") && IsOnFloor()
-        )
-        {
-            AudioStreamPlayerRunning.Play();
-        }
+        // // audio run
+        // if (
+        //     Input.IsActionJustPressed("ui_left")
+        //     || Input.IsActionJustPressed("ui_right") && IsOnFloor()
+        // )
+        // {
+        //     // AudioStreamPlayerRunning.Play();
+        // }
 
-        if (
-            Input.IsActionJustReleased("ui_left")
-            || Input.IsActionJustReleased("ui_right") && IsOnFloor()
-        )
-        {
-            AudioStreamPlayerRunning.Stop();
-        }
+        // if (
+        //     Input.IsActionJustReleased("ui_left")
+        //     || Input.IsActionJustReleased("ui_right") && IsOnFloor()
+        // )
+        // {
+        //     AudioStreamPlayerRunning.Stop();
+        // }
     }
     #endregion
 
@@ -354,7 +363,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         else
             runLerp = 0;
 
-        v.X += CalculateRunForce(runLerp, _moveInput.X) * delta;
+        v.X += CalculateRunForce(runLerp, MoveInput.X) * delta;
         if (LastOnGroundTime > 0 && IsAttacking) // stop the player momentum when attaking on ground
             v.X += CalculateRunForce(runLerp, 0) * delta;
         if (_isRecoiling)
@@ -567,10 +576,10 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
         // emit cloud of dust when change direction at max speed
         if (
-            _moveInput.X != 0
+            MoveInput.X != 0
             && LastOnGroundTime > 0
             && IsReadyForDeccelAtMaxSpeed
-            && Mathf.Sign(Velocity.X) != _moveInput.X
+            && Mathf.Sign(Velocity.X) != MoveInput.X
         )
         {
             runningDustLeft.Emitting = !IsFacingRight;
@@ -798,7 +807,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
     void SharpStopAnyMovement()
     {
-        _moveInput = Vector2.Zero;
+        MoveInput = Vector2.Zero;
     }
 
     private void SetGravityScale(float gravityScale)
@@ -832,7 +841,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
     {
         if (AttackCd <= 0)
             IsAttacking = true;
-        _moveInput = Vector2.Zero;
+        MoveInput = Vector2.Zero;
     }
 
     void StartInvinciblePeriod(int hurtFlashLoop = 6)
@@ -982,7 +991,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         {
             while (tween.IsValid())
             {
-                if (LastPressedJumpTime > 0 || _moveInput != Vector2.Zero)
+                if (LastPressedJumpTime > 0 || MoveInput != Vector2.Zero)
                 {
                     tween.Kill();
                     Velocity = Vector2.Zero;
