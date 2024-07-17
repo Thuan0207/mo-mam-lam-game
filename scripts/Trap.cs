@@ -38,8 +38,11 @@ public partial class Trap : Node2D
     {
         if (body is IHurtableBody hurtableBody && !UnhurtableBodies.Contains(body))
         {
-            var isHurt = hurtableBody.Hurt(1);
-            if (isHurt && hurtableBody is not Player)
+            if (hurtableBody is Player)
+            {
+                hurtableBody.Hurt(1);
+            }
+            else if (hurtableBody.Hurt(1, HitTypes.STRONG_HIT))
             {
                 UnhurtableBodies.Add(body);
                 Timing.CallDelayed(1, () => UnhurtableBodies.Remove(body));

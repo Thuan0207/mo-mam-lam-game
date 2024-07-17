@@ -38,7 +38,7 @@ joystick = NodePath("../CanvasLayer/MultidirectionnalJoystick")
 script = ExtResource("4_l0tek")
 
 [node name="PhantomCamera2D" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
-position = Vector2(4106.73, 591.386)
+position = Vector2(505, 33)
 script = ExtResource("5_3febf")
 priority = 10
 follow_mode = 1
@@ -49,7 +49,7 @@ follow_damping = true
 draw_limits = true
 
 [node name="PhantomCamera2D2" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
-position = Vector2(4106.73, 591.386)
+position = Vector2(505, 33)
 script = ExtResource("5_3febf")
 priority = 1
 follow_mode = 1
@@ -61,7 +61,7 @@ draw_limits = true
 
 [node name="Player" parent="." node_paths=PackedStringArray("joystick") instance=ExtResource("3_5gdp5")]
 z_index = 10
-position = Vector2(4106.73, 591.386)
+position = Vector2(505, 33)
 joystick = NodePath("../CanvasLayer/MultidirectionnalJoystick")
 trauma = 1.1
 
@@ -105,11 +105,15 @@ script = ExtResource("13_6vpck")
 pauseMenu = NodePath("../PauseMenu")
 
 [node name="MultidirectionnalJoystick" type="Node2D" parent="CanvasLayer"]
-position = Vector2(185, 524)
+position = Vector2(235, 522)
+scale = Vector2(1.2, 1.2)
 script = ExtResource("14_n27yv")
 bigger_texture = ExtResource("15_aqkw5")
 small_texture = ExtResource("16_58a1v")
 emulate_touch = true
 amount_of_directions = 4
-sensitivity_area = 93.077
+sensitivity_area = 225.0
+softness_off = 0.4
+softness_on = 0.3
+_draw_circle = false
 draw_sensitivity_area = false

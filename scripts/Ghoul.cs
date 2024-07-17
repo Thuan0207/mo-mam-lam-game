@@ -388,18 +388,21 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         bool isStrikeConnected = false;
         // we stop the character only when it isn't recoiling.
         _isVelocityOverrided = true;
-        // while (Velocity.X != 0 && !_isRecoiling)
-        // {
-        //     Velocity = Velocity.Lerp(new(0, Velocity.Y), _data.DeccelerationLerp);
-        //     yield return Timing.WaitForOneFrame;
-        // }
+        while (Mathf.Abs(Velocity.X) > _data.MaxSpeed / 2 && !_isRecoiling)
+        {
+            Velocity = Velocity.Lerp(
+                new(Mathf.Sign(Velocity.X) * (_data.MaxSpeed / 2), Velocity.Y),
+                _data.DeccelerationLerp
+            );
+            yield return Timing.WaitForOneFrame;
+        }
         _animatedSprite.Play("attack");
         //then attack
         while (_animatedSprite.Animation == "attack")
         {
             if (IsCurrentFrame(4, 5) && _isTargetWithinAtkRange && !isStrikeConnected)
             {
-                isStrikeConnected = _player.Hurt(_data.Damage);
+                isStrikeConnected = _player.Hurt(_data.Damage, HitTypes.STRONG_HIT);
             }
 
             yield return Timing.WaitForOneFrame;
@@ -427,20 +430,24 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
     #endregion
 
     #region CONTACT
-    public bool Hurt(int _dmg)
+    public bool Hurt(int _dmg, HitTypes hitTypes)
     {
         if (_health <= 0)
             return false;
 
         _health -= _dmg;
+        GD.Print("ghould hurt", hitTypes.ToString());
 
-        Recoil(
-            _player.IsFacingRight,
-            _data.RecoilOffsetX / 2,
-            _data.RecoilOffsetY / 2,
-            _data.RecoilDurationX,
-            _data.RecoilDurationY
-        );
+        if (hitTypes == HitTypes.STRONG_HIT)
+            Recoil(
+                _player.IsFacingRight,
+                _data.RecoilOffsetX / 2,
+                _data.RecoilOffsetY / 2,
+                _data.RecoilDurationX,
+                _data.RecoilDurationY
+            );
+        else
+            Recoil(_player.IsFacingRight, 0, 0, 0, 0);
 
         // hurt flash
         var tween = GetTree().CreateTween();
@@ -510,7 +517,7 @@ public partial class Ghoul : CharacterBody2D, IHurtableBody
         {
             if (body is Player && _health > 0)
             {
-                _player.Hurt(_data.Damage);
+                _player.Hurt(_data.Damage, HitTypes.STRONG_HIT);
                 return;
             }
         }

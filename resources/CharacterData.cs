@@ -181,6 +181,9 @@ public partial class CharacterData : Resource
     [ExportCategory("COMBAT")]
     [ExportGroup("Stats")]
     [Export]
+    public float StrongHitTime = 0.2f;
+
+    [Export]
     public float AttackCd; // cool down
 
     [Export]
@@ -276,9 +279,11 @@ public partial class CharacterData : Resource
         float recoilOffsetY = 25,
         float freezeDuration = 0.2f,
         float freezeScale = 0.05f,
-        float hitBlinkDuration = 0.01f
+        float hitBlinkDuration = 0.01f,
+        float strongHitTime = 0.2f
     )
     {
+        StrongHitTime = strongHitTime;
         RunMaxSpeed = runMaxSpeed;
         Acceleration = acceleration;
         Decceleration = decceleration;

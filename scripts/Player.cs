@@ -6,6 +6,8 @@ using MEC;
 
 public partial class Player : CharacterBody2D, IHurtableBody
 {
+    private const string Tag = "StartDash";
+
     #region EDTIOR VARIABLES
     [Export]
     public AnimationData AnimationData;
@@ -27,6 +29,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
     public bool IsFalling { get; private set; }
     public bool IsDashing { get; private set; }
     public float LastOnGroundTime { get; private set; }
+    float strongHitWindow;
     public bool IsReadyForDeccelAtMaxSpeed { get; private set; }
     public bool IsAttacking { get; private set; }
     public bool IsAtkConnected { get; private set; }
@@ -190,12 +193,13 @@ public partial class Player : CharacterBody2D, IHurtableBody
         LastPressedJumpTime -= delta;
         LastPressedDashTime -= delta;
         AttackCd -= delta;
+        strongHitWindow -= delta;
         #endregion
 
         #region INPUT HANDLER
         if (!_isAllInputDisabled)
         {
-            // _moveInput = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
+            MoveInput = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
 
             // if (_moveInput == Vector2.Zero)
             //     _moveInput = _joyStick.GetDirection();
@@ -659,7 +663,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
             lastDashDir = IsFacingRight ? Vector2.Right : Vector2.Left;
 
-            Timing.RunCoroutine(Dash(lastDashDir), Segment.PhysicsProcess, "StartDash");
+            Timing.RunCoroutine(Dash(lastDashDir), Segment.PhysicsProcess, Tag);
         }
     }
     #endregion
@@ -685,7 +689,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         dashAudio.Play();
         isDashAnimationPlaying = true;
         //We keep the player's velocity at the dash speed during the "attack" phase (in celeste the first 0.15s)
-        while (Time.GetTicksMsec() - startTime <= Data.dashAttackTime * 1000)
+        while (!IsAttacking && Time.GetTicksMsec() - startTime <= Data.dashAttackTime * 1000)
         {
             Velocity = Data.dashSpeed * (float)localTimeScale * dir;
             //Pauses the loop until the next frame, creating something of a Update loop.
@@ -701,6 +705,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         //Begins the "end" of our dash where we return some control to the player but still limit run acceleration (see Update() and Run())
         SetGravityScale(Data.GravityScale);
         Velocity = Data.dashEndSpeed * (float)localTimeScale * dir;
+        strongHitWindow = Data.StrongHitTime;
 
         while (Time.GetTicksMsec() - startTime <= Data.dashEndTime * 1000)
         {
@@ -717,7 +722,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         IsDashing = false;
         Velocity = Vector2.Zero;
         SetGravityScale(Data.GravityScale);
-        Timing.KillCoroutines("StartDash");
+        Timing.KillCoroutines(Tag);
     }
 
     [Export]
@@ -890,8 +895,8 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
     void AttackCheck()
     {
-        if (IsDashing)
-            return;
+        // if (IsDashing)
+        //     return;
 
         IsStriking = false; // this is the state where attack frames are allow to connect with the enemy body
 
@@ -957,7 +962,14 @@ public partial class Player : CharacterBody2D, IHurtableBody
     {
         if (body is IHurtableBody enemy)
         {
-            return enemy.Hurt(Data.Damage);
+            if (strongHitWindow < 0)
+                return enemy.Hurt(Data.Damage);
+            else
+            {
+                GD.Print("Strong hit");
+                strongHitWindow = -1;
+                return enemy.Hurt(Data.Damage, HitTypes.STRONG_HIT);
+            }
         }
 
         return false;
@@ -1027,7 +1039,7 @@ public partial class Player : CharacterBody2D, IHurtableBody
         tween.SetParallel(false);
     }
 
-    public bool Hurt(int _dmg)
+    public bool Hurt(int _dmg, HitTypes hitTypes)
     {
         if (_isInvincible)
             return false;
@@ -1047,13 +1059,15 @@ public partial class Player : CharacterBody2D, IHurtableBody
 
         EmitSignal(SignalName.HealthChanged, _health);
 
-        Recoil(
-            isRecoilRight: CharacterSprite.FlipH,
-            offsetX: Data.RecoilOffsetX,
-            offsetY: Data.RecoilOffsetY,
-            durationX: Data.RecoilDurationXSecond,
-            durationY: Data.RecoilDurationYSecond
-        );
+        if (hitTypes == HitTypes.STRONG_HIT)
+            Recoil(
+                isRecoilRight: CharacterSprite.FlipH,
+                offsetX: Data.RecoilOffsetX,
+                offsetY: Data.RecoilOffsetY,
+                durationX: Data.RecoilDurationXSecond,
+                durationY: Data.RecoilDurationYSecond
+            );
+
         ImpactHitFx(globalPos: GlobalPosition);
 
         if (_health <= 0)

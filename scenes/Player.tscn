@@ -119,7 +119,7 @@ material = ExtResource("7_l82qm")
 position = Vector2(-1, -13)
 scale = Vector2(1.375, 1.35417)
 sprite_frames = ExtResource("7_8nd4t")
-animation = &"jump_neutral_up"
+animation = &"attack2"
 
 [node name="AttackFxRight" type="AnimatedSprite2D" parent="AnimatedSprite2D"]
 position = Vector2(24, -12.5538)
