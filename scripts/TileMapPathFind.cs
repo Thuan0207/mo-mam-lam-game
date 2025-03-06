@@ -16,7 +16,7 @@ public partial class TileMapPathFind : TileMap
     const int COLLISION_LAYER = 0;
     const int EMPTY_CELL = -1; // godot default this to -1
 
-    const int MAX_TILE_FALL_SCAN_DEPTH = 1000; // max number of tiles to scan downward for a solid tiles (!= CELL_IS_EMPTY)
+    const int MAX_TILE_FALL_SCAN_DEPTH = 2; // max number of tiles to scan downward for a solid tiles (!= CELL_IS_EMPTY)
 
     public AStar2D AStarGrapth = new();
     Array<Vector2I> _usedTiles;

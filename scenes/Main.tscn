@@ -46,6 +46,7 @@ follow_target = NodePath("../Player")
 zoom = Vector2(2, 2)
 tween_resource = SubResource("Resource_f6x5w")
 follow_damping = true
+follow_damping_value = Vector2(0.1, 0.2)
 draw_limits = true
 
 [node name="PhantomCamera2D2" type="Node2D" parent="." node_paths=PackedStringArray("follow_target")]
@@ -57,6 +58,7 @@ follow_target = NodePath("../Player")
 zoom = Vector2(2.1, 2.1)
 tween_resource = SubResource("Resource_f6x5w")
 follow_damping = true
+follow_damping_value = Vector2(0.1, 0.2)
 draw_limits = true
 
 [node name="Player" parent="." node_paths=PackedStringArray("joystick") instance=ExtResource("3_5gdp5")]

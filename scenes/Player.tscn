@@ -165,23 +165,25 @@ shape = SubResource("CapsuleShape2D_0d3cq")
 
 [node name="AudioStreamPlayerJump" parent="." instance=ExtResource("9_hwarw")]
 stream = ExtResource("12_q6188")
-volume_db = 12.0
-pitch_scale = 1.0
+volume_db = -80.0
+pitch_scale = 0.01
 
 [node name="AudioStreamPlayerRunning" parent="." instance=ExtResource("10_dw32d")]
 stream = ExtResource("14_efacy")
-volume_db = 18.0
-pitch_scale = 1.0
+volume_db = -80.0
+pitch_scale = 0.01
 
 [node name="HitAudio" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("13_0wnk0")
-volume_db = 1.0
+volume_db = -80.0
+pitch_scale = 0.01
 
 [node name="DashAudio" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("16_o44pi")
-volume_db = 8.0
+volume_db = -80.0
+pitch_scale = 0.01
 
 [node name="HurtAudio" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("17_od6hl")
-volume_db = 10.0
-pitch_scale = 2.0
+volume_db = -80.0
+pitch_scale = 0.01
